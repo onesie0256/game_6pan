@@ -17,7 +17,7 @@ int main(int argc , char* argv[])
 		fprintf(stderr, "Usage: %s, Cannot find a Server Name.\n", argv[0]);
 		return -1;
     }
-
+  
   //サーバーへ接続
   if(connectServer(myGameManager.serverName) == 0){
     printf("cannot connect server\n");
@@ -28,6 +28,11 @@ int main(int argc , char* argv[])
     while(endFlag){
       endFlag = gameLoop();
     }
+  
+
+  printf("good job\n");
+
+  
 
     return 0;
 }

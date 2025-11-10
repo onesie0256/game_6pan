@@ -1,9 +1,6 @@
 #include "3DEngine.h"
 #include <math.h>
 
-#define DEG_TO_RAD 0.017453
-
-
 /**
  * @brief ベクトルの加算を行う
  * 

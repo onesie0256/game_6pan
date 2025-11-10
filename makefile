@@ -1,6 +1,7 @@
+VPATH = common:client:server:assets/3D_Engine
 CC = gcc
-TARGET_CLIENT = client
-TARGET_SERVER = server
+TARGET_CLIENT = game_client
+TARGET_SERVER = game_server
 CFLAGS = -lSDL2 -lm -lGL -lGLU -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 CC = gcc
 JOYCON = #-DUSE_JOY -ljoyconlib -lhidapi-hidraw
@@ -22,7 +23,7 @@ $(TARGET_SERVER): $(OBJS_SERVER)
 		$(CC) -g -o $@ $(OBJS_SERVER) $(CFLAGS)
 
 .c.o:
-		$(CC) -g -c $< $(JOYCON)
+		$(CC) -g -c $< -o $@ $(JOYCON)
 
 clean:
-		rm -rf $(OBJS_SERVER) $(OBJS_SERVER) $(OBJS_CLIENT) $(TARGET)
+		rm -rf $(OBJS_SERVER) $(OBJS_3DE) $(OBJS_CLIENT) $(TARGET_CLIENT) $(TARGET_SERVER) ./*.o
