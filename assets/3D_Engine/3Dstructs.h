@@ -1,6 +1,6 @@
 #pragma once
-#include "../common/common.h"
-#include "./../assets/3D_Engine/3DEngine.h"
+#include "./../../common/common.h"
+#include "3DEngine.h"
 
 /* vector.c */
 
