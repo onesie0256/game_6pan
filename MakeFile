@@ -1,0 +1,20 @@
+CC = gcc
+TARGET = test
+CFLAGS = -lSDL2 -lm -lGL -lGLU -lSDL2_image -lSDL2_mixer -lSDL2_ttf
+CC = gcc
+JOYCON = #-DUSE_JOY -ljoyconlib -lhidapi-hidraw
+SRCS = $(shell find ./ -name "*.c")
+OBJS = $(SRCS:.c=.o)
+
+.PHONY: all clean
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+		$(CC) -g -o $@ $(OBJS) $(CFLAGS) $(JOYCON)
+
+.c.o:
+		$(CC) -g -c $< $(JOYCON)
+
+clean:
+		rm -rf $(OBJS) $(TARGET) core
