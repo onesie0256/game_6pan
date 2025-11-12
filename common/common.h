@@ -9,7 +9,8 @@
 
 #define KEY_MAX 10
 #define JOY_KEY_MAX 10
-#define FONT_MAX 1
+#define FONT_MAX 5
+#define FPS_f 90.0f
 
 /**
  * @name GameManager
@@ -28,8 +29,9 @@ typedef struct
     Uint16 windowH;                 //ウィンドウの縦幅
     TTF_Font *fonts[FONT_MAX];      //フォント
     void *scene;                    //シーン
-    uint8_t sceneNum;               //シーン番号
+    uint8_t sceneID;                //シーン番号
     SDL_Surface *UI;                //UI用のサーフェイス
+    List *UIList;
 }GameManager;
 
 /**
