@@ -24,7 +24,7 @@ int gameLoop(void)
         break;
     }
 
-    draw();
+    draw(NULL);
 
     return endFlag;
 }

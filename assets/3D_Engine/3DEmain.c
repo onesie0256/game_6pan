@@ -1,5 +1,6 @@
 #include "3DEngine.h"
 
+void drawUI(void);
 int initWindow(char *title);
 void closeWindow(void);
 int draw(Camera *camera);
@@ -70,7 +71,7 @@ void closeWindow(void)
 /**
  * @brief 画面を描画する
  * 
- * @param camera カメラ
+ * @param camera カメラ(カメラを使わなければNULLを入力)
  * 
  */
 int draw(Camera *camera)
@@ -92,6 +93,14 @@ int draw(Camera *camera)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
+    Camera camera_;
+
+    if (camera == NULL){
+        camera_.orientation = (Quaternion){0.0f,0.0f,0.0f,0.0f};
+        camera_.pos = (Vec3f){0.0f,0.0f,0.0f};
+        camera = &camera_;
+    }
+    // クォータニオンから前方ベクトルと上方ベクトルを計算してgluLookAtを設定
     Vec3f forward_vec = quaternion_rotate_vector((Vec3f){0.0f, 0.0f, -1.0f}, camera->orientation);
     Vec3f up_vec = quaternion_rotate_vector((Vec3f){0.0f, 1.0f, 0.0f}, camera->orientation);
     Vec3f center_pos = vecAdd(camera->pos, forward_vec);
@@ -99,4 +108,70 @@ int draw(Camera *camera)
     gluLookAt(camera->pos.x, camera->pos.y, camera->pos.z, center_pos.x, center_pos.y, center_pos.z, up_vec.x, up_vec.y, up_vec.z);
 
     return 1;
+}
+
+/**
+ * @brief 
+ */
+void drawUI(void)
+{
+    // --- 3D描画の状態を完全に保存 ---
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+
+    // --- 2D描画用に状態を設定 ---
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    // --- 2D描画用の行列を設定 ---
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, myGameManager.windowW, myGameManager.windowH, 0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    //openGL用のテクスチャを生成する
+    GLuint textureID;
+    SDL_Surface *data = myGameManager.UI;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    GLenum format = (data->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data->w, data->h, 0, format, GL_UNSIGNED_BYTE, data->pixels);
+
+    float x = 0;
+    float y = 0;
+    float w = myGameManager.windowW;
+    float h = myGameManager.windowH;
+
+    glBegin(GL_QUADS);
+        // テクスチャ座標のYを修正して、上下反転を直す
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(x, y);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f(x + w, y);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f(x + w, y + h);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(x, y + h);
+    glEnd();
+
+    // 3. 作成したテクスチャを削除
+    glDeleteTextures(1, &textureID);
+    
+
+    // --- 3D描画の状態を完全に復元 ---
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glPopAttrib();
+
 }

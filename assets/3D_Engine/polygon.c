@@ -146,7 +146,7 @@ Polygon* createRectangler(Vec3f coord , Vec3f size , Vec3f color , int pitch , i
     rtn->data.rectangler = rectangler;
 
     //双方向リストに格納
-    addListNode(list , rtn);
+    addListNode(list , rtn , NULL);
 
     return rtn;
 }
@@ -171,7 +171,7 @@ Polygon* createSphere(Vec3f center , float radius , Vec3f color , List *list)
     rtn->data.sphere = sphere;
 
     //双方向リストに格納
-    addListNode(list , rtn);
+    addListNode(list , rtn, NULL);
 
     return rtn;
 }
@@ -243,7 +243,7 @@ Polygon* createPlane4(Vec3f coord , float sizeX , float sizeY , Vec3f color , in
     rtn->type        = PT_PLANE4;
 
     //双方向リストに格納
-    addListNode(list , rtn);
+    addListNode(list , rtn, NULL);
 
     return rtn;
 }
@@ -267,7 +267,7 @@ Polygon* createDisc(Vec3f center , float radius , Vec3f color , List *list)
     rtn->type        = PT_DISC;
 
     //双方向リストに格納
-    addListNode(list , rtn);
+    addListNode(list , rtn, NULL);
 
     return rtn;
 }
@@ -333,7 +333,7 @@ Polygon* createObj(const char* obj_filename , const char* texture_filename , Vec
     rtn->type        = PT_OBJ;
 
     //双方向リストに格納
-    addListNode(list , rtn);
+    addListNode(list , rtn, NULL);
 
     return rtn;
 }
@@ -355,7 +355,7 @@ Polygon* createCylinder(List *list)
     rtn->isDisplay = SDL_TRUE;
     rtn->type = PT_CYLINDER;
 
-    addListNode(list , rtn);
+    addListNode(list , rtn , NULL);
 
     return rtn;
 }

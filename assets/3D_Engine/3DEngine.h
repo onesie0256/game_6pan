@@ -39,10 +39,10 @@ Vec3f roteteP(Vec3f target , Vec3f center , int pitch , int roll , int yaw);
 
 /* list.c */
 List* createList(void);
-void addListNode(List *list, void *data);
-//void serchListNode();todo
+void addListNode(List *list, void *data , char *key);
+void *serchListNode(List *list , char *key);
 void deleteListNode(List *list, ListNode *node);
-void deleteListNodeAll(List *list);
+void deleteListNodeAll(List *list , char *key);
 void destroyList(List *list);
 
 /* quaternion.c */

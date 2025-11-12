@@ -26,8 +26,9 @@ List* createList(void)
  * 
  * @param list リストの構造体のポインタ
  * @param data 任意の型のデータへのポインタ
+ * @param key 検索キー(検索キーが要らなかったらNULLを入力)
  */
-void addListNode(List *list, void *data)
+void addListNode(List *list, void *data , char *key)
 {
     //ノードを初期化
     ListNode *node = (ListNode*)malloc(sizeof(ListNode));
@@ -42,6 +43,10 @@ void addListNode(List *list, void *data)
         return;
     }
 
+    //キーを設定
+    if (key != NULL)
+    strcpy(node->key , key);
+
     //リストの最後尾まで
     ListNode *temp = list->head;
     while (temp->next != NULL){
@@ -52,7 +57,32 @@ void addListNode(List *list, void *data)
     node->prev = temp;
     list->count++;
 }
-//void serchListNode(); //todo
+
+/**
+ * @brief keyでリストのノードを検索する
+ * 
+ * @param list 検索対象のリスト
+ * @param key 検索キー
+ * 
+ * @return もし対象のリストが発見出来たらそのリストへのポインタを返す.見つからなかったらNULLを返す.
+ */
+void *serchListNode(List *list , char *key)
+{
+    void *rtn = NULL;
+    if (list->head == NULL || list == NULL) return rtn;
+    ListNode *node = list->head;
+
+    while (node != NULL)
+    {
+        if (!strcmp(node->key , key)){
+            return node->data;
+        }
+
+        node = node->next;
+    }
+
+    return rtn;
+}
 
 /**
  * @brief リストからノードを1つ削除する

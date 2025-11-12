@@ -17,6 +17,7 @@ typedef struct{
  * @brief リスト構造体のノード
  */
 typedef struct ListNode_t {
+    char key[20];               //キー
     void *data;                 //データへのポインタ
     struct ListNode_t *next;    //次のノードへのポインタ
     struct ListNode_t *prev;    //前のノードへのポインタ
@@ -226,7 +227,6 @@ typedef struct {
  * @brief カメラの情報
  */
 typedef struct camera_t{
-    Vec3f pos;
-    // 注視点(center)は pos と orientation から動的に計算される
-    Quaternion orientation;
+    Vec3f pos;              //カメラの存在する座標
+    Quaternion orientation; // 注視点(center)は pos と orientation から動的に計算される
 }Camera;
