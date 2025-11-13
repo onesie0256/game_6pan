@@ -14,22 +14,19 @@ int gameLoop(void)
 {
     int endFlag = 1;
 
-    switch (myGameManager.sceneNum)
+    switch (myGameManager.sceneID)
     {
     case Scene_Title:
         endFlag = titleScene();
         break;
-    
+    case Scene_Wait:
+        //endFlag = waitScene(); todo
+        break;
+    case Scene_Main:
+        endFlag = mainScene();
     default:
         break;
     }
 
-    draw();
-
     return endFlag;
-}
-
-int init(void)
-{
-    return 0;
 }

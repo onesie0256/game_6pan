@@ -10,7 +10,7 @@
 #include <GL/glu.h>
 #include <stdio.h>
 
-#include "./../../common/common.h"
+#include "./../../client/client.h"
 #include "3Dstructs.h"
 
 #define DEG_TO_RAD 0.01745329
@@ -39,8 +39,8 @@ Vec3f roteteP(Vec3f target , Vec3f center , int pitch , int roll , int yaw);
 
 /* list.c */
 List* createList(void);
-void addListNode(List *list, void *data);
-//void serchListNode();todo
+void addListNode(List *list, void *data , char *key);
+void *serchListNode(List *list , char *key);
 void deleteListNode(List *list, ListNode *node);
 void deleteListNodeAll(List *list);
 void destroyList(List *list);
