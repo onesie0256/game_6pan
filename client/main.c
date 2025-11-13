@@ -2,6 +2,8 @@
 
 GameManager myGameManager;
 
+SDL_bool init(void);
+
 int main(int argc , char* argv[])
 {
 
@@ -21,9 +23,14 @@ int main(int argc , char* argv[])
   if(!init()) return 1;
 
   //サーバーへ接続
+  /*
   if(connectServer(myGameManager.serverName) == 0){
     printf("cannot connect server\n");
   }
+  */
+  #ifdef DEGUG_3DE
+  myGameManager.sceneID = Scene_Main;
+  #endif
 
   //ゲームループ
     int endFlag = 1;
@@ -33,8 +40,11 @@ int main(int argc , char* argv[])
   
 
   printf("good job\n");
+  closeWindow();
 
-  
+  SDL_Quit();
+  TTF_Quit();
+  IMG_Quit();
 
     return 0;
 }
@@ -78,7 +88,9 @@ SDL_bool init(void)
     myGameManager.windowH = WINDOW_HIGHT;
 
     //ウィンドウ作成
-    myGameManager.window = SDL_CreateWindow("3D_battle_kart" ,  SDL_WINDOWPOS_CENTERED , SDL_WINDOWPOS_CENTERED , myGameManager.windowW , myGameManager.windowH , SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    //myGameManager.window = SDL_CreateWindow("3D_battle_kart" ,  SDL_WINDOWPOS_CENTERED , SDL_WINDOWPOS_CENTERED , myGameManager.windowW , myGameManager.windowH , SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    initWindow("3D_battle_kart");
+
     //エラー処理
     if (!myGameManager.window){
         printf("CreateWindow error %s\n" , SDL_GetError());

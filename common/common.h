@@ -6,11 +6,15 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdio.h>
+#include "./../assets/3D_Engine/3DEngine.h"
 
 #define KEY_MAX 10
 #define JOY_KEY_MAX 10
 #define FONT_MAX 5
 #define FPS_f 90.0f
+
+struct list_t;
+typedef struct list_t List;
 
 /**
  * @name GameManager

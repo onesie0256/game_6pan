@@ -19,11 +19,13 @@ int initWindow(char *title)
         return 0;
     }
 
+    /*
     myGameManager.renderer = SDL_CreateRenderer(myGameManager.window , -1 , SDL_RENDERER_ACCELERATED);
     if (myGameManager.renderer == NULL)
     {
         return 0;
     }
+    */
 
     //OpenGL設定
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);        //ダブルバッファ有効化
@@ -34,6 +36,8 @@ int initWindow(char *title)
 
     if (myGameManager.context == NULL)
     {
+        SDL_DestroyWindow(myGameManager.window);
+        myGameManager.window = NULL;
         return 0;
     }
 
@@ -105,8 +109,16 @@ int draw(Camera *camera)
     Vec3f up_vec = quaternion_rotate_vector((Vec3f){0.0f, 1.0f, 0.0f}, camera->orientation);
     Vec3f center_pos = vecAdd(camera->pos, forward_vec);
 
-    gluLookAt(camera->pos.x, camera->pos.y, camera->pos.z, center_pos.x, center_pos.y, center_pos.z, up_vec.x, up_vec.y, up_vec.z);
+    //gluLookAt(camera->pos.x, camera->pos.y, camera->pos.z, center_pos.x, center_pos.y, center_pos.z, up_vec.x, up_vec.y, up_vec.z);
+    gluLookAt(3.0, 3.0, 3.0, 0.0 , 0.0, 0.0, 0.0, 1.0, 0.0);
 
+    if (myGameManager.sceneID == Scene_Main){
+        MainScene *scene = (MainScene *)myGameManager.scene;
+        displayPolygons(scene->polygonList);
+    }
+
+    glFlush();
+    SDL_GL_SwapWindow(myGameManager.window);
     return 1;
 }
 
@@ -115,6 +127,8 @@ int draw(Camera *camera)
  */
 void drawUI(void)
 {
+    if (!myGameManager.UI) return;
+
     // --- 3D描画の状態を完全に保存 ---
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glMatrixMode(GL_PROJECTION);

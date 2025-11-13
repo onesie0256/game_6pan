@@ -1,5 +1,6 @@
 #include "client.h"
 
+
 /**
  * @name titleScene
  * @brief タイトルを表示する
@@ -7,7 +8,7 @@
  */
 int titleScene(void)
 {
-
+#ifndef DEGUG_3DE
     
     // fontを開く
     List *partsUI = createList();
@@ -56,7 +57,7 @@ int titleScene(void)
         printf("Failed to create main UI surface: %s\n", SDL_GetError());
         return SDL_FALSE;
     }
-
+    
     // 背景を描画
     if (bg)
         SDL_BlitScaled(bg, NULL, myGameManager.UI, NULL);
@@ -73,5 +74,7 @@ int titleScene(void)
                                                                        myGameManager.windowH / 3 * 2,
                                                                        0, 0});
 
+#endif
     return 1;
 }
+

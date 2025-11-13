@@ -10,7 +10,7 @@
 #include <GL/glu.h>
 #include <stdio.h>
 
-#include "./../../common/common.h"
+#include "./../../client/client.h"
 #include "3Dstructs.h"
 
 #define DEG_TO_RAD 0.01745329
@@ -42,7 +42,7 @@ List* createList(void);
 void addListNode(List *list, void *data , char *key);
 void *serchListNode(List *list , char *key);
 void deleteListNode(List *list, ListNode *node);
-void deleteListNodeAll(List *list , char *key);
+void deleteListNodeAll(List *list);
 void destroyList(List *list);
 
 /* quaternion.c */

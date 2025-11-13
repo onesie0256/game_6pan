@@ -8,6 +8,7 @@ JOYCON = #-DUSE_JOY -ljoyconlib -lhidapi-hidraw
 SRCS_SERVR = $(shell find ./server -name "*.c")
 SRCS_CLIENT = $(shell find ./client -name "*.c")
 SRCS_3DE = $(shell find ./assets/3D_Engine -name "*.c")
+DEGUG_3DE = #-DDEGUG_3DE
 
 OBJS_SERVER = $(SRCS_SERVR:.c=.o)
 OBJS_CLIENT = $(SRCS_CLIENT:.c=.o)
@@ -23,7 +24,7 @@ $(TARGET_SERVER): $(OBJS_SERVER)
 		$(CC) -g -o $@ $(OBJS_SERVER) $(CFLAGS)
 
 .c.o:
-		$(CC) -g -c $< -o $@ $(JOYCON)
+		$(CC) -g -c $< -o $@ $(JOYCON) $(DEGUG_3DE)
 
 clean:
 		rm -rf $(OBJS_SERVER) $(OBJS_3DE) $(OBJS_CLIENT) $(TARGET_CLIENT) $(TARGET_SERVER) ./*.o

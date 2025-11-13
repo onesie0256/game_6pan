@@ -20,8 +20,8 @@ void createUIwithIMG(SceneKinds group , char *filename , SDL_Rect dst)
     rtn->surface = IMG_Load(filename);
     if (!rtn->surface){
         printf("IMG_Load error: %s\n", IMG_GetError());
-        return NULL;
     }
+    else
     addListNode(myGameManager.UIList , rtn , NULL);
     
 }

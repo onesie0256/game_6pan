@@ -6,12 +6,15 @@
 #define WINDOW_WIDTH 1920
 #define WINDOW_HIGHT 1080
 
+struct camera_t;
+typedef struct camera_t Camera;
+
 /**
  * @brief タイトルシーン
  */
 typedef struct{
     List *polygonList;  //立体図形のリスト
-}titleScene;
+}TitleScene;
 
 /**
  * @brief メインゲームのシーン
@@ -25,7 +28,6 @@ typedef struct {
 
 /* game.c */
 int gameLoop(void);
-int init(void);
 
 /* net.c */
 int connectServer(char *serverName);
@@ -34,6 +36,10 @@ int recvData(NetworkContainer *container);
 
 /* title_scene.c */
 int titleScene(void);
+
+/* main_scene.c */
+int mainScene(void);
+
 typedef enum{
     UIG_Title = 1,
     UIG_Playing = 2,

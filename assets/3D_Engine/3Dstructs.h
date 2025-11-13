@@ -26,7 +26,7 @@ typedef struct ListNode_t {
 /**
  * @brief リスト構造体
  */
-typedef struct{
+typedef struct list_t {
     ListNode *head; //リストの先頭ノードへのポインタ
     int count;      //リスト内の要素数
 }List;

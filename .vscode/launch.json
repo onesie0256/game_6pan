@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) 起動",
+            "type": "cppdbg",
+            "request": "launch",
+            // Makefileによってビルドされた実行可能ファイルのパスを指定します。
+            "program": "${fileDirname}/../game_client",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "gdb の再フォーマットを有効にする",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            // デバッグ開始前に実行するタスクを指定します。
+            "preLaunchTask": "C/C++: gcc アクティブなファイルのビルド"
+        }
+    ]
+}
