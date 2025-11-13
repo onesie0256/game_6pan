@@ -3,10 +3,12 @@
 
 int titleScene(void)
 {
+	//タイトル画面状態の初期化
+	TitleScene titleScene;
+
 	UI_init(); //UI初期化
 
 	//タイトル画面状態の初期化 
-	TitleScene titleScene = {0};
 	titleScene.animationTimer = 0;
 	titleScene.beatScale = 1.0f;
 	titleScene.carX = 0.0f;
@@ -22,7 +24,7 @@ int titleScene(void)
 			}
 			else if (e.type == SDL_KEYDOWN) {
 				if (e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_KP_ENTER) {
-					myGameManager.sceneNum = Scene_Wait;
+					myGameManager.scene = Scene_Wait;
 					running = 0;
 					break;
 				}

@@ -14,6 +14,16 @@ typedef struct camera_t Camera;
  */
 typedef struct{
     List *polygonList;  //立体図形のリスト
+}TitleScene3D;
+
+/**
+ * @brief タイトルシーンの状態管理 (UIアニメーション用)
+ */
+typedef struct {
+	int animationTimer; // アニメーション進行タイマー
+	float beatScale;    // タイトルテキストの拡大・縮小スケール
+	float carX;         // 車のアニメーション用X座標
+	int carAnimState;   // 車のアニメーション状態
 }TitleScene;
 
 /**
@@ -40,6 +50,11 @@ int titleScene(void);
 /* main_scene.c */
 int mainScene(void);
 
+/* UI.c */
+int UI_init(void);
+void UI_renderTitleScreen(TitleScene *titleScene);
+void UI_cleanup(void);
+
 typedef enum{
     UIG_Title = 1,
     UIG_Playing = 2,
@@ -59,4 +74,3 @@ typedef struct {
     SceneKinds group;
 
 }UI;
-

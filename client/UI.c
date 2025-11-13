@@ -1,6 +1,5 @@
 #include "client.h"
 
-
 //UI初期化:TTFの初期化とフォントの読み込み
 int UI_init(void)
 {
