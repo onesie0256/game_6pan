@@ -45,10 +45,10 @@ static void UI_renderTextCentered(const char *text, int y, SDL_Color color)
 }
 
 /* タイトル画面の描画: 背景、タイトルテキスト、「Enter を押してください」プロンプト */
-void UI_renderTitleScreen(TitleScene *titleScene)
-{
-	if (myGameManager.renderer == NULL || titleScene == NULL) return;
+void UI_renderTitleScreen(TitleState *titleState)
 
+{
+	if (myGameManager.renderer == NULL || titleState == NULL) return;
 	/* ウィンドウサイズを最新の状態に更新 */
 	if (myGameManager.window) {
 		int w, h;
@@ -80,8 +80,8 @@ void UI_renderTitleScreen(TitleScene *titleScene)
 			if (tex) {
 				int baseW = s->w, baseH = s->h;
 				/* スケール適用 */
-				int scaledW = (int)(baseW * titleScene->beatScale);
-				int scaledH = (int)(baseH * titleScene->beatScale);
+				int scaledW = (int)(baseW * titleState->beatScale);
+				int scaledH = (int)(baseH * titleState->beatScale);
 				int winW = myGameManager.windowW, winH = myGameManager.windowH;
 				SDL_Rect dst = {
 					(winW - scaledW) / 2,
