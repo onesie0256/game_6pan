@@ -47,6 +47,17 @@ typedef enum{
 }SceneKinds;
 
 /**
+ * @brief タイトル画面の状態管理
+ */
+typedef struct
+{
+    Uint32 animationTimer;      /* アニメーション用タイマー（ms） */
+    float beatScale;            /* ビート効果のスケール値 */
+    float carX;                 /* 車アニメーション用X座標 */
+    uint8_t carAnimState;       /* 車アニメーション状態 */
+}TitleScene;
+
+/**
  * @brief 銃の番号
  */
 typedef enum{
