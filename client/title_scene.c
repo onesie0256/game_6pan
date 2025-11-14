@@ -24,7 +24,7 @@ int titleScene(void)
 			}
 			else if (e.type == SDL_KEYDOWN) {
 				if (e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_KP_ENTER) {
-					myGameManager.scene = Scene_Wait;
+					myGameManager.sceneID = Scene_Wait;
 					running = 0;
 					break;
 				}

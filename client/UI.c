@@ -12,7 +12,7 @@ int UI_init(void)
 
 	if (myGameManager.fonts[0] == NULL) {
 		/* フォント読み込み */
-		TTF_Font *f = TTF_OpenFont("assets/fonts/Aircruiser3Dital.ttf", 36);
+		TTF_Font *f = TTF_OpenFont("assets/fonts/Aircruiser3Dital.ttf", 100);
 		if (f) {
 			myGameManager.fonts[0] = f;
 		}
@@ -61,30 +61,38 @@ void UI_renderTitleScreen(TitleScene *titleScene)
 	SDL_RenderClear(myGameManager.renderer);
 
 
-	//タイトルボックス描画 
-	SDL_Rect titleBox = { myGameManager.windowW/8, myGameManager.windowH/3,
-						  myGameManager.windowW*3/4, myGameManager.windowH/4 };
+	// ビート効果を適用したタイトルボックスの描画
+	float scale = titleScene->beatScale;
+	int baseBoxW = myGameManager.windowW / 2;
+	int baseBoxH = myGameManager.windowH / 5;
+	int scaledBoxW = (int)(baseBoxW * scale);
+	int scaledBoxH = (int)(baseBoxH * scale);
+
+	SDL_Rect titleBox = { (myGameManager.windowW - scaledBoxW) / 2,
+						  myGameManager.windowH / 3 + (baseBoxH - scaledBoxH) / 2,
+						  scaledBoxW, scaledBoxH };
 	SDL_SetRenderDrawColor(myGameManager.renderer, 60, 120, 200, 255);
 	SDL_RenderFillRect(myGameManager.renderer, &titleBox);
 
 	/* ビート効果付きタイトルテキスト描画
-	 * beatScale を使用してテキストの大きさを変更
+	 * scale を使用してテキストの大きさを変更
 	 */
 	SDL_Color white = { 255, 255, 255, 255 };
+	SDL_Color black = { 0, 0, 0, 255 };
 	if (myGameManager.fonts[0]) {
 		/* ビート効果のスケールに応じたテキスト描画 */
-		SDL_Surface *s = TTF_RenderUTF8_Blended(myGameManager.fonts[0], "3D ガン★カート", white);
+		SDL_Surface *s = TTF_RenderUTF8_Blended(myGameManager.fonts[0], "3D GUN KART", white);
 		if (s) {
 			SDL_Texture *tex = SDL_CreateTextureFromSurface(myGameManager.renderer, s);
 			if (tex) {
 				int baseW = s->w, baseH = s->h;
 				/* スケール適用 */
-				int scaledW = (int)(baseW * titleScene->beatScale);
-				int scaledH = (int)(baseH * titleScene->beatScale);
+				int scaledW = (int)(baseW * scale);
+				int scaledH = (int)(baseH * scale);
 				int winW = myGameManager.windowW, winH = myGameManager.windowH;
 				SDL_Rect dst = {
 					(winW - scaledW) / 2,
-					myGameManager.windowH / 3 + 10,
+					myGameManager.windowH / 3 + (baseBoxH - scaledH) / 2,
 					scaledW,
 					scaledH
 				};
@@ -98,7 +106,7 @@ void UI_renderTitleScreen(TitleScene *titleScene)
 	/* Enter プロンプト点滅表示 */
 	Uint32 ticks = SDL_GetTicks();
 	if ((ticks / 500) % 2 == 0) {
-		UI_renderTextCentered("Press Enter to Start", myGameManager.windowH*3/4 + 50, white);
+		UI_renderTextCentered("Press Enter to Start", myGameManager.windowH*3/4 + 50, black);
 	}
 
 	/* 注記: SDL_RenderPresent は呼び出し元で呼び出す */
