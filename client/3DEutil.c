@@ -1,4 +1,4 @@
-#include "3DEngine.h"
+#include "client.h"
 
 void drawUI(void);
 int initWindow(char *title);
@@ -115,6 +115,7 @@ int draw(Camera *camera)
     if (myGameManager.sceneID == Scene_Main){
         MainScene *scene = (MainScene *)myGameManager.scene;
         displayPolygons(scene->polygonList);
+        displayCars(scene->cars);
     }
 
     glFlush();

@@ -12,7 +12,7 @@ int mainScene(void)
     //setupSceneを呼び出すためのフラグ
     static SDL_bool setupFlag = SDL_TRUE;
     //エンドフラグ
-    SDL_bool endFlag = SDL_TRUE;
+    SDL_bool endFlag = SDL_FALSE;
 
     MainScene *scene = (MainScene *)myGameManager.scene;
 
@@ -21,10 +21,20 @@ int mainScene(void)
         setupFlag = SDL_FALSE;
         return 1;
     }
+
+    SDL_Event event;
+    while (SDL_PollEvent(&event)){
+        switch (event.type)
+        {
+        case SDL_QUIT:
+            endFlag = SDL_TRUE;
+            break;
+        }
+    }
+
     
 
     draw(scene->camera);
-    SDL_Delay(4000);
 
     if (endFlag){
         destroyScene();
@@ -34,7 +44,7 @@ int mainScene(void)
 
     //だいたい16msで60fps
     SDL_Delay(16);
-    return 0;
+    return 1;
 }
 
 int setupScene(void)
@@ -51,7 +61,8 @@ int setupScene(void)
     myGameManager.scene = scene;
     myGameManager.sceneID = Scene_Main;
 
-    createRectangler((Vec3f){0.0f,0.0f,0.0f} , (Vec3f){1.0f,1.0f,1.0f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 0 , 0 , scene->polygonList);
+    //createRectangler((Vec3f){0.0f,0.0f,0.0f} , (Vec3f){1.0f,1.0f,1.0f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 0 , 0 , scene->polygonList);
+    createCar(scene->cars , 0 , (Vec3f){0.0f,0.0f,0.0f});
 
     return 0;
 }

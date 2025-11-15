@@ -6,7 +6,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdio.h>
-#include "./../assets/3D_Engine/3DEngine.h"
 
 #define KEY_MAX 10
 #define JOY_KEY_MAX 10
@@ -48,30 +47,7 @@ typedef enum{
     Scene_Max
 }SceneKinds;
 
-/**
- * @brief 銃の番号
- */
-typedef enum{
-    Pistl,      //ピストル
-    Shotgun,    //ショットガン
-    Sniper,     //スナイパー
-}GunKinds;
 
-/**
- * @brief 車の情報
- */
-typedef struct
-{
-    //to do
-}Car;
-
-/**
- * @brief 銃の構造体
- */
-typedef struct
-{
-    //to do
-}Gun;
 
 typedef struct{
     uint8_t id;                 //id

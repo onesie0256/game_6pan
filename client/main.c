@@ -100,6 +100,7 @@ SDL_bool init(void)
         return SDL_FALSE;
     }
 
+    /*
     //レンダラ作成
     myGameManager.renderer = SDL_CreateRenderer(myGameManager.window  , -1 , SDL_RENDERER_ACCELERATED);
     //エラー処理
@@ -111,4 +112,7 @@ SDL_bool init(void)
         IMG_Quit();
         return SDL_FALSE;
     }
+    */
+
+  return SDL_TRUE;
 }

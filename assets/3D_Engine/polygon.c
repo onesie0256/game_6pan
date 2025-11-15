@@ -146,6 +146,7 @@ Polygon* createRectangler(Vec3f coord , Vec3f size , Vec3f color , int pitch , i
     rtn->data.rectangler = rectangler;
 
     //双方向リストに格納
+    if (list != NULL)
     addListNode(list , rtn , NULL);
 
     return rtn;
@@ -535,8 +536,9 @@ void displayCylinder(Cylinder *cylinder)
  */
 void displayPolygons(List *list)
 {
-    for (ListNode *temp = list->head ; temp != NULL ; temp = temp->next){
-        Polygon *data = (Polygon*)temp->data;
+    ListNode *tmp;
+    foreach(tmp , list){
+        Polygon *data = (Polygon*)tmp->data;
         //見えない立体を表示しない
         if (data->isDisplay == SDL_FALSE){
             continue;

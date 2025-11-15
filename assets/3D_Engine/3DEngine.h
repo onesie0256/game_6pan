@@ -9,17 +9,13 @@
 #include <SDL2/SDL_opengl.h>
 #include <GL/glu.h>
 #include <stdio.h>
-
-#include "./../../client/client.h"
 #include "3Dstructs.h"
 
 #define DEG_TO_RAD 0.01745329
 #define RAD_TO_DEG 57.2957795
 
 /* 3DEmain.c */
-int initWindow(char *title);
-void closeWindow(void);
-int draw(Camera *camera);
+
 
 /* vector.c */
 Vec3f vecAdd(Vec3f a , Vec3f b);
@@ -64,6 +60,7 @@ Polygon* createObj(const char* obj_filename , const char* texture_filename , Vec
 Polygon* createDisc(Vec3f center , float radius , Vec3f color , List *list);
 Polygon* createCylinder(List *list);
 void displayPolygons(List *list);
+void displayRectangler(Rectangler *rectangler);
 
 /* space.c */
 float lengthPointToPlaneAndH(Vec3f *H, Vec3f v , Vec3f n , Vec3f p);
@@ -77,5 +74,8 @@ void moveCamera(Camera *camera , float dx , float dy , float dz);
 void rotateCamera(Camera *camera, float pitch_delta, float yaw_delta);
 void updateCamera(Camera *camera);
 
-
-
+/* list */
+/**
+ * @brief c#のforeach文に感銘を受けたので,リスト構造体をforeachで回せるようにしてみました. x:ListNode型のポインタ list:List型のポインタ
+ */
+#define foreach(x,list) for(x=(list)->head;x!=NULL;x=x->next)
