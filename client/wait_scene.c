@@ -35,13 +35,16 @@ int waitScene(void)
                         waitSceneState.selectedWeaponIndex++;
                         waitSceneState.selectedWeaponIndex %= WEAPON_TYPE_MAX; // 先頭にループ
                         break;
+
                 }
             }
         }
 
         // 待機画面のUIを描画
         UI_renderWaitScreen(&waitSceneState);
-        SDL_RenderPresent(myGameManager.renderer);
+
+
+        draw(NULL);
 
         SDL_Delay(16);
     }

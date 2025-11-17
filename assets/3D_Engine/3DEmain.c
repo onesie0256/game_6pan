@@ -117,6 +117,9 @@ int draw(Camera *camera)
         displayPolygons(scene->polygonList);
     }
 
+
+    drawUI();
+    
     glFlush();
     SDL_GL_SwapWindow(myGameManager.window);
     return 1;
@@ -155,14 +158,27 @@ void drawUI(void)
     //openGL用のテクスチャを生成する
     GLuint textureID;
     SDL_Surface *data = myGameManager.UI;
+
+    SDL_Surface *convertedSurface = SDL_ConvertSurfaceFormat(data, SDL_PIXELFORMAT_RGBA32, 0);
+    if (!convertedSurface) {
+        printf("SDL_ConvertSurfaceFormat error: %s\n", SDL_GetError());
+        return;
+    }
+
+
+
+
+
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    GLenum format = (data->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data->w, data->h, 0, format, GL_UNSIGNED_BYTE, data->pixels);
+    //GLenum format = (data->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, convertedSurface->w, convertedSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, convertedSurface->pixels);
+
+    SDL_FreeSurface(convertedSurface);
 
     float x = 0;
     float y = 0;

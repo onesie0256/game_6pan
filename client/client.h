@@ -19,13 +19,11 @@ typedef struct{
 }TitleScene3D;
 
 /**
- * @brief タイトルシーンの状態管理 (UIアニメーション用)
+ * @brief タイトルシーンの状態管理 
  */
 typedef struct {
 	int animationTimer; // アニメーション進行タイマー
 	float beatScale;    // タイトルテキストの拡大・縮小スケール
-	float carX;         // 車のアニメーション用X座標
-	int carAnimState;   // 車のアニメーション状態
 }TitleScene;
 
 /**

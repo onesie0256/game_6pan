@@ -99,7 +99,7 @@ SDL_bool init(void)
         IMG_Quit();
         return SDL_FALSE;
     }
-
+    /*
     //レンダラ作成
     myGameManager.renderer = SDL_CreateRenderer(myGameManager.window  , -1 , SDL_RENDERER_ACCELERATED);
     //エラー処理
@@ -111,4 +111,16 @@ SDL_bool init(void)
         IMG_Quit();
         return SDL_FALSE;
     }
+    */
+   myGameManager.UI = SDL_CreateRGBSurface(0 , myGameManager.windowW , myGameManager.windowH , 32 , 0x00ff0000 , 0x0000ff00 , 0x000000ff , 0xff000000);
+   if (!myGameManager.UI){
+        printf("CreateRGBSurface error %s\n" , SDL_GetError());
+        SDL_DestroyWindow(myGameManager.window);
+        TTF_Quit();
+        SDL_Quit();
+        IMG_Quit();
+        return SDL_FALSE;
+    }
+
+    
 }
