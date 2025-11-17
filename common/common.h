@@ -7,6 +7,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 #include "./../assets/3D_Engine/3DEngine.h"
+#include <joyconlib.h>
 
 #define KEY_MAX 10
 #define JOY_KEY_MAX 10
@@ -36,6 +37,19 @@ typedef struct
     uint8_t sceneID;                //シーン番号
     SDL_Surface *UI;                //UI用のサーフェイス
     List *UIList;
+    SDL_Event event; // SDLイベント構造体    
+    SDL_Thread * joy_thread;
+    joyconlib_t jc;
+    joycon_btn prev_btn; // 前回のボタン状態
+    SDL_Thread * key_thread;
+    SDL_bool keyNow[KEY_MAX]; //キーの状態
+    SDL_bool keyPrev[KEY_MAX];//キーの状態(1フレーム前)
+    #ifdef USE_JOY
+    SDL_bool joyBotton[JOY_KEY_MAX];  //ジョイコンのボタンの状態
+    SDL_bool joyBottonPrev[JOY_KEY_MAX];
+    float StickX;            //ジョイスティックのx方向の傾き
+    float StickY;            //ジョイスティックのy方向の傾き
+    #endif
 }GameManager;
 
 /**
