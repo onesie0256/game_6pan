@@ -20,7 +20,7 @@ int gameLoop(void)
         endFlag = titleScene();
         break;
     case Scene_Wait:
-        //endFlag = waitScene(); todo
+        endFlag = waitScene();
         break;
     case Scene_Main:
         endFlag = mainScene();

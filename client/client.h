@@ -6,6 +6,8 @@
 #define WINDOW_WIDTH 1920
 #define WINDOW_HIGHT 1080
 
+#define WEAPON_TYPE_MAX 3
+
 struct camera_t;
 typedef struct camera_t Camera;
 
@@ -25,6 +27,27 @@ typedef struct {
 	float carX;         // 車のアニメーション用X座標
 	int carAnimState;   // 車のアニメーション状態
 }TitleScene;
+
+/**
+ * @brief 待機シーンの状態管理
+ */
+typedef struct {
+    int selectedWeaponIndex; // 選択中の武器のインデックス
+} WaitScene;
+
+/**
+ * @brief 武器の表示情報を格納する構造体
+ */
+typedef struct {
+    GunKinds kind;
+    const char* name;
+    const char* image_path;
+} WeaponInfo;
+
+
+// 武器情報配列を宣言
+extern const WeaponInfo weapon_info[WEAPON_TYPE_MAX];
+
 
 /**
  * @brief メインゲームのシーン
@@ -47,12 +70,16 @@ int recvData(NetworkContainer *container);
 /* title_scene.c */
 int titleScene(void);
 
+/* wait_scene.c */
+int waitScene(void);
+
 /* main_scene.c */
 int mainScene(void);
 
 /* UI.c */
 int UI_init(void);
 void UI_renderTitleScreen(TitleScene *titleScene);
+void UI_renderWaitScreen(WaitScene *waitScene);
 void UI_cleanup(void);
 
 typedef enum{

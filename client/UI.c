@@ -1,5 +1,12 @@
 #include "client.h"
 
+//武器情報の定義(client.hでextern宣言したものの実体)
+const WeaponInfo weapon_info[WEAPON_TYPE_MAX] = {
+    { Pistl,   "PISTOL",    "assets/images/pistol.png" },
+    { Shotgun, "SHOTGUN",   "assets/images/shotgun.png" },
+    { Sniper,  "SNIPER",    "assets/images/sniper.png" }
+};
+
 //UI初期化:TTFの初期化とフォントの読み込み
 int UI_init(void)
 {
@@ -17,17 +24,32 @@ int UI_init(void)
 			myGameManager.fonts[0] = f;
 		}
 	}
+	//小さいフォントを読み込む(ロード画面用)
+	if (myGameManager.fonts[1] == NULL) {
+		TTF_Font *f = TTF_OpenFont("assets/fonts/Aircruiser.ttf", 24); // サイズを小さく
+		if (f) {
+			myGameManager.fonts[1] = f;
+		}
+	}
+
+	//待機画面用のフォントを読み込む
+	if (myGameManager.fonts[2] == NULL) {
+		TTF_Font *f = TTF_OpenFont("assets/fonts/KiwiMaru-Regular.ttf", 32);
+		if (f) {
+			myGameManager.fonts[2] = f;
+		}
+	}
 
 	return 0;
 }
 
-/* 中央揃えでテキストを描画する。フォントがNULLの場合はスキップ */
-static void UI_renderTextCentered(const char *text, int y, SDL_Color color)
+//中央揃えでテキストを描画する。フォントがNULLの場合はスキップ
+static void UI_renderTextCentered(TTF_Font *font, const char *text, int y, SDL_Color color)
 {
-	if (myGameManager.renderer == NULL) return;
+	if (myGameManager.renderer == NULL || font == NULL) return;
 
-	if (myGameManager.fonts[0]) {
-		SDL_Surface *s = TTF_RenderUTF8_Blended(myGameManager.fonts[0], text, color);
+	//if (myGameManager.fonts[0]) { // fontがNULLでないことは上でチェック済み
+		SDL_Surface *s = TTF_RenderUTF8_Blended(font, text, color);
 		if (s) {
 			SDL_Texture *tex = SDL_CreateTextureFromSurface(myGameManager.renderer, s);
 			if (tex) {
@@ -40,10 +62,10 @@ static void UI_renderTextCentered(const char *text, int y, SDL_Color color)
 			}
 			SDL_FreeSurface(s);
 		}
-	}
+	//}
 }
 
-/* タイトル画面の描画: 背景、タイトルテキスト、「Enter を押してください」プロンプト */
+//タイトル画面の描画: 背景、タイトルテキスト、「Enter を押してください」プロンプト
 void UI_renderTitleScreen(TitleScene *titleScene)
 {
 	if (myGameManager.renderer == NULL || titleScene == NULL) return;
@@ -61,7 +83,7 @@ void UI_renderTitleScreen(TitleScene *titleScene)
 	SDL_RenderClear(myGameManager.renderer);
 
 
-	// ビート効果を適用したタイトルボックスの描画
+	//ビート効果を適用したタイトルボックスの描画
 	float scale = titleScene->beatScale;
 	int baseBoxW = myGameManager.windowW / 2;
 	int baseBoxH = myGameManager.windowH / 5;
@@ -103,23 +125,72 @@ void UI_renderTitleScreen(TitleScene *titleScene)
 		}
 	}
 
-	/* Enter プロンプト点滅表示 */
+	//Enterプロンプト点滅表示
 	Uint32 ticks = SDL_GetTicks();
 	if ((ticks / 500) % 2 == 0) {
-		UI_renderTextCentered("Press Enter to Start", myGameManager.windowH*3/4 + 50, black);
+		UI_renderTextCentered(myGameManager.fonts[0], "Press Enter to Start", myGameManager.windowH*3/4 + 50, black);
 	}
 
-	/* 注記: SDL_RenderPresent は呼び出し元で呼び出す */
+	//注記: SDL_RenderPresentは呼び出し元で呼び出す
 }
 
-//ロード画面の描画 
+//待機画面の描画
+void UI_renderWaitScreen(WaitScene *waitScene)
+{
+	if (myGameManager.renderer == NULL || waitScene == NULL) return;
+
+	/* ウィンドウサイズを最新の状態に更新 */
+	if (myGameManager.window) {
+		int w, h;
+		SDL_GetWindowSize(myGameManager.window, &w, &h);
+		myGameManager.windowW = (Uint16)w;
+		myGameManager.windowH = (Uint16)h;
+	}
+
+	//背景描画(ダークブルー)
+	SDL_SetRenderDrawColor(myGameManager.renderer, 30, 30, 50, 255);
+	SDL_RenderClear(myGameManager.renderer);
+
+	//選択中の武器情報を取得
+	int index = waitScene->selectedWeaponIndex;
+	const WeaponInfo* selected_weapon = &weapon_info[index];
+
+	//画面中央: 武器名を描画
+	SDL_Color white = { 255, 255, 255, 255 };
+	UI_renderTextCentered(myGameManager.fonts[0], selected_weapon->name, myGameManager.windowH / 2 - 50, white);
+
+	//画面中央: 武器画像を描画
+	//TODO: 3Dモデルに置き換えるまでの仮表示として画像を描画
+	
+
+	//画面上部: 操作説明を描画
+	UI_renderTextCentered(myGameManager.fonts[2], "左右キーで武器を選択", 60, white);
+
+	
+	//画面右下: 「通信待機中．．．」を表示
+	if (myGameManager.fonts[2]) { // 待機画面用フォント(インデックス2)を使用
+		SDL_Surface *s = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "通信待機中．．．", white);
+		if (s) {
+			SDL_Texture *tex = SDL_CreateTextureFromSurface(myGameManager.renderer, s);
+			if (tex) {
+				//右下から少し内側に配置
+				SDL_Rect dst = { myGameManager.windowW - s->w - 60, myGameManager.windowH - s->h - 20, s->w, s->h };
+				SDL_RenderCopy(myGameManager.renderer, tex, NULL, &dst);
+				SDL_DestroyTexture(tex);
+			}
+			SDL_FreeSurface(s);
+		}
+	}
+}
+
+//ロード画面の描画
 void UI_renderLoadingScreen(const char *message)
 {
 	if (myGameManager.renderer == NULL) return;
 	SDL_SetRenderDrawColor(myGameManager.renderer, 20, 20, 20, 255);
 	SDL_RenderClear(myGameManager.renderer);
 	SDL_Color white = { 255, 255, 255, 255 };
-	if (message) UI_renderTextCentered(message, myGameManager.windowH/2, white);
+	if (message) UI_renderTextCentered(myGameManager.fonts[0], message, myGameManager.windowH/2, white);
 }
 
 //メインゲーム画面の描画
@@ -129,10 +200,10 @@ void UI_renderMainScreen(void)
 	SDL_SetRenderDrawColor(myGameManager.renderer, 10, 30, 10, 255);
 	SDL_RenderClear(myGameManager.renderer);
 	SDL_Color white = { 220, 220, 220, 255 };
-	UI_renderTextCentered("Main Game Screen", myGameManager.windowH/2 - 20, white);
+	UI_renderTextCentered(myGameManager.fonts[0], "Main Game Screen", myGameManager.windowH/2 - 20, white);
 }
 
-/* UI リソースのクリーンアップ（フォントのクローズ） */
+//UIリソースのクリーンアップ(フォントのクローズ)
 void UI_cleanup(void)
 {
 	for (int i = 0; i < FONT_MAX; ++i) {
@@ -141,7 +212,7 @@ void UI_cleanup(void)
 			myGameManager.fonts[i] = NULL;
 		}
 	}
-	/* 他のモジュールが TTF に依存する可能性があるため、TTF_Quit は呼び出さない */
+	//他のモジュールがTTFに依存する可能性があるため、TTF_Quitは呼び出さない
 }
 #include <SDL2/SDL_image.h>
 
