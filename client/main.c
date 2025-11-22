@@ -123,4 +123,7 @@ SDL_bool init(void)
     }
 
     
+
+
+  return SDL_TRUE;
 }

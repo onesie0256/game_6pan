@@ -3,21 +3,38 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc アクティブなファイルのビルド",
-            "command": "make",
+            "command": "/usr/bin/gcc",
             "args": [
-                "game_client"
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}"
             ],
             "options": {
-                "cwd": "${fileDirname}/.."
+                "cwd": "${fileDirname}"
             },
             "problemMatcher": [
                 "$gcc"
             ],
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": false
             },
             "detail": "デバッガーによって生成されたタスク。"
+        },
+        {
+            "label": "Build All (make)",
+            "type": "shell",
+            "command": "make game_client",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "プロジェクト全体を makefile でビルドします。"
         }
     ],
     "version": "2.0.0"

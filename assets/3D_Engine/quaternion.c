@@ -108,3 +108,49 @@ Vec3f quaternion_to_euler(Quaternion q) {
 
     return euler;
 }
+
+/**
+ * @brief 2つの単位ベクトル間の回転を表すオイラー角を導出する
+ * 
+ * @param v1 回転元となる単位ベクトル
+ * @param v2 回転先となる単位ベクトル
+ * @return オイラー角 (x: pitch, y: yaw, z: roll)
+ */
+Vec3f euler_from_vectors(Vec3f v1, Vec3f v2) {
+    // ベクトルを正規化する (念のため)
+    v1 = vecNormalize(v1);
+    v2 = vecNormalize(v2);
+
+    // 回転軸を計算する (外積)
+    Vec3f axis = vecMulOut(v1, v2);
+    float axis_length = vecLength(axis);
+
+    // ベクトルが同一直線上にある場合 (外積がゼロベクトルになる)
+    if (axis_length < 0.0001f) {
+        // ベクトルが平行 (同じ方向)
+        if (vecMulIn(v1, v2) > 0.9999f) {
+            return (Vec3f){0.0f, 0.0f, 0.0f}; // 回転なし
+        } else { // ベクトルが反平行 (反対方向)
+            // 180度の回転。任意の軸 (例えばY軸) の周りに回転させる
+            // Y軸と平行な場合はX軸を使う
+            if (fabsf(v1.y) < 0.9999f) {
+                axis = (Vec3f){0.0f, 1.0f, 0.0f};
+            } else {
+                axis = (Vec3f){1.0f, 0.0f, 0.0f};
+            }
+            return quaternion_to_euler(quaternion_from_axis_angle(axis, 180.0f));
+        }
+    }
+
+    axis = vecNormalize(axis); // 軸を正規化する
+
+    // 回転角度を計算する (内積)
+    float angle_rad = acosf(vecMulIn(v1, v2));
+    float angle_deg = angle_rad * RAD_TO_DEG;
+
+    // 軸-角度からクォータニオンに変換する
+    Quaternion q = quaternion_from_axis_angle(axis, angle_deg);
+
+    // クォータニオンからオイラー角に変換する
+    return quaternion_to_euler(q);
+}

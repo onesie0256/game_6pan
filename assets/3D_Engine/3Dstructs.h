@@ -1,13 +1,11 @@
 #pragma once
-#include "./../../common/common.h"
-#include "3DEngine.h"
 
 /* vector.c */
 
 /**
  * @brief 3次元ベクトル
  */
-typedef struct{
+typedef struct vec3f_t{
     float x, y, z;
 }Vec3f;
 
@@ -139,7 +137,7 @@ typedef struct{
 /**
  * @brief objファイル
  */
-typedef struct{
+typedef struct obj_t{
     Vec3f vertex[30000];    //頂点
     int vertNum;            //頂点数
 
@@ -194,7 +192,7 @@ typedef struct{
 /**
  * @brief ポリゴン構造体のメンバー(様々な形状の図形のデータ)
  */
-typedef union{
+typedef union {
     Rectangler *rectangler;
     Sphere *sphere;
     Plane4 *plane4;

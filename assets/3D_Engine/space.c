@@ -132,6 +132,18 @@ SDL_bool isPointInRect(Vec3f H , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f v4 , Vec
 }
 
 /**
+ * @brief v1~v4からなる平面上に点pがあるかを調べる
+ */
+SDL_bool isPointOnPlane4(Vec3f p , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f v4 , Vec3f normal)
+{
+    Vec3f H;
+    lengthPointToPlaneAndH(&H , v1 , normal , p);
+    if (isPointInRect(H , v1 , v2 , v3 , v4 , normal)) return SDL_TRUE;
+    return SDL_FALSE;
+}
+
+
+/**
  * @brief 点が円の内部にあるか判定する
  */
 SDL_bool isPointInCircle(Vec3f H , Vec3f center , float radius)
@@ -171,6 +183,8 @@ Vec3f calcCollisionVel(Vec3f velocity , Vec3f normal)
 
     //跳ね返った後の速度ベクトルは入射のベクトルに法線ベクトルの2倍を足したものである
     rtn = vecAdd(velocity , vecMulSca(normal , l * 2.0));
+
+    rtn.y *= 0.2f;
 
     return rtn;
 }
