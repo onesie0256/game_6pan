@@ -186,6 +186,17 @@ Vec3f rotateXYZ(Vec3f vert , int pitch , int roll , int yaw)
 }
 
 /**
+ * @brief ベクトルを任意の点周りに回転させる
+ * 
+ */
+Vec3f rotateCenter(Vec3f vert , int pitch , int roll , int yaw , Vec3f center)
+{
+    Vec3f tmp = vecSub(vert , center);
+
+    return vecAdd(rotateXYZ(tmp , pitch , roll , yaw) , center);
+}
+
+/**
  * @brief ベクトルの大きさを計算する
  * 
  */

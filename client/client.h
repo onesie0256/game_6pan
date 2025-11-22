@@ -48,11 +48,12 @@ typedef enum{
 typedef struct
 {
     uint8_t id;                 //操作するプレイヤーのid
-    Polygon *collisionBox;   //当たり判定の直方体
+    Polygon *collisionBox;      //当たり判定の直方体
     Obj *model;                 //3Dモデル
     Vec3f center;               //中心座標
     Vec3f velocity;             //速度
     Vec3f direction;            //方向ベクトル
+    Vec3f preCoordOfVertexs[8]; //1フレーム前の各頂点の座標
 }Car;
 
 /**
@@ -102,7 +103,9 @@ int initWindow(char *title);
 void closeWindow(void);
 int draw(Camera *camera);
 
+
 /* car.c */
 Car *createCar(List *list , uint8_t id , Vec3f coord);
 void displayCars(List *list);
+void moveCar(List *carList , List *PolygonList);
 //void destroyCar(Car *car);

@@ -4,6 +4,8 @@ void drawUI(void);
 int initWindow(char *title);
 void closeWindow(void);
 int draw(Camera *camera);
+void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2);
+
 
 /**
  * @brief ウィンドウを初期化する
@@ -118,13 +120,15 @@ int draw(Camera *camera)
         displayCars(scene->cars);
     }
 
+    drawUI();
+
     glFlush();
     SDL_GL_SwapWindow(myGameManager.window);
     return 1;
 }
 
 /**
- * @brief 
+ * @brief myGameManager.UIをUIとして画面に貼り付ける
  */
 void drawUI(void)
 {
@@ -156,14 +160,22 @@ void drawUI(void)
     //openGL用のテクスチャを生成する
     GLuint textureID;
     SDL_Surface *data = myGameManager.UI;
+
+    // Convert surface to RGBA32 format for consistent OpenGL upload
+    SDL_Surface *convertedSurface = SDL_ConvertSurfaceFormat(data, SDL_PIXELFORMAT_RGBA32, 0);
+    if (!convertedSurface) {
+        printf("SDL_ConvertSurfaceFormat error: %s\n", SDL_GetError());
+        return; // Or handle error appropriately
+    }
+
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    GLenum format = (data->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data->w, data->h, 0, format, GL_UNSIGNED_BYTE, data->pixels);
+    // Use convertedSurface for texture upload
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, convertedSurface->w, convertedSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, convertedSurface->pixels);
 
     float x = 0;
     float y = 0;
@@ -181,6 +193,9 @@ void drawUI(void)
     // 3. 作成したテクスチャを削除
     glDeleteTextures(1, &textureID);
     
+    // Free the converted surface
+    SDL_FreeSurface(convertedSurface);
+    
 
     // --- 3D描画の状態を完全に復元 ---
     glMatrixMode(GL_PROJECTION);
@@ -188,5 +203,70 @@ void drawUI(void)
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
     glPopAttrib();
+}
 
+SDL_bool collisionCar(Car *c1 , Car *c2)
+{
+    Rectangler *r1 = c1->collisionBox->data.rectangler;
+    Rectangler *r2 = c2->collisionBox->data.rectangler;
+
+    
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane4(r2->vertex[i] , r1->vertex[0] , r1->vertex[1] , r1->vertex[2] , r1->vertex[3] , r1->normals[0]) && isPointOnPlane4(r2->vertex[i] , r1->vertex[1] , r1->vertex[4] , r1->vertex[7] , r1->vertex[2] , r1->normals[1]) && isPointOnPlane4(r2->vertex[i] , r1->vertex[3] , r1->vertex[2] , r1->vertex[6] , r1->vertex[7] , r1->normals[4])){
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+void collisionCars(List *carList)
+{
+    ListNode *i;
+    foreach(i,carList){
+        ListNode *j;
+        foreach_(j,i){
+            Car *c1 = (Car *)i->data;
+            Car *c2 = (Car *)i->data;
+
+            collisionCar(c1 ,c2);
+            collisionCar(c2 ,c1);
+        }
+    }
+}
+
+/**
+ * @brief 車が別の車に当たった時の跳ね返りの速度を求める   
+ * 
+ * @param velocity1 車の速度ベクトル1
+ * @param velocity2 車の速度ベクトル1
+ * 
+ * @return なし
+ */
+void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2)
+{
+    float e = 0.90;
+    float mass = 100.0f;
+
+    Vec3f v1_ , v2_;
+
+    v1_.x = (mass * v1->x + mass * v2->x + v2->x * e * mass - v1->x * e * mass) / (mass * 2);
+    v2_.x = -e * (v2->x - v1->x) + v1_.x;
+
+    v1_.y = (mass * v1->y + mass * v2->y + v2->y * e * mass - v1->y * e * mass) / (mass * 2);
+    v2_.y = -e * (v2->y - v1->y) + v1_.y;
+
+    v1_.z = (mass * v1->z + mass * v2->z + v2->z * e * mass - v1->z * e * mass) / (mass * 2);
+    v2_.z = -e * (v2->z - v1->z) + v1_.z;
+
+    *v1 = v1_;
+    *v2 = v2_;
+
+    /*
+    ci_v1.x = (ci->mass * ci_v0.x + cj->mass * cj_v0.x + cj_v0.x * e * cj->mass - ci_v0.x * e * cj->mass) / (ci->mass + cj->mass);
+        cj_v1.x = -e * (cj_v0.x - ci_v0.x) + ci_v1.x;
+
+    ci_v1.y = (ci->mass * ci_v0.y + cj->mass * cj_v0.y + cj_v0.y * e * cj->mass - ci_v0.y * e * cj->mass) / (ci->mass + cj->mass);
+    cj_v1.y = -e * (cj_v0.y - ci_v0.y) + ci_v1.y;
+    */
 }

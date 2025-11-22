@@ -114,5 +114,16 @@ SDL_bool init(void)
     }
     */
 
+    myGameManager.UI = SDL_CreateRGBSurface(0 , WINDOW_WIDTH , WINDOW_HIGHT , 32 , 0x00ff0000 , 0x0000ff00 , 0x000000ff , 0xff000000);
+    if(!myGameManager.UI){
+        printf("CreateRGBSurface error %s\n" , SDL_GetError());
+        SDL_DestroyWindow(myGameManager.window);
+        TTF_Quit();
+        SDL_Quit();
+        IMG_Quit();
+        return SDL_FALSE;
+    }
+
+
   return SDL_TRUE;
 }

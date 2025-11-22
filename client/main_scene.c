@@ -32,7 +32,7 @@ int mainScene(void)
         }
     }
 
-    
+    moveCar(scene->cars , scene->polygonList);
 
     draw(scene->camera);
 
@@ -41,6 +41,8 @@ int mainScene(void)
         setupFlag = SDL_TRUE;
         return 0;
     }
+
+    
 
     //だいたい16msで60fps
     SDL_Delay(16);
@@ -62,7 +64,9 @@ int setupScene(void)
     myGameManager.sceneID = Scene_Main;
 
     //createRectangler((Vec3f){0.0f,0.0f,0.0f} , (Vec3f){1.0f,1.0f,1.0f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 0 , 0 , scene->polygonList);
-    createCar(scene->cars , 0 , (Vec3f){0.0f,0.0f,0.0f});
+    createCar(scene->cars , 0 , (Vec3f){0.0f,3.0f,0.0f});
+    createPlane4((Vec3f){-5.0f,-0.1f,5.0f} , 20.0f , 20.0f , (Vec3f){0.0f,1.0f,0.0f} , 90 , 0 , 0 , PT_PLANE4 , scene->polygonList);
+    createRectangler((Vec3f){-3.0f , 0.0f , 0.0f} , (Vec3f){1.0f , 1.0f , 1.0f} , (Vec3f){0.0f , 0.0f , 1.0f} , 0 , 0 , 30 , scene->polygonList);
 
     return 0;
 }
