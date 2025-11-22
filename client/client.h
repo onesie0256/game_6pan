@@ -5,6 +5,8 @@
 
 #define WINDOW_WIDTH 1920
 #define WINDOW_HIGHT 1080
+#define JOYCON_BUTTON_EVENT SDL_USEREVENT + 1 // Joy-Conボタンイベントの定義
+#define KEY_BUTTON_EVENT SDL_USEREVENT + 2
 
 #define WEAPON_TYPE_MAX 3
 
@@ -31,6 +33,8 @@ typedef struct{
 typedef struct {
 	int animationTimer; // アニメーション進行タイマー
 	float beatScale;    // タイトルテキストの拡大・縮小スケール
+    float carX;
+    int carAnimState;
 }TitleScene;
 
 /**
@@ -73,6 +77,47 @@ typedef struct {
     Camera *camera;     //カメラ
 }MainScene;
 
+/**
+ * @brief キーの状態
+ */
+typedef enum {
+    K_RIGHT, //→
+    K_LEFT,  //←
+    K_UP,    //↑
+    K_DOWN,  //↓
+    K_SPACE, //スペースキー
+    K_SHIFT, //シフトキー
+    K_ENTER, //エンターキー
+    K_ESCAPE,//escキー
+    K_MAX    //使用するキーの数
+}KeyNum;
+
+//ジョイコン使用
+#ifdef USE_JOY
+
+#include <joyconlib.h>
+
+/**
+ * @brief ジョイコンのボタン
+ */
+typedef enum {
+
+    JOY_Home,
+    JOY_Plus, //+ボタン
+    JOY_Minus, //-ボタン
+    JOY_ZR,   //ZRボタン
+    JOY_ZL,   //ZRボタン
+    JOY_A,
+    JOY_B,
+    JOY_X,
+    JOY_Y,
+
+    JOY_Max   //ボタンの数
+
+}JoyConInputNum;
+
+#endif
+
 
 /**
  * @brief 車の情報
@@ -98,6 +143,7 @@ typedef struct
 
 /* game.c */
 int gameLoop(void);
+int mainLoopDelay(void *arg);
 
 /* net.c */
 int connectServer(char *serverName);
@@ -113,11 +159,18 @@ int waitScene(void);
 /* main_scene.c */
 int mainScene(void);
 
+
 /* UI.c */
 int UI_init(void);
 void UI_renderTitleScreen(TitleScene *titleScene);
 void UI_renderWaitScreen(WaitScene *waitScene);
 void UI_cleanup(void);
+
+/* thread.c */
+void createThread(void);
+int joy_func(void *args);
+int key_func(void *args);
+SDL_bool isKeyDowned(int KEY_NAME);
 
 typedef enum{
     UIG_Title = 1,

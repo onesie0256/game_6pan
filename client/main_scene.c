@@ -22,14 +22,8 @@ int mainScene(void)
         return 1;
     }
 
-    SDL_Event event;
-    while (SDL_PollEvent(&event)){
-        switch (event.type)
-        {
-        case SDL_QUIT:
-            endFlag = SDL_TRUE;
-            break;
-        }
+    if (myGameManager.quitRequest == SDL_TRUE) {
+        endFlag = SDL_TRUE;
     }
 
     moveCar(scene->cars , scene->polygonList);
@@ -42,10 +36,6 @@ int mainScene(void)
         return 0;
     }
 
-    
-
-    //だいたい16msで60fps
-    SDL_Delay(16);
     return 1;
 }
 

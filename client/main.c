@@ -20,7 +20,9 @@ int main(int argc , char* argv[])
 		return -1;
     }
 
-  if(!init()) return 1;
+  if(!init()) return 1; //初期化
+
+  createThread(); //スレッド作成する
 
   //サーバーへ接続
   /*
@@ -41,6 +43,14 @@ int main(int argc , char* argv[])
 
   printf("good job\n");
   closeWindow();
+
+
+  SDL_WaitThread(myGameManager.key_thread , NULL); //キーボード監視スレッドの終了を待機
+  
+  #ifdef USE_JOY
+  SDL_WaitThread(myGameManager.joy_thread, NULL); // Joy-Con監視スレッドの終了を待機
+  joycon_close(&jc);
+  #endif
 
   SDL_Quit();
   TTF_Quit();
@@ -79,8 +89,11 @@ SDL_bool init(void)
 
     #ifdef USE_JOY
     
-    if (joycon_open(&jc , JOYCON_R) != 0){
+    if (joycon_open(&myGameManager.jc , JOYCON_R) != 0){
         printf("failed to open Joy-Con");
+        SDL_DestroyWindow(window); // ウィンドウを破棄
+        SDL_Quit(); // SDLを終了
+        return 1; // プログラム終了
     }
     #endif
 
@@ -122,7 +135,7 @@ SDL_bool init(void)
         return SDL_FALSE;
     }
 
-    
+    myGameManager.quitRequest = SDL_FALSE;
 
 
   return SDL_TRUE;
