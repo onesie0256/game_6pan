@@ -41,6 +41,15 @@ typedef struct {
 } WaitScene;
 
 /**
+ * @brief 銃の番号
+ */
+typedef enum{
+    Pistl,      //ピストル
+    Shotgun,    //ショットガン
+    Sniper,     //スナイパー
+}GunKinds;
+
+/**
  * @brief 武器の表示情報を格納する構造体
  */
 typedef struct {
@@ -64,14 +73,6 @@ typedef struct {
     Camera *camera;     //カメラ
 }MainScene;
 
-/**
- * @brief 銃の番号
- */
-typedef enum{
-    Pistl,      //ピストル
-    Shotgun,    //ショットガン
-    Sniper,     //スナイパー
-}GunKinds;
 
 /**
  * @brief 車の情報
