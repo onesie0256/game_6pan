@@ -218,9 +218,11 @@ void rotateCamera(Camera *camera, float pitch_delta, float yaw_delta)
     camera->orientation = quaternion_normalize(camera->orientation);
 }
 
+
 /**
  * @brief カメラの位置,向きをアップデートする
  */
+/*
 void updateCamera(Camera *camera)
 {
     // カメラの向きから前方、右ベクトルを計算
@@ -229,7 +231,7 @@ void updateCamera(Camera *camera)
 
     // 移動量を初期化
     Vec3f move_vec = {0.0f, 0.0f, 0.0f};
-    /*
+    
     //カメラ移動
     if (gameInfo.keyNow[K_D] == SDL_TRUE){
         move_vec = vecAdd(move_vec, right);
@@ -274,12 +276,13 @@ void updateCamera(Camera *camera)
     if (gameInfo.keyNow[K_LEFT] == SDL_TRUE){
         rotateCamera(camera, 0.0f, CAMERA_SENSITIVITY);
     }
-    */
-
+    
     #ifdef USE_JOY
     // ジョイスティックの入力で視点を回転（Y軸周り）
     rotateCamera(camera, 0.0f, -gameInfo.joyStickX * CAMERA_SENSITIVITY);
     rotateCamera(camera, -gameInfo.joyStickY * CAMERA_SENSITIVITY, 0.0f);
 
     #endif
+    
 }
+*/

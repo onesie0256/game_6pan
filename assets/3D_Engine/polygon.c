@@ -218,13 +218,13 @@ void rotateRectacglerTo(Rectangler *rectangler , int pitch , int roll , int yaw 
     */
     //点の回転と並行移動
     for (int i = 0 ; i < 8 ; i++){
-        rectangler->vertex[i] = rotateCenter(rectangler->vertex[i] , -rectangler->pitch , -rectangler->roll , -rectangler->yaw , center);
+        //rectangler->vertex[i] = rotateCenter(rectangler->vertex[i] , -rectangler->pitch , -rectangler->roll , -rectangler->yaw , center);
         rectangler->vertex[i] = rotateCenter(rectangler->vertex[i] , pitch , roll , yaw , center);
     }
 
-    rectangler->pitch = pitch;
-    rectangler->roll  = roll;
-    rectangler->yaw   = yaw;
+    rectangler->pitch += pitch;
+    rectangler->roll  += roll;
+    rectangler->yaw   += yaw;
 
     //法線ベクトルを計算
     rectangler->normals[0] = calcNormalVec(rectangler->vertex[PP_LDF] , rectangler->vertex[PP_RDF] , rectangler->vertex[PP_LUF]);

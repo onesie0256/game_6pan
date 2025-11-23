@@ -226,5 +226,6 @@ typedef struct {
  */
 typedef struct camera_t{
     Vec3f pos;              //カメラの存在する座標
+    Vec3f center;
     Quaternion orientation; // 注視点(center)は pos と orientation から動的に計算される
 }Camera;

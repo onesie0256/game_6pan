@@ -18,6 +18,9 @@ struct polygon_t;
 typedef struct polygon_t Polygon;
 struct obj_t;
 typedef struct obj_t Obj;
+struct car_t;
+typedef struct car_t Car;
+
 
 
 /**
@@ -75,6 +78,7 @@ typedef struct {
     List *cars;         //車のリスト
     List *UIList;       //UIのリスト
     Camera *camera;     //カメラ
+    Car *myCar;         //自分の操作する車
 }MainScene;
 
 /**
@@ -122,7 +126,7 @@ typedef enum {
 /**
  * @brief 車の情報
  */
-typedef struct
+typedef struct car_t
 {
     uint8_t id;                 //操作するプレイヤーのid
     Polygon *collisionBox;      //当たり判定の直方体
@@ -196,7 +200,7 @@ typedef struct {
 int initWindow(char *title);
 void closeWindow(void);
 int draw(Camera *camera);
-
+void updateCamera(Car *car , Camera *camera);
 
 /* car.c */
 Car *createCar(List *list , uint8_t id , Vec3f coord);

@@ -77,7 +77,7 @@ SDL_bool isPointOnPlane4(Vec3f p , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f v4 , V
 Vec3f calcCollisionVel(Vec3f velocity , Vec3f normal);
 void moveCamera(Camera *camera , float dx , float dy , float dz);
 void rotateCamera(Camera *camera, float pitch_delta, float yaw_delta);
-void updateCamera(Camera *camera);
+//void updateCamera(Camera *camera);
 
 /* collision.c */
 void collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity);

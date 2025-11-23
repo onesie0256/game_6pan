@@ -17,6 +17,7 @@ void collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , 
         case PT_PLANE4:
             if(collisionPlane(rectangler , polygon->data.plane4 , preCoordOfVertex))
                 *velocity = calcCollisionVel(*velocity , polygon->data.plane4->normal);
+                *velocity = vecMulSca(*velocity , 0.98f);
             break;
 
         case PT_RECTANGLER:

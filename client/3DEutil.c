@@ -112,7 +112,7 @@ int draw(Camera *camera)
     Vec3f center_pos = vecAdd(camera->pos, forward_vec);
 
     //gluLookAt(camera->pos.x, camera->pos.y, camera->pos.z, center_pos.x, center_pos.y, center_pos.z, up_vec.x, up_vec.y, up_vec.z);
-    gluLookAt(3.0, 3.0, 3.0, 0.0 , 0.0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(camera->pos.x, camera->pos.y, camera->pos.z, camera->center.x, camera->center.y, camera->center.z, 0.0, 1.0, 0.0);
 
     if (myGameManager.sceneID == Scene_Main){
         MainScene *scene = (MainScene *)myGameManager.scene;
@@ -273,4 +273,12 @@ void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2)
     ci_v1.y = (ci->mass * ci_v0.y + cj->mass * cj_v0.y + cj_v0.y * e * cj->mass - ci_v0.y * e * cj->mass) / (ci->mass + cj->mass);
     cj_v1.y = -e * (cj_v0.y - ci_v0.y) + ci_v1.y;
     */
+}
+
+void updateCamera(Car *car , Camera *camera)
+{
+    Rectangler *r = car->collisionBox->data.rectangler;
+
+    camera->center = car->center;
+    camera->pos = vecAdd(car->center , vecAdd((Vec3f){0.0f,2.0f,0.0f} , vecMulSca(car->direction , -3.0f)));
 }
