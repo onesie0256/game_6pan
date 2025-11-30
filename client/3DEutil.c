@@ -118,6 +118,7 @@ int draw(Camera *camera)
         MainScene *scene = (MainScene *)myGameManager.scene;
         displayPolygons(scene->polygonList);
         displayCars(scene->cars);
+        displayAmmos();
     }
 
 
@@ -215,8 +216,87 @@ SDL_bool collisionCar(Car *c1 , Car *c2)
     Rectangler *r2 = c2->collisionBox->data.rectangler;
 
     
+    Vec3f v = r2->vertex[0];
+    Vec3f n = r2->normals[0];
+
+
     for (int i = 0 ; i < 8 ; i++){
-        if (isPointOnPlane4(r2->vertex[i] , r1->vertex[0] , r1->vertex[1] , r1->vertex[2] , r1->vertex[3] , r1->normals[0]) && isPointOnPlane4(r2->vertex[i] , r1->vertex[1] , r1->vertex[4] , r1->vertex[7] , r1->vertex[2] , r1->normals[1]) && isPointOnPlane4(r2->vertex[i] , r1->vertex[3] , r1->vertex[2] , r1->vertex[6] , r1->vertex[7] , r1->normals[4])){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[0] , r2->vertex[1] , r2->vertex[2] , r2->vertex[3] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+
+    v = r2->vertex[1];
+    n = r2->normals[1];
+
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[1] , r2->vertex[4] , r2->vertex[7] , r2->vertex[2] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+
+    v = r2->vertex[4];
+    n = r2->normals[2];
+
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[4] , r2->vertex[5] , r2->vertex[6] , r2->vertex[7] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+
+    v = r2->vertex[5];
+    n = r2->normals[3];
+
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[5] , r2->vertex[0] , r2->vertex[3] , r2->vertex[6] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+    
+    v = r2->vertex[3];
+    n = r2->normals[4];
+
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[3] , r2->vertex[2] , r2->vertex[7] , r2->vertex[6] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+    
+
+    v = r2->vertex[0];
+    n = r2->normals[5];
+
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[0] , r2->vertex[5] , r2->vertex[4] , r2->vertex[1] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
             calcCollisionCarVel(&c1->velocity , &c2->velocity);
             return SDL_TRUE;
         }
@@ -229,13 +309,13 @@ void collisionCars(List *carList)
     ListNode *i;
     foreach(i,carList){
         ListNode *j;
-        foreach_(j,i){
-            Car *c1 = (Car *)i->data;
-            Car *c2 = (Car *)i->data;
-
-            collisionCar(c1 ,c2);
-            collisionCar(c2 ,c1);
+        foreach_(j , i){
+            Car *c1 = ((Car *)i->data);
+            Car *c2 = ((Car *)j->data);
+            collisionCar(c1 , c2);
+            collisionCar(c2 , c1);
         }
+        
     }
 }
 

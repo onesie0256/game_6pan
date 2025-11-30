@@ -30,11 +30,20 @@ List* createList(void)
  */
 void addListNode(List *list, void *data , char *key)
 {
+
+    if (list == NULL) return;
+
     //ノードを初期化
     ListNode *node = (ListNode*)malloc(sizeof(ListNode));
     node->data = data;
     node->next = NULL;
     node->prev = NULL;
+
+    //キーを設定
+    if (key != NULL){
+        memset(node->key , 0 , sizeof(node->key));
+        strcpy(node->key , key);
+    }
 
     //リストが空の場合
     if (list->head == NULL){
@@ -43,9 +52,6 @@ void addListNode(List *list, void *data , char *key)
         return;
     }
 
-    //キーを設定
-    if (key != NULL)
-    strcpy(node->key , key);
 
     //リストの最後尾まで
     ListNode *temp = list->head;
@@ -66,7 +72,7 @@ void addListNode(List *list, void *data , char *key)
  * 
  * @return もし対象のリストが発見出来たらそのリストへのポインタを返す.見つからなかったらNULLを返す.
  */
-void *serchListNode(List *list , char *key)
+ListNode *serchListNode(List *list , char *key)
 {
     void *rtn = NULL;
     if (list->head == NULL || list == NULL) return rtn;
@@ -75,7 +81,7 @@ void *serchListNode(List *list , char *key)
     while (node != NULL)
     {
         if (!strcmp(node->key , key)){
-            return node->data;
+            return node;
         }
 
         node = node->next;
@@ -93,7 +99,7 @@ void *serchListNode(List *list , char *key)
 void deleteListNode(List *list, ListNode *node)
 {
     //ヘッダの指すノードが対象だった場合
-    if (node->prev == NULL){
+    if (list->head == node){
         list->head = node->next;
     }else{
         //前ノードのnext付け替え
@@ -103,7 +109,7 @@ void deleteListNode(List *list, ListNode *node)
     if (node->next != NULL){
         node->next->prev = node->prev;
     }
-
+    node->data = NULL;
     free(node);
     list->count--;
 }
@@ -135,4 +141,17 @@ void destroyList(List *list)
 {
     deleteListNodeAll(list);
     free(list);
+}
+
+/**
+ * @brief keyでリストのノードを削除する
+ * 
+ * @param list リストの構造体のポインタ
+ * @param key 検索キー
+ */
+void deleteListNodeKey(List *list , char *key)
+{
+    ListNode *node = serchListNode(list , key);
+    if (node == NULL) return;
+    deleteListNode(list , node);
 }

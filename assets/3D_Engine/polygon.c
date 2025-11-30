@@ -702,3 +702,39 @@ void displayPolygons(List *list)
         }
     }
 }
+
+void destroyPolygon(Polygon *polygon)
+{
+    switch (polygon->type)
+    {
+    case PT_RECTANGLER:
+        free(polygon->data.rectangler);
+        break;
+
+    case PT_SPHERE:
+        gluDeleteQuadric(polygon->data.sphere->qobj);
+        free(polygon->data.sphere);
+        break;
+    
+    case PT_PLANE4:
+        free(polygon->data.plane4);
+        break;
+
+    case PT_DISC:
+        free(polygon->data.disc);
+        break;
+
+    case PT_OBJ:
+        free(polygon->data.obj);
+        break;
+
+    case PT_CYLINDER:
+        free(polygon->data.cylinder);
+        break;
+
+    default:
+        break;
+    }
+
+    free(polygon);
+}

@@ -51,7 +51,7 @@ typedef struct {
  * @brief 銃の番号
  */
 typedef enum{
-    Pistl,      //ピストル
+    Pistol,      //ピストル
     Shotgun,    //ショットガン
     Sniper,     //スナイパー
 }GunKinds;
@@ -65,7 +65,32 @@ typedef struct {
     const char* image_path;
 } WeaponInfo;
 
+typedef struct {
+    GunKinds kind;                  //銃の種類
+    int bulletNum;                  //残り弾薬数
+    const int maxBulletNum;         //最大弾薬数
+    const int reloadFrame;          //リロードにかかるフレーム
+    int reloadFrameNow;             //現在のリロードのフレーム
+    const float damage;             //攻撃力
+    const int fireCoolFrame;        //銃発射のクールタイム(≒連射レート)
+    int fireCoolFrameNow;           //現在の発射のクールタイム
+    float ammoSpeed;                //弾薬の速度
+    int maxAmmoLivingFrame;         //弾薬の残存フレーム
+    Obj *model;                     //3Dモデル
+}Gun;
 
+typedef struct {
+    GunKinds kind;                  //弾薬の種類
+    Vec3f velocity;                 //速度
+    int maxLivingFrame;             //最大残存フレーム
+    int livingFrameNow;             //今の残存フレーム
+    Polygon *model;                 //弾薬のモデル
+    Vec3f color;                    //弾薬の色
+    float damage;                   //攻撃力
+    Vec3f center;                   //中心座標
+    Vec3f preCoord;                 //1フレーム前の座標
+    char id[6];                     //id
+}Ammo;
 // 武器情報配列を宣言
 extern const WeaponInfo weapon_info[WEAPON_TYPE_MAX];
 
@@ -77,6 +102,7 @@ typedef struct {
     List *polygonList;  //立体図形のリスト
     List *cars;         //車のリスト
     List *UIList;       //UIのリスト
+    List *ammoList;     //弾薬のリスト
     Camera *camera;     //カメラ
     Car *myCar;         //自分の操作する車
 }MainScene;
@@ -135,15 +161,12 @@ typedef struct car_t
     Vec3f velocity;             //速度
     Vec3f direction;            //方向ベクトル
     Vec3f preCoordOfVertexs[8]; //1フレーム前の各頂点の座標
+    float hp;                   //HP
+    float speed;                //スピード(UI専用)
+    Gun *gun;                   //所持する銃
 }Car;
 
-/**
- * @brief 銃の構造体
- */
-typedef struct
-{
-    //to do
-}Gun;
+
 
 /* game.c */
 int gameLoop(void);
@@ -201,9 +224,20 @@ int initWindow(char *title);
 void closeWindow(void);
 int draw(Camera *camera);
 void updateCamera(Car *car , Camera *camera);
+void collisionCars(List *carList);
 
 /* car.c */
-Car *createCar(List *list , uint8_t id , Vec3f coord);
+Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind);
 void displayCars(List *list);
 void moveCar(List *carList , List *PolygonList);
 //void destroyCar(Car *car);
+
+/* gun.c */
+void register_ammoList(List *list);
+Gun* createGun(GunKinds kind);
+void fireGun(Car *car , Gun *gun);
+Ammo* createAmmo(Gun *gun , Vec3f coord , Vec3f direct);
+void updateAmmos(void);
+void destroyAmmo(Ammo *ammo);
+void displayAmmos(void);
+void updateGuns(List *carList);

@@ -6,7 +6,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_opengl.h>
+//#include <SDL2/SDL_opengl.h>
+#include <GL/glew.h>
 #include <GL/glu.h>
 #include <stdio.h>
 #include "3Dstructs.h"
@@ -37,8 +38,9 @@ Vec3f rotateCenter(Vec3f vert , int pitch , int roll , int yaw , Vec3f center);
 /* list.c */
 List* createList(void);
 void addListNode(List *list, void *data , char *key);
-void *serchListNode(List *list , char *key);
+ListNode *serchListNode(List *list , char *key);
 void deleteListNode(List *list, ListNode *node);
+void deleteListNodeKey(List *list , char *key);
 void deleteListNodeAll(List *list);
 void destroyList(List *list);
 
@@ -63,8 +65,14 @@ Polygon* createDisc(Vec3f center , float radius , Vec3f color , List *list);
 Polygon* createCylinder(List *list);
 void displayPolygons(List *list);
 void displayRectangler(Rectangler *rectangler);
+void displaySphere(Sphere *sphere);
+void displayPlane4(Plane4 *plane4);
+void displayObj(Obj *obj);
+void displayDisc(Disc *disc);
+void displayCylinder(Cylinder *cylinder);
 void moveRectacgler(Rectangler *rectangler , Vec3f velocity , float dt);
 void rotateRectacglerTo(Rectangler *rectangler , int pitch , int roll , int yaw , Vec3f center);
+void destroyPolygon(Polygon *polygon);
 
 /* space.c */
 float lengthPointToPlaneAndH(Vec3f *H, Vec3f v , Vec3f n , Vec3f p);

@@ -3,7 +3,7 @@
 
 //武器情報の定義(client.hでextern宣言したものの実体)
 const WeaponInfo weapon_info[WEAPON_TYPE_MAX] = {
-    { Pistl,   "PISTOL",    "assets/images/pistol.png" },
+    { Pistol,   "PISTOL",    "assets/images/pistol.png" },
     { Shotgun, "SHOTGUN",   "assets/images/shotgun.png" },
     { Sniper,  "SNIPER",    "assets/images/sniper.png" }
 };
