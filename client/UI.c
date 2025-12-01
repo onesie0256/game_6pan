@@ -96,7 +96,7 @@ void UI_renderTitleScreen(TitleScene *titleScene)
 	if (myGameManager.UI == NULL || titleScene == NULL) return;
 
 	// 背景描画（白色）
-	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 0, 255, 255));
+	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 255, 255, 255));
 
 	//ビート効果を適用したタイトルボックスの描画
 	float scale = titleScene->beatScale;
@@ -150,30 +150,30 @@ void UI_renderWaitScreen(WaitScene *waitScene)
 	if (myGameManager.UI == NULL || waitScene == NULL) return;
 
 	//背景描画(水色)
-	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 0, 255, 255));
+	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 224, 255, 255));
 
 	//選択中の武器情報を取得
 	int index = waitScene->selectedWeaponIndex;
 	const WeaponInfo* selected_weapon = &weapon_info[index];
 
 	//画面中央: 武器名を描画
-	SDL_Color white = { 255, 255, 255, 255 };
-	UI_renderTextCentered(myGameManager.fonts[0], selected_weapon->name, myGameManager.windowH / 2 - 50, white);
+	SDL_Color black = {0, 0, 0, 0};
+	UI_renderTextCentered(myGameManager.fonts[0], selected_weapon->name, myGameManager.windowH / 2 - 50, black);
 
 	//画面中央: 武器画像を描画
 	//TODO: 3Dモデルに置き換えるまでの仮表示として画像を描画
 	
 
 	//画面上部: 操作説明を描画
-	UI_renderTextCentered(myGameManager.fonts[2], "左右キーで武器を選択", 60, white);
+	UI_renderTextCentered(myGameManager.fonts[2], "左右キーで武器を選択", 60, black);
 
 	
 	//画面右下: 「通信待機中．．．」を表示
 	if (myGameManager.fonts[2]) { // 待機画面用フォント(インデックス2)を使用
-		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "通信待機中．．．", white);
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "通信待機中．．．", black);
 		if (textSurface) {
 			//右下から少し内側に配置
-			SDL_Rect dst = { myGameManager.windowW - textSurface->w - 60, myGameManager.windowH - textSurface->h - 20, textSurface->w, textSurface->h };
+			SDL_Rect dst = { myGameManager.windowW - textSurface->w - 130, myGameManager.windowH - textSurface->h - 20, textSurface->w, textSurface->h };
 			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
 			SDL_FreeSurface(textSurface);
 		}
