@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "joyconlib.h": "c",
+        "condition_variable": "c"
+    }
+}

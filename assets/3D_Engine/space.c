@@ -132,6 +132,18 @@ SDL_bool isPointInRect(Vec3f H , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f v4 , Vec
 }
 
 /**
+ * @brief v1~v4からなる平面上に点pがあるかを調べる
+ */
+SDL_bool isPointOnPlane4(Vec3f p , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f v4 , Vec3f normal)
+{
+    Vec3f H;
+    lengthPointToPlaneAndH(&H , v1 , normal , p);
+    if (isPointInRect(H , v1 , v2 , v3 , v4 , normal)) return SDL_TRUE;
+    return SDL_FALSE;
+}
+
+
+/**
  * @brief 点が円の内部にあるか判定する
  */
 SDL_bool isPointInCircle(Vec3f H , Vec3f center , float radius)
@@ -172,6 +184,8 @@ Vec3f calcCollisionVel(Vec3f velocity , Vec3f normal)
     //跳ね返った後の速度ベクトルは入射のベクトルに法線ベクトルの2倍を足したものである
     rtn = vecAdd(velocity , vecMulSca(normal , l * 2.0));
 
+    rtn.y *= 0.2f;
+
     return rtn;
 }
 
@@ -204,9 +218,11 @@ void rotateCamera(Camera *camera, float pitch_delta, float yaw_delta)
     camera->orientation = quaternion_normalize(camera->orientation);
 }
 
+
 /**
  * @brief カメラの位置,向きをアップデートする
  */
+/*
 void updateCamera(Camera *camera)
 {
     // カメラの向きから前方、右ベクトルを計算
@@ -215,7 +231,7 @@ void updateCamera(Camera *camera)
 
     // 移動量を初期化
     Vec3f move_vec = {0.0f, 0.0f, 0.0f};
-    /*
+    
     //カメラ移動
     if (gameInfo.keyNow[K_D] == SDL_TRUE){
         move_vec = vecAdd(move_vec, right);
@@ -260,12 +276,13 @@ void updateCamera(Camera *camera)
     if (gameInfo.keyNow[K_LEFT] == SDL_TRUE){
         rotateCamera(camera, 0.0f, CAMERA_SENSITIVITY);
     }
-    */
-
+    
     #ifdef USE_JOY
     // ジョイスティックの入力で視点を回転（Y軸周り）
     rotateCamera(camera, 0.0f, -gameInfo.joyStickX * CAMERA_SENSITIVITY);
     rotateCamera(camera, -gameInfo.joyStickY * CAMERA_SENSITIVITY, 0.0f);
 
     #endif
+    
 }
+*/

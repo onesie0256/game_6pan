@@ -1,9 +1,11 @@
-#include "3DEngine.h"
+#include "client.h"
 
 void drawUI(void);
 int initWindow(char *title);
 void closeWindow(void);
 int draw(Camera *camera);
+void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2);
+
 
 /**
  * @brief ウィンドウを初期化する
@@ -110,11 +112,13 @@ int draw(Camera *camera)
     Vec3f center_pos = vecAdd(camera->pos, forward_vec);
 
     //gluLookAt(camera->pos.x, camera->pos.y, camera->pos.z, center_pos.x, center_pos.y, center_pos.z, up_vec.x, up_vec.y, up_vec.z);
-    gluLookAt(3.0, 3.0, 3.0, 0.0 , 0.0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(camera->pos.x, camera->pos.y, camera->pos.z, camera->center.x, camera->center.y, camera->center.z, 0.0, 1.0, 0.0);
 
     if (myGameManager.sceneID == Scene_Main){
         MainScene *scene = (MainScene *)myGameManager.scene;
         displayPolygons(scene->polygonList);
+        displayCars(scene->cars);
+        displayAmmos();
     }
 
 
@@ -126,7 +130,7 @@ int draw(Camera *camera)
 }
 
 /**
- * @brief 
+ * @brief myGameManager.UIをUIとして画面に貼り付ける
  */
 void drawUI(void)
 {
@@ -196,6 +200,7 @@ void drawUI(void)
     // 3. 作成したテクスチャを削除
     glDeleteTextures(1, &textureID);
     
+    
 
     // --- 3D描画の状態を完全に復元 ---
     glMatrixMode(GL_PROJECTION);
@@ -203,5 +208,157 @@ void drawUI(void)
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
     glPopAttrib();
+}
 
+SDL_bool collisionCar(Car *c1 , Car *c2)
+{
+    Rectangler *r1 = c1->collisionBox->data.rectangler;
+    Rectangler *r2 = c2->collisionBox->data.rectangler;
+
+    
+    Vec3f v = r2->vertex[0];
+    Vec3f n = r2->normals[0];
+
+
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[0] , r2->vertex[1] , r2->vertex[2] , r2->vertex[3] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+
+    v = r2->vertex[1];
+    n = r2->normals[1];
+
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[1] , r2->vertex[4] , r2->vertex[7] , r2->vertex[2] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+
+    v = r2->vertex[4];
+    n = r2->normals[2];
+
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[4] , r2->vertex[5] , r2->vertex[6] , r2->vertex[7] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+
+    v = r2->vertex[5];
+    n = r2->normals[3];
+
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[5] , r2->vertex[0] , r2->vertex[3] , r2->vertex[6] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+    
+    v = r2->vertex[3];
+    n = r2->normals[4];
+
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[3] , r2->vertex[2] , r2->vertex[7] , r2->vertex[6] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+    
+
+    v = r2->vertex[0];
+    n = r2->normals[5];
+
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[0] , r2->vertex[5] , r2->vertex[4] , r2->vertex[1] , n)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(r1 , moveVec , 1.0f);
+            calcCollisionCarVel(&c1->velocity , &c2->velocity);
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+void collisionCars(List *carList)
+{
+    ListNode *i;
+    foreach(i,carList){
+        ListNode *j;
+        foreach_(j , i){
+            Car *c1 = ((Car *)i->data);
+            Car *c2 = ((Car *)j->data);
+            collisionCar(c1 , c2);
+            collisionCar(c2 , c1);
+        }
+        
+    }
+}
+
+/**
+ * @brief 車が別の車に当たった時の跳ね返りの速度を求める   
+ * 
+ * @param velocity1 車の速度ベクトル1
+ * @param velocity2 車の速度ベクトル1
+ * 
+ * @return なし
+ */
+void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2)
+{
+    float e = 0.90;
+    float mass = 100.0f;
+
+    Vec3f v1_ , v2_;
+
+    v1_.x = (mass * v1->x + mass * v2->x + v2->x * e * mass - v1->x * e * mass) / (mass * 2);
+    v2_.x = -e * (v2->x - v1->x) + v1_.x;
+
+    v1_.y = (mass * v1->y + mass * v2->y + v2->y * e * mass - v1->y * e * mass) / (mass * 2);
+    v2_.y = -e * (v2->y - v1->y) + v1_.y;
+
+    v1_.z = (mass * v1->z + mass * v2->z + v2->z * e * mass - v1->z * e * mass) / (mass * 2);
+    v2_.z = -e * (v2->z - v1->z) + v1_.z;
+
+    *v1 = v1_;
+    *v2 = v2_;
+
+    /*
+    ci_v1.x = (ci->mass * ci_v0.x + cj->mass * cj_v0.x + cj_v0.x * e * cj->mass - ci_v0.x * e * cj->mass) / (ci->mass + cj->mass);
+        cj_v1.x = -e * (cj_v0.x - ci_v0.x) + ci_v1.x;
+
+    ci_v1.y = (ci->mass * ci_v0.y + cj->mass * cj_v0.y + cj_v0.y * e * cj->mass - ci_v0.y * e * cj->mass) / (ci->mass + cj->mass);
+    cj_v1.y = -e * (cj_v0.y - ci_v0.y) + ci_v1.y;
+    */
+}
+
+void updateCamera(Car *car , Camera *camera)
+{
+    Rectangler *r = car->collisionBox->data.rectangler;
+
+    camera->center = car->center;
+    camera->pos = vecAdd(car->center , vecAdd((Vec3f){0.0f,2.0f,0.0f} , vecMulSca(car->direction , -3.0f)));
 }

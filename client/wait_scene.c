@@ -15,30 +15,28 @@ int waitScene(void)
     WaitScene waitSceneState;
     waitSceneState.selectedWeaponIndex = 0; // 初期選択
 
-    SDL_Event e;
     int running = 1;
     while (running) {
-        while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) {
+            if (myGameManager.quitRequest == SDL_TRUE) {
                 return 0; // ゲーム終了
             }
             // キーが押されたときのイベント
-            if (e.type == SDL_KEYDOWN) {
-                switch (e.key.keysym.sym) {
-                    case SDLK_LEFT: // 左キー
+            
+                    if (isKeyDowned(K_LEFT) == SDL_TRUE){
+                         // 左キー
                         waitSceneState.selectedWeaponIndex--;
                         if (waitSceneState.selectedWeaponIndex < 0) {
                             waitSceneState.selectedWeaponIndex = WEAPON_TYPE_MAX - 1; // 末尾にループ
                         }
-                        break;
-                    case SDLK_RIGHT: // 右キー
+                    }
+                    if (isKeyDowned(K_RIGHT) == SDL_TRUE) {
+                        // 右キー
                         waitSceneState.selectedWeaponIndex++;
                         waitSceneState.selectedWeaponIndex %= WEAPON_TYPE_MAX; // 先頭にループ
-                        break;
+                    }
 
-                }
-            }
-        }
+    
+            
 
         // 待機画面のUIを描画
         UI_renderWaitScreen(&waitSceneState);
@@ -47,6 +45,7 @@ int waitScene(void)
         draw(NULL);
 
         SDL_Delay(16);
+        
     }
 
     return 1; // 次のシーンへ

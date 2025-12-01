@@ -1,8 +1,11 @@
 {
+    // IntelliSense を使用して利用可能な属性を学べます。
+    // 既存の属性の説明をホバーして表示します。
+    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) 起動",
+            "name": "(gdb) client",
             "type": "cppdbg",
             "request": "launch",
             // Makefileによってビルドされた実行可能ファイルのパスを指定します。
@@ -18,10 +21,39 @@
                     "description": "gdb の再フォーマットを有効にする",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "逆アセンブリ フレーバーを Intel に設定",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
                 }
             ],
-            // デバッグ開始前に実行するタスクを指定します。
-            "preLaunchTask": "C/C++: gcc アクティブなファイルのビルド"
+            "preLaunchTask": "Build All (make)"
+        },
+        {
+            "name": "(gdb) server",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/game_client",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "gdb の再フォーマットを有効にする",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "逆アセンブリ フレーバーを Intel に設定",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build All (make)"
         }
     ]
 }
