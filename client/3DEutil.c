@@ -6,7 +6,6 @@ void closeWindow(void);
 int draw(Camera *camera);
 void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2);
 
-
 /**
  * @brief ウィンドウを初期化する
  * @param title ゲームタイトル
