@@ -3,7 +3,7 @@
 
 //武器情報の定義(client.hでextern宣言したものの実体)
 const WeaponInfo weapon_info[WEAPON_TYPE_MAX] = {
-    { Pistl,   "PISTOL",    "assets/images/pistol.png" },
+    { Pistol,   "PISTOL",    "assets/images/pistol.png" },
     { Shotgun, "SHOTGUN",   "assets/images/shotgun.png" },
     { Sniper,  "SNIPER",    "assets/images/sniper.png" }
 };
@@ -15,11 +15,13 @@ const WeaponInfo weapon_info[WEAPON_TYPE_MAX] = {
  */
 int UI_init(void)
 {
+	/*
 	//SDLを初期化 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
 		return -1;
 	}
+	*/
 
 	//TTFを初期化 
 	if (TTF_WasInit() == 0) {
@@ -32,6 +34,10 @@ int UI_init(void)
 		/* フォント読み込み */
 		TTF_Font *f = TTF_OpenFont("assets/fonts/Aircruiser3Dital.ttf", 100);
 		if (f) {
+			if (f)
+			myGameManager.fonts[0] = f;
+		}
+		else if (f = TTF_OpenFont("./../assets/fonts/Aircruiser3Dital.ttf", 100)){
 			myGameManager.fonts[0] = f;
 		}
 	}
@@ -41,12 +47,18 @@ int UI_init(void)
 		if (f) {
 			myGameManager.fonts[1] = f;
 		}
+		else if (f = TTF_OpenFont("./../assets/fonts/aircruiser.ttf", 24)){
+			myGameManager.fonts[1] = f;
+		}
 	}
 
 	//待機画面用のフォントを読み込む
 	if (myGameManager.fonts[2] == NULL) {
 		TTF_Font *f = TTF_OpenFont("assets/fonts/KiwiMaru-Regular.ttf", 32);
 		if (f) {
+			myGameManager.fonts[2] = f;
+		}
+		else if (f = TTF_OpenFont("./../assets/fonts/KiwiMaru-Regular.ttf", 32)){
 			myGameManager.fonts[2] = f;
 		}
 	}

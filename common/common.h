@@ -6,7 +6,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdio.h>
-#include "./../assets/3D_Engine/3DEngine.h"
+#ifdef USE_JOY
+#include <joyconlib.h>
+#endif
 
 #define KEY_MAX 10
 #define JOY_KEY_MAX 10
@@ -22,6 +24,7 @@ typedef struct list_t List;
  */
 typedef struct
 {
+    SDL_bool quitRequest;           //SDL_QUITが通知されたらTRUE
     uint8_t myID;                   //ID
     uint8_t playerNum;              //プレイヤー人数
     //to do 自分の選んだ銃の情報
@@ -36,6 +39,21 @@ typedef struct
     uint8_t sceneID;                //シーン番号
     SDL_Surface *UI;                //UI用のサーフェイス
     List *UIList;
+    SDL_Event event; // SDLイベント構造体    
+    SDL_Thread * joy_thread;
+    #ifdef USE_JOY
+    joyconlib_t jc;
+    joycon_btn prev_btn; // 前回のボタン状態
+    #endif 
+    SDL_Thread * key_thread;
+    SDL_bool keyNow[KEY_MAX]; //キーの状態
+    SDL_bool keyPrev[KEY_MAX];//キーの状態(1フレーム前)
+    #ifdef USE_JOY
+    SDL_bool joyBotton[JOY_KEY_MAX];  //ジョイコンのボタンの状態
+    SDL_bool joyBottonPrev[JOY_KEY_MAX];
+    float StickX;            //ジョイスティックのx方向の傾き
+    float StickY;            //ジョイスティックのy方向の傾き
+    #endif
 }GameManager;
 
 /**
@@ -48,30 +66,7 @@ typedef enum{
     Scene_Max
 }SceneKinds;
 
-/**
- * @brief 銃の番号
- */
-typedef enum{
-    Pistl,      //ピストル
-    Shotgun,    //ショットガン
-    Sniper,     //スナイパー
-}GunKinds;
 
-/**
- * @brief 車の情報
- */
-typedef struct
-{
-    //to do
-}Car;
-
-/**
- * @brief 銃の構造体
- */
-typedef struct
-{
-    //to do
-}Gun;
 
 typedef struct{
     uint8_t id;                 //id
