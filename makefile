@@ -2,13 +2,13 @@ VPATH = common:client:server:assets/3D_Engine
 CC = gcc
 TARGET_CLIENT = game_client
 TARGET_SERVER = game_server
-CFLAGS = -lSDL2 -lm -lGL -lGLU -lGLEW -lSDL2_image -lSDL2_mixer -lSDL2_ttf
+CFLAGS = -lSDL2 -lm -lGL -lGLU  -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 CC = gcc
 JOYCON = #-DUSE_JOY -ljoyconlib -lhidapi-hidraw
 SRCS_SERVR = $(shell find ./server -name "*.c")
 SRCS_CLIENT = $(shell find ./client -name "*.c")
 SRCS_3DE = $(shell find ./assets/3D_Engine -name "*.c")
-DEGUG_3DE = -DDEGUG_3DE
+DEGUG_3DE = #-DDEGUG_3DE
 
 OBJS_SERVER = $(SRCS_SERVR:.c=.o)
 OBJS_CLIENT = $(SRCS_CLIENT:.c=.o)

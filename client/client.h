@@ -189,8 +189,9 @@ int mainScene(void);
 
 /* UI.c */
 int UI_init(void);
-void UI_renderTitleScreen(TitleScene *titleScene);
-void UI_renderWaitScreen(WaitScene *waitScene);
+void UI_updateTitleSurface(TitleScene *titleScene);
+void UI_updateWaitSurface(WaitScene *waitScene);
+void UI_updateMainSurface(MainScene *scene);
 void UI_cleanup(void);
 
 /* thread.c */

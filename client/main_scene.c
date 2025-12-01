@@ -34,6 +34,9 @@ int mainScene(void)
 
 
     updateCamera(scene->myCar , scene->camera);
+
+    UI_updateMainSurface(scene); 
+
     draw(scene->camera);
 
     updateGuns(scene->cars);
@@ -60,7 +63,7 @@ int setupScene(void)
     scene->camera = (Camera*)malloc(sizeof(Camera));
     scene->camera->pos = (Vec3f){0.0f,0.0f,0.0f};
     scene->camera->orientation = (Quaternion){0.0f,0.0f,0.0f,0.0f};
-    myGameManager.UI = NULL;
+
 
     myGameManager.scene = scene;
     myGameManager.sceneID = Scene_Main;

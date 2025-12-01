@@ -22,21 +22,17 @@ int titleScene(void)
 	//タイトル画面状態の初期化 
 	titleState.animationTimer = 0;
 	titleState.beatScale = 1.0f;
-	titleState.carX = 0.0f;
-	titleState.carAnimState = 1;
 
 	setupFlag = SDL_FALSE;
 	}
 
-	//イベント処理:Enter(Xにする)で次シーンへ  
-
-	
+	//イベント処理:Enter(Joy-conではX)で次シーンへ  
 		if (myGameManager.quitRequest == SDL_TRUE) {
 			setupFlag = SDL_TRUE;
 			return 0; // ゲーム終了 
 		}
 		else{
-			if (myGameManager.keyNow[K_ENTER] == SDL_TRUE ) {
+			if (isKeyDowned(K_ENTER) == SDL_TRUE) {
 				myGameManager.sceneID = Scene_Wait;
 			}
 		
@@ -50,34 +46,16 @@ int titleScene(void)
 		#endif 
 		}
 
-		
-		
-
 	//アニメーション更新
 	titleState.animationTimer += 16; 
 
-	/* ビート効果（拡大縮小）: sin波で0.9～1.1をループ */
+	// ビート効果（拡大縮小）: sin波で0.9～1.1をループ 
 	float beatPhase = (titleState.animationTimer % 1000) / 1000.0f; /* 0.0～1.0 */
 	titleState.beatScale = 1.0f + 0.15f * sinf(beatPhase * 2.0f * 3.14159f);
 
-	/* 車アニメーション5秒周期で左から右へループ
-	 * 素材が揃ったら、調整
-	 */
-	float carPhase = (titleState.animationTimer % 5000) / 5000.0f; /* 0.0～1.0, 5秒周期 */
-	titleState.carX = carPhase * myGameManager.windowW;
-
-	/*
-	//タイトルUI描画 
-	UI_renderTitleScreen(&titleState);
-		SDL_RenderPresent(myGameManager.renderer);
-
-		SDL_Delay(16); 
-	}
-	*/
-	UI_renderTitleScreen(&titleState);
+	UI_updateTitleSurface(&titleState);
 	draw(NULL);
-
-	/* 注記: フォントは今後の画面でも使用するため、ここではクリーンアップしない */
+	
 	return 1;
 }
 
