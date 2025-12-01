@@ -29,7 +29,7 @@ int UI_init(void)
 	}
 
 	if (myGameManager.fonts[0] == NULL) {
-		/* フォント読み込み */
+		// フォント読み込み 
 		TTF_Font *f = TTF_OpenFont("assets/fonts/Aircruiser3Dital.ttf", 100);
 		if (f) {
 			myGameManager.fonts[0] = f;
