@@ -36,7 +36,7 @@ int titleScene(void)
 			return 0; // ゲーム終了 
 		}
 		else{
-			if (myGameManager.keyNow[K_ENTER] == SDL_TRUE ) {
+			if (isKeyDowned(K_ENTER) == SDL_TRUE) {
 				myGameManager.sceneID = Scene_Wait;
 			}
 		

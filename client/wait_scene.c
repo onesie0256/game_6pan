@@ -34,6 +34,10 @@ int waitScene(void)
                         waitSceneState.selectedWeaponIndex++;
                         waitSceneState.selectedWeaponIndex %= WEAPON_TYPE_MAX; // 先頭にループ
                     }
+                    if (isKeyDowned(K_ENTER) == SDL_TRUE) {
+                        myGameManager.sceneID = Scene_Main;
+                        return 1;
+                    }
 
     
             
