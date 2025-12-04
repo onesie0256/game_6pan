@@ -138,23 +138,23 @@ typedef struct{
  * @brief objファイル
  */
 typedef struct obj_t{
-    Vec3f vertex[30000];    //頂点
+    Vec3f vertex[1000000];    //頂点
     int vertNum;            //頂点数
 
-    float vertAry[30000];   //頂点(openGL方式)
+    float vertAry[1000000];   //頂点(openGL方式)
     int vertAryNum;         //頂点数(openGL方式)
 
-    Vec3f normal[30000];    //法線ベクトル
+    Vec3f normal[1000000];    //法線ベクトル
     int normalNum;          //法線ベクトル数
 
-    float normAry[30000];   //法線ベクトル
+    float normAry[1000000];   //法線ベクトル
     int normAryNum;         //法線ベクトル
 
 
-    Vec3f texCoord[30000];  //テクスチャマッピング
+    Vec3f texCoord[1000000];  //テクスチャマッピング
     int texCoordNum;        //テクスチャマッピング数
 
-    float texCoordAry[30000];   //テクスチャマッピング
+    float texCoordAry[1000000];   //テクスチャマッピング
     int texCoordAryNum;     //テクスチャマッピング数
 
     GLuint texture;         //テクスチャID

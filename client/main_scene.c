@@ -2,6 +2,7 @@
 
 int main_scene(void);
 int setupScene(void);
+int setupSceneLate(void);
 int destroyScene(void);
 
 /**
@@ -31,12 +32,15 @@ int mainScene(void)
 
     updateAmmos();
     moveCar(scene->cars , scene->polygonList);
-
+    checkCarCheckPoint(scene->cars , scene->course);
+    updatePlace();
 
     updateCamera(scene->myCar , scene->camera);
     draw(scene->camera);
 
     updateGuns(scene->cars);
+    //printf("next point : %f , %f , %f\n" , scene->myCar->nextCheckPoint->coord.x , scene->myCar->nextCheckPoint->coord.y , scene->myCar->nextCheckPoint->coord.z);
+    printf("順位: %d\n" , scene->myCar->place);
 
 
 
@@ -57,25 +61,46 @@ int setupScene(void)
     scene->UIList = createList();
     scene->ammoList = createList();
     register_ammoList(scene->ammoList);
+    scene->course = createCourse(&(scene->checkPointPlaneZero) , &(scene->checkPointZero));
     scene->camera = (Camera*)malloc(sizeof(Camera));
     scene->camera->pos = (Vec3f){0.0f,0.0f,0.0f};
     scene->camera->orientation = (Quaternion){0.0f,0.0f,0.0f,0.0f};
-    myGameManager.UI = NULL;
+    scene->myCar = NULL;
+    scene->goaledPlayerNum = 0;
+
+
 
     myGameManager.scene = scene;
     myGameManager.sceneID = Scene_Main;
+
+    #ifdef DEGUG_3DE
     myGameManager.myID = 0;
+    myGameManager.playerNum = 3;
+    #endif
 
     scene->myCar = NULL;
 
     //createRectangler((Vec3f){0.0f,0.0f,0.0f} , (Vec3f){1.0f,1.0f,1.0f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 0 , 0 , scene->polygonList);
-    scene->myCar = createCar(scene->cars , 0 , (Vec3f){0.0f,3.0f,0.0f} , Pistol);
-    createCar(scene->cars , 1 , (Vec3f){0.0f,5.0f,0.0f} , Pistol);
-    createCar(scene->cars , 2 , (Vec3f){0.0f,7.0f,0.0f} , Pistol);
+    scene->myCar = createCar(scene->cars , 0 , (Vec3f){0.0f,3.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
+    createCar(scene->cars , 1 , (Vec3f){0.0f,5.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
+    createCar(scene->cars , 2 , (Vec3f){0.0f,7.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
     createPlane4((Vec3f){-5.0f,-0.1f,5.0f} , 20.0f , 20.0f , (Vec3f){0.0f,1.0f,0.0f} , 90 , 0 , 0 , PT_PLANE4 , scene->polygonList);
     createRectangler((Vec3f){-3.0f , 0.0f , 0.0f} , (Vec3f){1.0f , 1.0f , 1.0f} , (Vec3f){0.0f , 0.0f , 1.0f} , 0 , 0 , 30 , scene->polygonList);
 
+    
+    //Polygon *obj = createObj("assets/models/coco.obj" , "assets/models/coco.png" , (Vec3f){0.0f,0.0f,0.0f} , (Vec3f){1.5f,1.5f,1.5f} , 0 , 0 , 0 , scene->polygonList);
+
+    //if (obj == NULL) 
+    //printf("load obj error\n");
+    
+
+    setupSceneLate();
     return 0;
+}
+
+int setupSceneLate(void)
+{
+    carPlaceAlgorithmSetup();
 }
 
 int destroyScene(void)

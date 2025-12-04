@@ -1,10 +1,11 @@
 #include "client.h"
 
-Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind)
+Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *nextPlaneZero , CheckPoint *nextCheckPointZero)
 {
     Car *car = (Car *)malloc(sizeof(Car));
     car->id = id;
     car->center = coord;
+    car->preCenter = coord;
     Vec3f color = (Vec3f){1.0f,0.0f,0.0f};
     switch (id)
     {
@@ -39,6 +40,12 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind)
     car->speed = 0.0f;
     car->gun = createGun(kind);
     addListNode(list , car , NULL);
+
+    car->rapNum = 0;
+    car->checkPointNum = 0;
+    car->nextPlane = nextPlaneZero;
+    car->nextCheckPoint = nextCheckPointZero;
+
     return car;
 }
 
@@ -120,6 +127,7 @@ void moveCar(List *carList , List *PolygonList)
     foreach(node , carList){
         Car *car = ((Car *)node->data);
         Rectangler *r = car->collisionBox->data.rectangler;
+        car->preCenter = car->center;
 
         updateCarCenter(car);
 
@@ -155,7 +163,6 @@ void moveCar(List *carList , List *PolygonList)
             car->preCoordOfVertexs[i] = car->collisionBox->data.rectangler->vertex[i];
         }
     }
-
 }
 
 //void destroyCar(Car *car)

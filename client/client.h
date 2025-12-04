@@ -20,6 +20,13 @@ struct obj_t;
 typedef struct obj_t Obj;
 struct car_t;
 typedef struct car_t Car;
+struct course_t;
+typedef struct course_t Course;
+struct checkPoint_t;
+typedef struct checkPoint_t CheckPoint;
+
+
+
 
 
 
@@ -105,6 +112,10 @@ typedef struct {
     List *ammoList;     //弾薬のリスト
     Camera *camera;     //カメラ
     Car *myCar;         //自分の操作する車
+    Course *course;     //コースの構造体
+    Polygon *checkPointPlaneZero;   //最初のチェックポイントの平面
+    CheckPoint *checkPointZero;     //最初のチェックポイントの座標
+    int goaledPlayerNum;            //ゴールしたプレイヤーの数
 }MainScene;
 
 /**
@@ -158,13 +169,33 @@ typedef struct car_t
     Polygon *collisionBox;      //当たり判定の直方体
     Obj *model;                 //3Dモデル
     Vec3f center;               //中心座標
+    Vec3f preCenter;            //1フレーム前の中心座標
     Vec3f velocity;             //速度
     Vec3f direction;            //方向ベクトル
     Vec3f preCoordOfVertexs[8]; //1フレーム前の各頂点の座標
     float hp;                   //HP
     float speed;                //スピード(UI専用)
+    int place;                  //順位
     Gun *gun;                   //所持する銃
+    int rapNum;                 //周回数
+    int checkPointNum;          //次のチェックポイント
+
+    Polygon *nextPlane;         //次のチェックポイントの平面
+    CheckPoint *nextCheckPoint; //次のチェックポイントの座標
 }Car;
+
+typedef struct checkPoint_t{
+    Vec3f coord;
+    Vec3f normal;
+}CheckPoint;
+
+typedef struct course_t{
+    Polygon *courseModel;           //コースのモデル
+    List *courseCollision;          //コースのあたり判定のリスト
+    List *checkPointPlaneList;      //チェックポイントの平面のリスト
+    List *checkPointPointList;      //チェックポイントのリスト
+    int checkPointNum;              //チェックポイントの数
+}Course;
 
 
 
@@ -227,7 +258,7 @@ void updateCamera(Car *car , Camera *camera);
 void collisionCars(List *carList);
 
 /* car.c */
-Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind);
+Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *nextPlaneZero , CheckPoint *nextCheckPointZero);
 void displayCars(List *list);
 void moveCar(List *carList , List *PolygonList);
 //void destroyCar(Car *car);
@@ -241,3 +272,9 @@ void updateAmmos(void);
 void destroyAmmo(Ammo *ammo);
 void displayAmmos(void);
 void updateGuns(List *carList);
+
+/* course_manager.h */
+Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero);
+void checkCarCheckPoint(List *carList , Course *course);
+void carPlaceAlgorithmSetup(void);
+void updatePlace(void);
