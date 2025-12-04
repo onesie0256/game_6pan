@@ -427,11 +427,17 @@ Polygon* createObj(const char* obj_filename , const char* texture_filename , Vec
 
     loadOBJ(obj_filename , texture_filename , obj);
 
-    SDL_Surface *surface = IMG_Load(texture_filename);
+    SDL_Surface *surfaceRaw = IMG_Load(texture_filename);
 
-    if (!surface) {
+    if (!surfaceRaw) {
         printf("IMG_Load error: %s\n", IMG_GetError());
         free(obj);
+        return NULL;
+    }
+
+    SDL_Surface *surface = SDL_ConvertSurfaceFormat(surfaceRaw, SDL_PIXELFORMAT_RGBA32, 0);
+    if (!surface) {
+        printf("SDL_ConvertSurfaceFormat error: %s\n", SDL_GetError());
         return NULL;
     }
 
@@ -628,7 +634,7 @@ void displayObj(Obj *obj)
     glTexCoordPointer(2 , GL_FLOAT , 0 , &(obj->texCoordAry[0]));
     glNormalPointer(GL_FLOAT , 0 , &(obj->normAry[0]));
 
-    glDrawArrays(GL_QUADS , 0 , obj->vertAryNum / 3);
+    glDrawArrays(GL_TRIANGLES , 0 , obj->vertAryNum / 3);
 
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);

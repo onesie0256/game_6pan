@@ -1,0 +1,161 @@
+#include "client.h"
+
+#define MAX_PLAYER 10
+
+Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero);
+void checkCarCheckPoint(List *carList , Course *course);
+void destroyCourse(Course *course);
+Polygon *set_checkPointPlaneZero(void);
+CheckPoint *set_checkPointZero(void);
+void carPlaceAlgorithmSetup(void);
+
+static MainScene *scene = NULL;
+static int placeAry[MAX_PLAYER];
+static Car *carAry[MAX_PLAYER];
+
+
+Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero)
+{
+    Course *course = (Course *)malloc(sizeof(Course));
+    course->courseModel = NULL;
+    course->courseCollision = createList();
+    course->checkPointPlaneList = createList();
+    course->checkPointPointList = createList();
+    course->checkPointNum = 0;
+
+    Polygon *p = createPlane4((Vec3f){0.0f,-1.0f,0.0f} , 20.0f , 20.0f , (Vec3f){0.0f,1.0f,0.0f} , 0 , 0 , 0 , PT_PLANE4 , NULL);
+    addListNode(course->checkPointPlaneList , p , "0");
+    course->checkPointNum++;
+
+    Polygon *p2 = createPlane4((Vec3f){0.0f,-1.0f,-3.0f} , 20.0f , 20.0f , (Vec3f){1.0f,0.0f,0.0f} , 0 , 0 , 0 , PT_PLANE4 , NULL);
+    addListNode(course->checkPointPlaneList , p2 , "1");
+    course->checkPointNum++;
+
+    ListNode *node;
+    int id = 0;
+    foreach(node , course->checkPointPlaneList){
+        Polygon *p = (Polygon *)node->data;
+        Plane4 *plane = p->data.plane4;
+        
+        CheckPoint *cp = (CheckPoint *)malloc(sizeof(CheckPoint));
+
+        cp->coord = vecMulSca(vecAdd(plane->vertex[0] , plane->vertex[2]) , 0.5f);
+        cp->normal = vecMulSca(plane->normal , -1.0);
+        char tmp[20] = {0};
+        sprintf(tmp , "%d" , id);
+        addListNode(course->checkPointPointList , cp , tmp);
+
+        if (id == 0){
+            *checkPointPlaneZero = p;
+            *checkPointZero = cp;
+        }
+        id++;
+    }
+    
+    return course;
+}
+
+/**
+ * 
+ * @details アルゴリズム:チェックポイントの座標をp,いまフレームの車の中心座表をB,前フレームの車の中心座表をA,チェックポイント平面の法線ベクトルをCとすると,
+ */
+SDL_bool checkCarPoint(Car *car , CheckPoint *cp , Polygon *plane_)
+{
+    Plane4 *plane = plane_->data.plane4;
+    Vec3f pa = vecSub(car->preCenter , cp->coord);
+    Vec3f pb = vecSub(car->center , cp->coord);
+    Vec3f C = cp->normal;
+
+
+    if (isPointOnPlane4_(car->center , plane) && (vecMulIn(pa , C) < 0) && (vecMulIn(pb , C) > 0)){
+        #ifdef DEGUG_3DE
+            printf("No.%d : チェックポイントを%d通過\n" , car->id , car->checkPointNum);
+        #endif
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+void checkCarCheckPoint(List *carList , Course *course)
+{
+    ListNode *node;
+    foreach(node , carList){
+        Car *car = (Car *)node->data;
+        if (!checkCarPoint(car , car->nextCheckPoint , car->nextPlane)) continue;
+        char id_char[20] = {0};
+        car->checkPointNum++;
+        if (car->checkPointNum >= course->checkPointNum){
+            car->checkPointNum = 0;
+            car->rapNum++;
+
+            car->nextPlane = scene->checkPointPlaneZero;
+            car->nextCheckPoint = scene->checkPointZero;
+
+
+            #ifdef DEGUG_3DE
+            printf("No.%d : %d周完了\n" , car->id , car->rapNum);
+            #endif
+        }
+
+        sprintf(id_char , "%d" , car->checkPointNum);
+        ListNode *nodeNextPlene = serchListNode(course->checkPointPlaneList , id_char);
+        if (nodeNextPlene == NULL) continue;
+        car->nextPlane = (Polygon *)nodeNextPlene->data;
+        
+
+        ListNode *nodeNextCheckPoint = serchListNode(course->checkPointPointList , id_char);
+        if (nodeNextCheckPoint == NULL) continue;
+        car->nextCheckPoint = (CheckPoint *)nodeNextCheckPoint->data;
+        
+    }
+}
+
+void carPlaceAlgorithmSetup(void)
+{
+    if (scene == NULL) scene = (MainScene *)myGameManager.scene;
+
+    for (int i = 0 ; i < MAX_PLAYER ; i++){
+        placeAry[i] = i;
+    }
+
+    ListNode *node;
+    foreach(node , scene->cars){
+        Car *car = (Car *)node->data;
+        carAry[car->id] = car;
+    }
+}
+
+int comp_place(const void *a , const void *b)
+{
+    Car *carA = carAry[*(int *)a];
+    Car *carB = carAry[*(int *)b];
+
+    if (carA->rapNum < carB->rapNum) return 1;
+    if (carA->rapNum > carB->rapNum) return -1;
+    
+    if (carA->checkPointNum < carB->checkPointNum) return 1;
+    if (carA->checkPointNum > carB->checkPointNum) return -1;
+
+    Vec3f AtoP = vecSub(carA->center , carA->nextCheckPoint->coord);
+    Vec3f BtoP = vecSub(carB->center , carB->nextCheckPoint->coord);
+
+    float lenA = vecLength(AtoP);
+    float lenB = vecLength(BtoP);
+
+    lenA = vecMulIn(AtoP , carA->nextCheckPoint->normal);
+    lenB = vecMulIn(BtoP , carB->nextCheckPoint->normal);
+
+    if (lenA < lenB) return 1;
+    if (lenA > lenB) return -1;
+
+    return 0;
+}
+void updatePlace(void)
+{
+    qsort(&placeAry[scene->goaledPlayerNum] , (size_t)(myGameManager.playerNum - scene->goaledPlayerNum) , sizeof(int) , comp_place);
+
+    for (int i = scene->goaledPlayerNum ; i < myGameManager.playerNum ; i++){
+        Car *car = carAry[placeAry[i]];
+        car->place = i + 1;
+    }
+}

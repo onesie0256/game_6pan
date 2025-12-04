@@ -119,6 +119,7 @@ int draw(Camera *camera)
         displayPolygons(scene->polygonList);
         displayCars(scene->cars);
         displayAmmos();
+        displayPolygons(scene->course->checkPointPlaneList);
     }
 
 
