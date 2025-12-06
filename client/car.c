@@ -1,34 +1,64 @@
 #include "client.h"
 
+/**
+ * @brief Car構造体を作成する
+ * 
+ * @param list Carを格納するリスト
+ * @param id id
+ * @param coord 初期座標
+ * @param kind 銃の種類
+ * @param nextPlaneZero 最初のチェックポイントのポリゴン
+ * @param nextCheckPointZero 最初のチェックポイントの構造体
+ * 
+ * @return 車の構造体へのポインタ
+ */
 Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *nextPlaneZero , CheckPoint *nextCheckPointZero)
 {
     Car *car = (Car *)malloc(sizeof(Car));
     car->id = id;
     car->center = coord;
     car->preCenter = coord;
-    Vec3f color = (Vec3f){1.0f,0.0f,0.0f};
+    Vec3f color = (Vec3f){1.0f , 0.0f , 0.0f};
     switch (id)
     {
-    case 1:
-        color = (Vec3f){0.0f,0.0f,1.0f};
+    case 0:
+        color = (Vec3f){1.0f , 0.0f , 0.0f};
         break;
-
+    case 1:
+        color = (Vec3f){0.0f , 0.0f , 1.0f};
+        break;
     case 2:
-        color = (Vec3f){0.0f,1.0f,0.0f};
+        color = (Vec3f){0.0f , 0.0f , 0.5f};
         break;
 
     case 3:
-        color = (Vec3f){1.0f,1.0f,0.0f};
+        color = (Vec3f){1.0f , 1.0f , 0.0f};
         break;
 
     case 4:
-        color = (Vec3f){1.0f,0.0f,1.0f};
+        color = (Vec3f){0.8627f , 0.0784f , 0.2352f};
         break;
 
     case 5:
-        color = (Vec3f){0.0f,1.0f,1.0f};
+        color = (Vec3f){0.5411f , 0.1686f , 0.8862f};
         break;
     
+    case 6:
+        color = (Vec3f){0.0f , 1.0f , 0.0f};
+        break;
+        
+    case 7:
+        color = (Vec3f){1.0f , 0.5f , 0.0f};
+        break;
+
+    case 8:
+        color = (Vec3f){0.4117f , 0.4117f , 0.4117f};
+        break;
+
+    case 9:
+        color = (Vec3f){0.9411f , 0.0f , 0.0f};
+        break;
+
     default:
         break;
     }
@@ -38,7 +68,7 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     memcpy(car->preCoordOfVertexs , car->collisionBox->data.rectangler->vertex , sizeof(Vec3f)*8);
     car->hp = 100.0f;
     car->speed = 0.0f;
-    car->gun = createGun(kind);
+    car->gun = createGun(kind , id);
     addListNode(list , car , NULL);
 
     car->rapNum = 0;
@@ -49,12 +79,25 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     return car;
 }
 
+/**
+ * @brief 車の中心座標を更新する
+ * @param car 車の構造体
+ * 
+ * @return なし
+ */
 void updateCarCenter(Car *car)
 {
     Rectangler *r = car->collisionBox->data.rectangler;
     car->center = vecMulSca(vecAdd(r->vertex[0] , r->vertex[7]) , 0.50f);
 }
 
+/**
+ * @brief リストの中の全ての車を表示する
+ * 
+ * @param list 車が格納されたリスト構造体
+ * 
+ * @return なし
+ */
 void displayCars(List *list)
 {
     ListNode *node;
@@ -65,6 +108,14 @@ void displayCars(List *list)
     }
 }
 
+/**
+ * @brief 車をヨー角で回転させる
+ * 
+ * @param car 車の構造体
+ * @param deg 回転角
+ * 
+ * @return なし
+ */
 void rotateCar(Car *car , int deg)
 {
     Rectangler *r = car->collisionBox->data.rectangler;
@@ -75,12 +126,26 @@ void rotateCar(Car *car , int deg)
 
 #define CURVE_DEGREE 1
 
+/**
+ * @brief 車を入力情報に従って移動させる
+ * @param car 車
+ * @param inputAry 廃止予定
+ * 
+ * @return なし
+ */
 void forwardCar(Car *car , SDL_bool inputAry[])
 {
     if (car->id != 0) return;
+
+    int curve_deg = CURVE_DEGREE;
+
+    if (inputAry[K_SHIFT]){
+        curve_deg *= 2;
+    }
+
     if (inputAry[K_LEFT]){
-        car->direction = rotateXYZ(car->direction , 0 , 0 , CURVE_DEGREE);
-        rotateCar(car , CURVE_DEGREE);
+        car->direction = rotateXYZ(car->direction , 0 , 0 , curve_deg);
+        rotateCar(car , curve_deg);
         /*
         if (inputAry[K_SHIFT]){
             car->direction = rotateXYZ(car->direction , 0 , 0 , CURVE_DEGREE);
@@ -90,8 +155,8 @@ void forwardCar(Car *car , SDL_bool inputAry[])
     }
 
     if (inputAry[K_RIGHT]){
-        car->direction = rotateXYZ(car->direction , 0 , 0 , -CURVE_DEGREE);
-        rotateCar(car , -CURVE_DEGREE);
+        car->direction = rotateXYZ(car->direction , 0 , 0 , -curve_deg);
+        rotateCar(car , -curve_deg);
         /*
         if (inputAry[K_SHIFT]){
             car->direction = rotateXYZ(car->direction , 0 , 0 , CURVE_DEGREE);
@@ -113,6 +178,12 @@ void forwardCar(Car *car , SDL_bool inputAry[])
     }
 }
 
+/**
+ * @brief 車を指定の座標に移動させる
+ * 
+ * @param car 車
+ * @return なし
+ */
 void teleportCar(Car *car , Vec3f coord)
 {
     Vec3f delta = vecSub(coord , car->center);
@@ -121,6 +192,13 @@ void teleportCar(Car *car , Vec3f coord)
     updateCarCenter(car);
 }
 
+/**
+ * @brief リスト内全ての車に移動・物理演算を行う
+ * 
+ * @param carList 車のリスト
+ * @param PolygonList 衝突判定させるポリゴンのリスト
+ * @return なし
+ */
 void moveCar(List *carList , List *PolygonList)
 {
     ListNode *node;
@@ -165,4 +243,12 @@ void moveCar(List *carList , List *PolygonList)
     }
 }
 
-//void destroyCar(Car *car)
+void damageCar(Car *car , float damage)
+{
+    car->hp -= damage;
+    if (car->hp <= 0.0f){
+        car->hp = 100.0f;
+        car->velocity = vecMulSca(car->velocity , 0.3f);
+        car->velocity.y += 8.0f;
+    }
+}

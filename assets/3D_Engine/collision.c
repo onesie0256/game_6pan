@@ -24,6 +24,8 @@ void collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , 
             collisionRectangler(polygon->data.rectangler , rectangler , preCoordOfVertex , velocity);
             break;
         
+        case PT_PLANE3:
+            break;
         default:
             break;
         }
@@ -133,6 +135,22 @@ SDL_bool collisionRectangler(Rectangler *rectangler_s , Rectangler *rectangler_d
             Vec3f moveVec = vecMulSca(n , l);
             moveRectacgler(rectangler_d , moveVec , 1.0f);
             *velocity = calcCollisionVel(*velocity , n);
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+SDL_bool collisionPlane3(Rectangler *rectangler , Plane3 *plane , Vec3f preCoordOfVertex[])
+{
+    Vec3f v = plane->vertex[0];
+    Vec3f n = plane->normal;
+    for (int i = 0 ; i < 8 ; i++){
+        if (isPointOnPlane(preCoordOfVertex[i] , v , n) && !isPointOnPlane(rectangler->vertex[i] , v , n) && isPointOnPlane3(rectangler->vertex[i] , plane->vertex[0] , plane->vertex[1] , plane->vertex[2] , plane->normal)){
+            Vec3f H; float l;
+            l = lengthPointToPlaneAndH(&H , v , n , rectangler->vertex[i]);
+            Vec3f moveVec = vecMulSca(n , l);
+            moveRectacgler(rectangler , moveVec , 1.0f);
             return SDL_TRUE;
         }
     }

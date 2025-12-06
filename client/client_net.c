@@ -16,6 +16,7 @@
 
 static int sockfd = -1;
 
+/*
 int connectServer(char *serverName)
 {
     struct sockaddr_in server_addr;
@@ -51,7 +52,7 @@ int connectServer(char *serverName)
     fprintf(stderr,"Connected\n");
     return 1;
 }
-
+*/
 
 
 /**
@@ -59,6 +60,7 @@ int connectServer(char *serverName)
  * @param container 送信する NetworkContainer 構造体
  * @return 成功: 1, 失敗: 0
  */
+/*
 int sendData(NetworkContainer *container)
 {
     if (sockfd < 0) return 0;
@@ -71,12 +73,14 @@ int sendData(NetworkContainer *container)
 
     return 1;
 }
+*/
 
 /**
  * @brief データ受信
  * @param container 受信先 NetworkContainer 構造体
  * @return 成功: 1, 失敗または切断: 0
  */
+/*
 int recvData(NetworkContainer *container)
 {
     if (sockfd < 0) return 0;
@@ -92,8 +96,9 @@ int recvData(NetworkContainer *container)
 
     return 1;
 }
+*/
 
-
+/*
 void CloseSoc(void)
 {
 NetworkContainer pack;
@@ -107,5 +112,4 @@ printf("...Connection closed\n");
 close(sockfd);
 
 }
-
-
+*/

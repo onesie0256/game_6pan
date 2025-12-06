@@ -38,6 +38,7 @@ typedef enum{
     PT_RECTANGLER, //直方体
     PT_SPHERE,     //球体
     PT_PLANE4,      //4つの頂点からなる平面
+    PT_PLANE3,      //3つの頂点からなる平面
     PT_DISC,        //円盤
     PT_OBJ,         //.obj形式
     PT_CYLINDER    //円錐
@@ -121,6 +122,18 @@ typedef struct{
     SDL_bool isBallOnPlane; //ボールがこの平面の表側にあるか裏側にあるか
 }Plane4;
 
+typedef struct {
+    Vec3f vertex[3];              //頂点
+    Vec3f normal;                 //法線
+    Vec3f color;            //色
+
+    float vertAry[9];
+    float normAry[3];
+    float colorAry[9];
+
+    PlaneType type;         //タイプ
+}Plane3;
+
 /**
  * @brief 円盤の構造体
  */
@@ -196,6 +209,7 @@ typedef union {
     Rectangler *rectangler;
     Sphere *sphere;
     Plane4 *plane4;
+    Plane3 *plane3;
     Disc *disc;
     Obj *obj;
     Cylinder *cylinder;

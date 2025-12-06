@@ -74,6 +74,7 @@ typedef struct {
 
 typedef struct {
     GunKinds kind;                  //銃の種類
+    int carId;                      //所属する車
     int bulletNum;                  //残り弾薬数
     const int maxBulletNum;         //最大弾薬数
     const int reloadFrame;          //リロードにかかるフレーム
@@ -83,6 +84,7 @@ typedef struct {
     int fireCoolFrameNow;           //現在の発射のクールタイム
     float ammoSpeed;                //弾薬の速度
     int maxAmmoLivingFrame;         //弾薬の残存フレーム
+    float ammoRadius;               //弾薬の半径
     Obj *model;                     //3Dモデル
 }Gun;
 
@@ -97,6 +99,8 @@ typedef struct {
     Vec3f center;                   //中心座標
     Vec3f preCoord;                 //1フレーム前の座標
     char id[6];                     //id
+    int carId;                      //所属する車
+    float radius;                   //半径
 }Ammo;
 // 武器情報配列を宣言
 extern const WeaponInfo weapon_info[WEAPON_TYPE_MAX];
@@ -262,16 +266,18 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
 void displayCars(List *list);
 void moveCar(List *carList , List *PolygonList);
 //void destroyCar(Car *car);
+void damageCar(Car *car , float damage);
 
 /* gun.c */
 void register_ammoList(List *list);
-Gun* createGun(GunKinds kind);
+Gun* createGun(GunKinds kind , int carId);
 void fireGun(Car *car , Gun *gun);
 Ammo* createAmmo(Gun *gun , Vec3f coord , Vec3f direct);
 void updateAmmos(void);
 void destroyAmmo(Ammo *ammo);
 void displayAmmos(void);
 void updateGuns(List *carList);
+void collisionAmmoCars(List *carList);
 
 /* course_manager.h */
 Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero);

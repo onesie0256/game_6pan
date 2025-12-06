@@ -5,6 +5,8 @@ int setupScene(void);
 int setupSceneLate(void);
 int destroyScene(void);
 
+static Car *c2 = NULL;
+
 /**
  * @brief メインゲーム
  */
@@ -32,6 +34,7 @@ int mainScene(void)
 
     updateAmmos();
     moveCar(scene->cars , scene->polygonList);
+    collisionAmmoCars(scene->cars);
     checkCarCheckPoint(scene->cars , scene->course);
     updatePlace();
 
@@ -40,13 +43,17 @@ int mainScene(void)
 
     updateGuns(scene->cars);
     //printf("next point : %f , %f , %f\n" , scene->myCar->nextCheckPoint->coord.x , scene->myCar->nextCheckPoint->coord.y , scene->myCar->nextCheckPoint->coord.z);
-    printf("順位: %d\n" , scene->myCar->place);
+    //printf("順位: %d\n" , scene->myCar->place);
+    //printf("c2.hp: %f\n" , c2->hp);
+    printf("弾数:%d\n" , scene->myCar->gun->bulletNum);
 
 
 
     if (endFlag){
         destroyScene();
         setupFlag = SDL_TRUE;
+
+        SDL_Delay(100);
         return 0;
     }
 
@@ -68,6 +75,7 @@ int setupScene(void)
     scene->myCar = NULL;
     scene->goaledPlayerNum = 0;
 
+    SDL_FillRect(myGameManager.UI , NULL , SDL_MapRGBA(myGameManager.UI->format , 0 , 0 , 0 , 0));
 
 
     myGameManager.scene = scene;
@@ -75,15 +83,15 @@ int setupScene(void)
 
     #ifdef DEGUG_3DE
     myGameManager.myID = 0;
-    myGameManager.playerNum = 3;
+    myGameManager.playerNum = 2;
     #endif
 
     scene->myCar = NULL;
 
     //createRectangler((Vec3f){0.0f,0.0f,0.0f} , (Vec3f){1.0f,1.0f,1.0f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 0 , 0 , scene->polygonList);
-    scene->myCar = createCar(scene->cars , 0 , (Vec3f){0.0f,3.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
-    createCar(scene->cars , 1 , (Vec3f){0.0f,5.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
-    createCar(scene->cars , 2 , (Vec3f){0.0f,7.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
+    scene->myCar = createCar(scene->cars , 0 , (Vec3f){0.0f,3.0f,0.0f} , Sniper , scene->checkPointPlaneZero , scene->checkPointZero);
+    c2 = createCar(scene->cars , 1 , (Vec3f){0.0f,5.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
+    //createCar(scene->cars , 2 , (Vec3f){0.0f,7.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
     createPlane4((Vec3f){-5.0f,-0.1f,5.0f} , 20.0f , 20.0f , (Vec3f){0.0f,1.0f,0.0f} , 90 , 0 , 0 , PT_PLANE4 , scene->polygonList);
     createRectangler((Vec3f){-3.0f , 0.0f , 0.0f} , (Vec3f){1.0f , 1.0f , 1.0f} , (Vec3f){0.0f , 0.0f , 1.0f} , 0 , 0 , 30 , scene->polygonList);
 

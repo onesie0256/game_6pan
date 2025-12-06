@@ -13,7 +13,11 @@ static MainScene *scene = NULL;
 static int placeAry[MAX_PLAYER];
 static Car *carAry[MAX_PLAYER];
 
-
+/**
+ * @brief コースの構造体を作成する
+ * @param checkPointPlaneZero 最初のチェックポイントの平面のポインタへのポインタ
+ * @param checkPointZero 最初のチェックポイントの構造体のポインタへのポインタ
+ */
 Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero)
 {
     Course *course = (Course *)malloc(sizeof(Course));
@@ -56,8 +60,13 @@ Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero
 }
 
 /**
- * 
+ * @brief 車1つのチェックポイントを確認する
  * @details アルゴリズム:チェックポイントの座標をp,いまフレームの車の中心座表をB,前フレームの車の中心座表をA,チェックポイント平面の法線ベクトルをCとすると,
+ * @param car 車の構造体
+ * @param cp 車の次のチェックポイントへのポインタ
+ * @param plane_ 車の次のチェックポイントの平面のポリゴンへのポインタ
+ * 
+ * @return 車がチェックポイントを通過したらSDL_True,そうでないならSDL_False
  */
 SDL_bool checkCarPoint(Car *car , CheckPoint *cp , Polygon *plane_)
 {
@@ -76,6 +85,13 @@ SDL_bool checkCarPoint(Car *car , CheckPoint *cp , Polygon *plane_)
     return SDL_FALSE;
 }
 
+/**
+ * @brief リスト内全ての車のチェックポイントを確認する
+ * 
+ * @param carList 車のリスト
+ * @param corse コースの構造体
+ * 
+ */
 void checkCarCheckPoint(List *carList , Course *course)
 {
     ListNode *node;
@@ -110,6 +126,10 @@ void checkCarCheckPoint(List *carList , Course *course)
     }
 }
 
+/**
+ * @brief 車の順位決定アルゴリズムのセットアップ,updatePlace()を呼び出す前にこれを呼び出す
+ * 
+ */
 void carPlaceAlgorithmSetup(void)
 {
     if (scene == NULL) scene = (MainScene *)myGameManager.scene;
@@ -125,6 +145,11 @@ void carPlaceAlgorithmSetup(void)
     }
 }
 
+/**
+ * @brief updatePlace()内部で使用するqsortの比較関数,順位決定アルゴリズムの中核
+ * 
+ * @details 車のラップ数,チェックポイントの数で比較を行い,それで順位が決まらなかった場合は次のチェックポイントまでの距離とチェックポイントの法線の内積で決定する
+ */
 int comp_place(const void *a , const void *b)
 {
     Car *carA = carAry[*(int *)a];
@@ -150,6 +175,10 @@ int comp_place(const void *a , const void *b)
 
     return 0;
 }
+
+/**
+ * @brief 全ての車の順位を更新する
+ */
 void updatePlace(void)
 {
     qsort(&placeAry[scene->goaledPlayerNum] , (size_t)(myGameManager.playerNum - scene->goaledPlayerNum) , sizeof(int) , comp_place);

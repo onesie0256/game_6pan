@@ -30,9 +30,6 @@ int main(int argc , char* argv[])
     printf("cannot connect server\n");
   }
   */
-  #ifdef DEGUG_3DE
-  myGameManager.sceneID = Scene_Main;
-  #endif
 
   //ゲームループ
     int endFlag = 1;
