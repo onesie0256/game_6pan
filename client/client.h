@@ -120,6 +120,7 @@ typedef struct {
     Polygon *checkPointPlaneZero;   //最初のチェックポイントの平面
     CheckPoint *checkPointZero;     //最初のチェックポイントの座標
     int goaledPlayerNum;            //ゴールしたプレイヤーの数
+    int sendInputDataPlayerNum;     //入力データを送信するプレイヤーの数
 }MainScene;
 
 /**
@@ -207,10 +208,13 @@ typedef struct course_t{
 int gameLoop(void);
 int mainLoopDelay(void *arg);
 
-/* net.c */
-int connectServer(char *serverName);
-int sendData(NetworkContainer *container);
-int recvData(NetworkContainer *container);
+/* client_net.c */
+void setup_client(char *serverName, uint16_t port); 
+int control_requests();
+void terminate_client();
+void send_input_data(void);
+void receive_input_data(void);
+void send_Quit(void);
 
 /* title_scene.c */
 int titleScene(void);
@@ -267,6 +271,7 @@ void displayCars(List *list);
 void moveCar(List *carList , List *PolygonList);
 //void destroyCar(Car *car);
 void damageCar(Car *car , float damage);
+Car *getCarFromId(List *carList , uint8_t id);
 
 /* gun.c */
 void register_ammoList(List *list);

@@ -59,7 +59,8 @@ int key_func(void *args)
             switch (myGameManager.event.type)
             {
             case SDL_QUIT: //終了処理へ
-                myGameManager.quitRequest = SDL_TRUE;
+                
+                send_Quit();
                 running = 0;
                 break;
 
@@ -159,6 +160,8 @@ int key_func(void *args)
             }
             
         }
+
+        control_requests();
     }
     
     return 0;

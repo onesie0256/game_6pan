@@ -4,6 +4,7 @@ int main_scene(void);
 int setupScene(void);
 int setupSceneLate(void);
 int destroyScene(void);
+int receiveDataThreFunc();
 
 static Car *c2 = NULL;
 
@@ -28,8 +29,23 @@ int mainScene(void)
     if (myGameManager.quitRequest == SDL_TRUE) {
         endFlag = SDL_TRUE;
     }
-    if (myGameManager.keyNow[K_ENTER]){
-        fireGun(scene->myCar , scene->myCar->gun);
+
+    
+    while (scene->sendInputDataPlayerNum != myGameManager.playerNum && myGameManager.quitRequest == SDL_FALSE){
+        ;
+    }
+    send_input_data();
+
+    scene->sendInputDataPlayerNum = 0;
+
+    for (int i = 0 ; i < myGameManager.playerNum ; i++){
+        if (myGameManager.clients[i].keyNow[K_ENTER] == SDL_TRUE){
+            Car *tmp = getCarFromId(scene->cars , i);
+            if (tmp != NULL){
+                fireGun(tmp , tmp->gun);
+            }
+            
+        }
     }
 
     updateAmmos();
@@ -74,6 +90,8 @@ int setupScene(void)
     scene->camera->orientation = (Quaternion){0.0f,0.0f,0.0f,0.0f};
     scene->myCar = NULL;
     scene->goaledPlayerNum = 0;
+    scene->sendInputDataPlayerNum = 0;
+    
 
     SDL_FillRect(myGameManager.UI , NULL , SDL_MapRGBA(myGameManager.UI->format , 0 , 0 , 0 , 0));
 
@@ -89,8 +107,18 @@ int setupScene(void)
     scene->myCar = NULL;
 
     //createRectangler((Vec3f){0.0f,0.0f,0.0f} , (Vec3f){1.0f,1.0f,1.0f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 0 , 0 , scene->polygonList);
+    #ifdef DEGUG_3DE
     scene->myCar = createCar(scene->cars , 0 , (Vec3f){0.0f,3.0f,0.0f} , Sniper , scene->checkPointPlaneZero , scene->checkPointZero);
     c2 = createCar(scene->cars , 1 , (Vec3f){0.0f,5.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
+    #else
+    for (int i = 0 ; i < myGameManager.playerNum ; i++){
+        Car *car = createCar(scene->cars , i , (Vec3f){(float)i, 3.0f , 0.0f} , Shotgun , scene->checkPointPlaneZero , scene->checkPointZero);
+        if (i == myGameManager.myID){
+            scene->myCar = car;
+        }
+    }
+
+    #endif
     //createCar(scene->cars , 2 , (Vec3f){0.0f,7.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
     createPlane4((Vec3f){-5.0f,-0.1f,5.0f} , 20.0f , 20.0f , (Vec3f){0.0f,1.0f,0.0f} , 90 , 0 , 0 , PT_PLANE4 , scene->polygonList);
     createRectangler((Vec3f){-3.0f , 0.0f , 0.0f} , (Vec3f){1.0f , 1.0f , 1.0f} , (Vec3f){0.0f , 0.0f , 1.0f} , 0 , 0 , 30 , scene->polygonList);
@@ -109,6 +137,7 @@ int setupScene(void)
 int setupSceneLate(void)
 {
     carPlaceAlgorithmSetup();
+    send_input_data();
 }
 
 int destroyScene(void)

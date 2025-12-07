@@ -4,32 +4,59 @@ GameManager myGameManager;
 
 SDL_bool init(void);
 
+static uint16_t port = 50100;
+static char clientServerName[MAX_LEN_NAME];
+
 int main(int argc , char* argv[])
 {
-
+  memset(myGameManager.serverName , 0 , MAX_LEN_NAME);
+  
+  #ifdef DEGUG_3D
   //引数チェック
     if(argc == 1){
         char* str_localhost = "localhost";
-    	myGameManager.serverName = str_localhost;
+    	  strcpy(myGameManager.serverName , str_localhost);
     }
     else if(argc == 2){
-    	myGameManager.serverName = argv[1];
+    	strcpy(myGameManager.serverName , argv[1]);
     }
     else{
 		fprintf(stderr, "Usage: %s, Cannot find a Server Name.\n", argv[0]);
 		return -1;
     }
+    #else
+    //コマンドライン引数処理
+  switch (argc) {
+  case 1: //引数なし
+  {
+    char* str_localhost = "localhost";
+    strcpy(myGameManager.serverName , str_localhost);
+  }
+    break;
+  case 2: //サーバ名のみ指定
+    strncpy(myGameManager.serverName, argv[1], MAX_LEN_NAME - 1);
+    clientServerName[MAX_LEN_NAME - 1] = '\0';
+    break;
+  case 3: //サーバ名とポート番号指定
+    strncpy(myGameManager.serverName, argv[1], MAX_LEN_NAME - 1);
+    clientServerName[MAX_LEN_NAME - 1] = '\0';
+    port = (uint16_t)atoi(argv[2]);
+    break;
+  default:
+    fprintf(stderr, "Usage: %s [server name] [port number]\n", argv[0]);
+    return -1;
+  }
+  #endif
 
   if(!init()) return 1; //初期化
+
+  setup_client(myGameManager.serverName, port);
+  printf("connected server %s %d\n" , myGameManager.serverName , port);
 
   createThread(); //スレッド作成する
 
   //サーバーへ接続
-  /*
-  if(connectServer(myGameManager.serverName) == 0){
-    printf("cannot connect server\n");
-  }
-  */
+  
 
   //ゲームループ
     int endFlag = 1;
@@ -37,6 +64,8 @@ int main(int argc , char* argv[])
       endFlag = gameLoop();
     }
   
+  //終了処理
+  terminate_client();
 
   printf("good job\n");
   closeWindow();

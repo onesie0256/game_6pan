@@ -69,7 +69,10 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     car->hp = 100.0f;
     car->speed = 0.0f;
     car->gun = createGun(kind , id);
-    addListNode(list , car , NULL);
+
+    char id_char[6] = {0};
+    sprintf(id_char , "%d" , id);
+    addListNode(list , car , id_char);
 
     car->rapNum = 0;
     car->checkPointNum = 0;
@@ -133,11 +136,12 @@ void rotateCar(Car *car , int deg)
  * 
  * @return なし
  */
-void forwardCar(Car *car , SDL_bool inputAry[])
+void forwardCar(Car *car)
 {
     if (car->id != 0) return;
 
     int curve_deg = CURVE_DEGREE;
+    SDL_bool *inputAry = myGameManager.clients[car->id].keyNow;
 
     if (inputAry[K_SHIFT]){
         curve_deg *= 2;
@@ -209,7 +213,7 @@ void moveCar(List *carList , List *PolygonList)
 
         updateCarCenter(car);
 
-        forwardCar(car , myGameManager.keyNow);
+        forwardCar(car);
 
         //car->velocity.x = -1.0f;
         car->velocity = vecAdd(car->velocity , (Vec3f){0.0f,-0.1f,0.0f});
@@ -252,3 +256,18 @@ void damageCar(Car *car , float damage)
         car->velocity.y += 8.0f;
     }
 }
+
+Car *getCarFromId(List *carList , uint8_t id)
+{
+    ListNode *node;
+    char id_char[6] = {0};
+    sprintf(id_char , "%d" , id);
+    foreach(node , carList){
+        if (strcmp(node->key , id_char) == 0){
+            return (Car *)node->data;
+        }
+    }
+    return NULL;
+}
+
+
