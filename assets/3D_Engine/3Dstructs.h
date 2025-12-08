@@ -38,6 +38,7 @@ typedef enum{
     PT_RECTANGLER, //直方体
     PT_SPHERE,     //球体
     PT_PLANE4,      //4つの頂点からなる平面
+    PT_PLANE3,      //3つの頂点からなる平面
     PT_DISC,        //円盤
     PT_OBJ,         //.obj形式
     PT_CYLINDER    //円錐
@@ -121,6 +122,18 @@ typedef struct{
     SDL_bool isBallOnPlane; //ボールがこの平面の表側にあるか裏側にあるか
 }Plane4;
 
+typedef struct {
+    Vec3f vertex[3];              //頂点
+    Vec3f normal;                 //法線
+    Vec3f color;            //色
+
+    float vertAry[9];
+    float normAry[3];
+    float colorAry[9];
+
+    PlaneType type;         //タイプ
+}Plane3;
+
 /**
  * @brief 円盤の構造体
  */
@@ -138,23 +151,23 @@ typedef struct{
  * @brief objファイル
  */
 typedef struct obj_t{
-    Vec3f vertex[30000];    //頂点
+    Vec3f vertex[1000000];    //頂点
     int vertNum;            //頂点数
 
-    float vertAry[30000];   //頂点(openGL方式)
+    float vertAry[1000000];   //頂点(openGL方式)
     int vertAryNum;         //頂点数(openGL方式)
 
-    Vec3f normal[30000];    //法線ベクトル
+    Vec3f normal[1000000];    //法線ベクトル
     int normalNum;          //法線ベクトル数
 
-    float normAry[30000];   //法線ベクトル
+    float normAry[1000000];   //法線ベクトル
     int normAryNum;         //法線ベクトル
 
 
-    Vec3f texCoord[30000];  //テクスチャマッピング
+    Vec3f texCoord[1000000];  //テクスチャマッピング
     int texCoordNum;        //テクスチャマッピング数
 
-    float texCoordAry[30000];   //テクスチャマッピング
+    float texCoordAry[1000000];   //テクスチャマッピング
     int texCoordAryNum;     //テクスチャマッピング数
 
     GLuint texture;         //テクスチャID
@@ -196,6 +209,7 @@ typedef union {
     Rectangler *rectangler;
     Sphere *sphere;
     Plane4 *plane4;
+    Plane3 *plane3;
     Disc *disc;
     Obj *obj;
     Cylinder *cylinder;

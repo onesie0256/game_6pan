@@ -377,6 +377,47 @@ Polygon* createPlane4(Vec3f coord , float sizeX , float sizeY , Vec3f color , in
     return rtn;
 }
 
+Polygon* createPlane3(Vec3f v0 , Vec3f v1 , Vec3f v2 , Vec3f color , List *list)
+{
+    Polygon *rtn = (Polygon *)malloc(sizeof(Polygon));
+    Plane3 *p = (Plane3 *)malloc(sizeof(Plane3));
+
+    p->vertex[0] = v0;
+    p->vertex[1] = v1;
+    p->vertex[2] = v2;
+
+    for (int i = 0 ; i < 3 ; i++){
+        p->vertAry[i*3]   = p->vertex[i].x;
+        p->vertAry[i*3+1] = p->vertex[i].y;
+        p->vertAry[i*3+2] = p->vertex[i].z;
+    }
+
+    Vec3f v0v1 = vecSub(v1 , v0);
+    Vec3f v0v2 = vecSub(v2 , v0);
+
+    p->normal = vecMulOut(v0v1 , v0v2);
+
+    p->normAry[0] = p->normal.x;
+    p->normAry[1] = p->normal.y;
+    p->normAry[2] = p->normal.z;
+
+    p->color = color;
+
+    for (int i = 3; i < 3 ; i++){
+        p->colorAry[i*3]   = color.x;
+        p->colorAry[i*3+1] = color.y;
+        p->colorAry[i*3+2] = color.z;
+    }
+
+    rtn->type = PT_PLANE3;
+    rtn->isDisplay = SDL_TRUE;
+    rtn->data.plane3 = p;
+
+    if (list != NULL) addListNode(list , rtn , NULL);
+
+    return rtn;
+}
+
 /**
  * @brief 円盤を1つ生成する
  */
@@ -427,11 +468,17 @@ Polygon* createObj(const char* obj_filename , const char* texture_filename , Vec
 
     loadOBJ(obj_filename , texture_filename , obj);
 
-    SDL_Surface *surface = IMG_Load(texture_filename);
+    SDL_Surface *surfaceRaw = IMG_Load(texture_filename);
 
-    if (!surface) {
+    if (!surfaceRaw) {
         printf("IMG_Load error: %s\n", IMG_GetError());
         free(obj);
+        return NULL;
+    }
+
+    SDL_Surface *surface = SDL_ConvertSurfaceFormat(surfaceRaw, SDL_PIXELFORMAT_RGBA32, 0);
+    if (!surface) {
+        printf("SDL_ConvertSurfaceFormat error: %s\n", SDL_GetError());
         return NULL;
     }
 
@@ -555,6 +602,24 @@ void displayPlane4(Plane4 *plane4)
     glDisableClientState(GL_COLOR_ARRAY);
 }
 
+void displayPlane3(Plane3 *plane3)
+{
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer(3 , GL_FLOAT , 0 , plane3->vertAry);
+    glNormalPointer(GL_FLOAT , 0 , plane3->normAry);
+    glColorPointer(3 , GL_FLOAT , 0 , plane3->colorAry);
+    //glDrawElements(GL_QUADS , 24 , GL_UNSIGNED_BYTE , rectIdxAry);
+    glDrawArrays(GL_TRIANGLES , 0 , 3);
+
+    
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+}
+
 /**
  * @brief 円盤を表示
  * 
@@ -628,7 +693,7 @@ void displayObj(Obj *obj)
     glTexCoordPointer(2 , GL_FLOAT , 0 , &(obj->texCoordAry[0]));
     glNormalPointer(GL_FLOAT , 0 , &(obj->normAry[0]));
 
-    glDrawArrays(GL_QUADS , 0 , obj->vertAryNum / 3);
+    glDrawArrays(GL_TRIANGLES , 0 , obj->vertAryNum / 3);
 
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
