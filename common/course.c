@@ -1,4 +1,4 @@
-#include "client.h"
+#include "common.h"
 
 #define MAX_PLAYER 10
 

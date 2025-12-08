@@ -1,4 +1,4 @@
-#include "client.h"
+#include "common.h"
 
 const WeaponInfo sniper_ = (WeaponInfo){.kind = Sniper , .name = "Sniper"};
 const WeaponInfo shotgun_ = (WeaponInfo){.kind = Shotgun , .name = "Shotgun"};

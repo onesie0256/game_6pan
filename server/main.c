@@ -5,6 +5,8 @@
 
 #define SERVER_PORT 50000
 
+GameManager myGameManager;
+
 extern int connectClient(void);
 extern void CloseClient(int i);
 
