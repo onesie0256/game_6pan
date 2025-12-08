@@ -106,13 +106,12 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 	SDL_Color white = { 255, 255, 255, 255 };
 	SDL_Color black = { 0, 0, 0, 255 };
 	if (myGameManager.fonts[0]) {
-		/* ビート効果のスケールに応じたテキスト描画 */
+		//ビート効果のスケールに応じたテキスト描画 
 		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], "3D GUN KART", white);
 		if (textSurface) {
 			int baseW = textSurface->w, baseH = textSurface->h;
-			/* スケール適用 */
 			int scaledW = (int)(baseW * scale);
-			int scaledH = (int)(baseH * scale);
+			int scaledH = (int)(baseH * scale); 
 
 			SDL_Rect dst = {
 				(myGameManager.windowW - scaledW) / 2,
@@ -127,9 +126,13 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 	}
 
 	//Enterプロンプト点滅表示
-	Uint32 ticks = SDL_GetTicks();
-	if ((ticks / 500) % 2 == 0) { 
-		UI_updateTextCenteredOnSurface(myGameManager.fonts[0], "Press Enter to Start", myGameManager.windowH*3/4 + 50, black);
+	if ((SDL_GetTicks() / 700) % 2 == 0) { // 0.7秒ごとに点滅
+
+	#ifdef USE_JOY
+		UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "キーボードで ENTER / Joy-Conで X を押してスタート", myGameManager.windowH * 3 / 4 + 50, black);
+	#else
+		UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "キーボードで ENTER を押してスタート", myGameManager.windowH * 3 / 4 + 50, black);
+	#endif
 	}
 }
 
@@ -160,7 +163,7 @@ void UI_updateWaitSurface(WaitScene *waitScene)
 
 	
 	//画面右下: 「通信待機中．．．」を表示
-	if (myGameManager.fonts[2]) { // 待機画面用フォント(インデックス2)を使用
+	if (myGameManager.fonts[2]) { 
 		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "通信待機中．．．", black);
 		if (textSurface) {
 			//右下から少し内側に配置
@@ -178,12 +181,11 @@ void UI_updateMainSurface(MainScene *scene)
 {
 	if (myGameManager.UI == NULL || scene == NULL || scene->myCar == NULL) return;
 
-	// UIサーフェイスを透明でクリア
+	//UIサーフェイスを透明でクリア
 	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGBA(myGameManager.UI->format, 0, 0, 0, 0));
-
 	SDL_Color black = {0, 0, 0, 255};
 
-
+	/* 画面右下: HPバー */
 	Car *myCar = scene->myCar;
 	float hp_percentage = myCar->hp / 100.0f; 
 	if (hp_percentage < 0) hp_percentage = 0;
@@ -194,33 +196,68 @@ void UI_updateMainSurface(MainScene *scene)
 	int bar_x = myGameManager.windowW - bar_width - 20;
 	int bar_y = myGameManager.windowH - bar_height - 60; 
 
-	// HPバーの背景(灰色)
+	//HPバーの背景(灰色)
 	SDL_Rect hp_bar_bg = { bar_x, bar_y, bar_width, bar_height };
 	SDL_FillRect(myGameManager.UI, &hp_bar_bg, SDL_MapRGB(myGameManager.UI->format, 128, 128, 128));
 
-	// HPバーの前景(HP残量に応じて色が変わる)
+	//HPバーの前景(HP残量に応じて色が変わる)
 	Uint32 hp_bar_color;
 	if (hp_percentage <= 0.25f) {
-		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 255, 50, 50); // 赤
+		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 255, 50, 50); //赤
 	} else if (hp_percentage <= 0.5f) {
-		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 255, 255, 50); // 黄
+		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 255, 255, 50); //黄
 	} else {
-		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 50, 255, 50); // 緑
+		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 50, 255, 50); //緑
 	}
 
 	SDL_Rect hp_bar_fg = { bar_x, bar_y, (int)(bar_width * hp_percentage), bar_height };
 	SDL_FillRect(myGameManager.UI, &hp_bar_fg, hp_bar_color);
 
-	// HP 文字出力
+	//HP 文字出力
 	if (myGameManager.fonts[2]) {
 		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "HP", black);
+		
 		if (textSurface) {
-			// HPバーの左側に配置
+			//HPバーの左側に配置
 			SDL_Rect dst = { bar_x - textSurface->w - 10, bar_y + (bar_height - textSurface->h) / 2, 0, 0 };
 			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
 			SDL_FreeSurface(textSurface);
 		}
 	}
+
+	/*画面右下(HPバーの上): 弾数表示*/
+	static SDL_Surface* bulletSurface = NULL;
+	if (bulletSurface == NULL) {
+		bulletSurface = IMG_Load("assets/images/bullet.png"); 
+		if (bulletSurface == NULL) {
+			fprintf(stderr, "Failed to load image: assets/pictures/bullet.jpg. Error: %s\n", IMG_GetError());
+		}
+	}
+	
+	Gun *myGun = myCar->gun;
+	if (myGun) {
+		if (myGun->reloadFrameNow > 0) {
+			// リロード中はテキストを表示
+			if (myGameManager.fonts[2]) {
+				SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "Reloading...", black);
+				if (textSurface) {
+					// HPバーの上に表示
+					SDL_Rect dst = {bar_x, bar_y - textSurface->h - 10, textSurface->w, textSurface->h };
+					SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
+					SDL_FreeSurface(textSurface);
+				}
+			}
+		} 
+		if (bulletSurface) {
+			SDL_Rect dst;
+			dst.w = bulletSurface->w;
+			dst.h = bulletSurface->h; 
+			dst.x = (myGameManager.windowW - dst.w) / 2; 
+			dst.y = (myGameManager.windowH - dst.h) / 2;
+			SDL_BlitSurface(bulletSurface, NULL, myGameManager.UI, &dst);
+		}
+	}
+	
 }
 
 /**
