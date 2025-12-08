@@ -15,8 +15,25 @@
 #define FONT_MAX 5
 #define FPS_f 90.0f
 
+#define MAX_LEN_NAME 100
+#define BACKLOG 10      // 同時接続待ち上限
+#define MAX_Clients 10
+
+
 struct list_t;
 typedef struct list_t List;
+
+typedef struct client_t{
+    uint8_t id;                 //クライアントのid
+    uint8_t gunId;              //銃の種類
+    SDL_bool keyNow[KEY_MAX];   //キーの状態
+    SDL_bool keyPrev[KEY_MAX];  //キーの状態(1フレーム前)
+    SDL_bool joyBotton[JOY_KEY_MAX];  //ジョイコンのボタンの状態
+    SDL_bool joyBottonPrev[JOY_KEY_MAX];
+}Client;
+
+
+
 
 /**
  * @name GameManager
@@ -27,8 +44,9 @@ typedef struct
     SDL_bool quitRequest;           //SDL_QUITが通知されたらTRUE
     uint8_t myID;                   //ID
     uint8_t playerNum;              //プレイヤー人数
-    //to do 自分の選んだ銃の情報
-    char *serverName;               //サーバーの名前
+    uint8_t gunId;                  //自分の銃の種類
+    char serverName[MAX_LEN_NAME];               //サーバーの名前
+    uint16_t serverPort;             //サーバーのポート番号
     SDL_Window *window;
     SDL_Renderer *renderer;         //レンダラ
     SDL_GLContext context;          //コンテキスト
@@ -54,6 +72,9 @@ typedef struct
     float StickX;            //ジョイスティックのx方向の傾き
     float StickY;            //ジョイスティックのy方向の傾き
     #endif
+
+    Client clients[MAX_Clients];    //クライアントのリスト
+
 }GameManager;
 
 /**

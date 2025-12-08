@@ -18,7 +18,8 @@ int waitScene(void)
     int running = 1;
     while (running) {
             if (myGameManager.quitRequest == SDL_TRUE) {
-                return 0; 
+                SDL_Delay(100);
+                return 0; // ゲーム終了
             }
                     if (isKeyDowned(K_LEFT) == SDL_TRUE){
                          //左キー
@@ -40,6 +41,11 @@ int waitScene(void)
 
         draw(NULL);
         if (running == 0) myGameManager.sceneID = Scene_Main;
+
+        if (isKeyDowned(K_ENTER) == SDL_TRUE){
+            myGameManager.sceneID = Scene_Main;
+            running = 0;
+        }
 
         SDL_Delay(16);
         

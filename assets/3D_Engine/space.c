@@ -132,6 +132,52 @@ SDL_bool isPointInRect(Vec3f H , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f v4 , Vec
 }
 
 /**
+ * @brief 点hがv1～v4で構成される四角形の内部に存在するか判定する
+ * 
+ * @param H 判定する点(v1～v4と同一平面上にあること)
+ * @param v1v2v3 同一平面上の三角形を形成する3つのベクトル
+ * 
+ * @return 点が三角形の内部にあったらSDL_TRUE そうでなければSDL_FALSE
+ */
+SDL_bool isPointInTriangle(Vec3f H , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f normal)
+{
+    Vec3f v1v2 , v2v3 , v3v1;
+    Vec3f v1H , v2H , v3H;
+    Vec3f a , b , c;
+    
+    //辺ベクトルを生成
+    v1v2 = vecSub(v2 , v1);
+    v2v3 = vecSub(v3 , v2);
+    v3v1 = vecSub(v1 , v3);
+
+    //頂点から点Hまでのベクトルを生成
+    v1H = vecSub(H , v1);
+    v2H = vecSub(H , v2);
+    v3H = vecSub(H , v3);
+
+    //辺ベクトルと頂点から点Hまでのベクトルの外積をとる
+    a = vecMulOut(v1v2 , v1H);
+    b = vecMulOut(v2v3 , v2H);
+    c = vecMulOut(v3v1 , v3H);
+
+    /*
+    float hoge1 = vecMulIn(vecSub(a , v1), normal);
+    float hoge2 = vecMulIn(vecSub(b , v2), normal);
+    float hoge3 = vecMulIn(vecSub(c , v3), normal);
+    */
+
+    float hoge1 = vecMulIn(a, normal);
+    float hoge2 = vecMulIn(b, normal);
+    float hoge3 = vecMulIn(c, normal);
+
+    //法線ベクトルの内積の符号を調べることで,外積(a～b)が平面のどちら側を向いているのかが分かる
+    if (serchFloatSign(hoge1) == serchFloatSign(hoge2) &&
+        serchFloatSign(hoge2) == serchFloatSign(hoge3))
+        return SDL_TRUE;
+    return SDL_FALSE;
+}
+
+/**
  * @brief v1~v4からなる平面上に点pがあるかを調べる
  */
 SDL_bool isPointOnPlane4(Vec3f p , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f v4 , Vec3f normal)
@@ -139,6 +185,17 @@ SDL_bool isPointOnPlane4(Vec3f p , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f v4 , V
     Vec3f H;
     lengthPointToPlaneAndH(&H , v1 , normal , p);
     if (isPointInRect(H , v1 , v2 , v3 , v4 , normal)) return SDL_TRUE;
+    return SDL_FALSE;
+}
+
+/**
+ * @brief v1~v3からなる平面上に点pがあるかを調べる
+ */
+SDL_bool isPointOnPlane3(Vec3f p , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f normal)
+{
+    Vec3f H;
+    lengthPointToPlaneAndH(&H , v1 , normal , p);
+    if (isPointInTriangle(H , v1 , v2 , v3 , normal)) return SDL_TRUE;
     return SDL_FALSE;
 }
 

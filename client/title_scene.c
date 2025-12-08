@@ -29,10 +29,11 @@ int titleScene(void)
 	//イベント処理:Enter(Joy-conではX)で次シーンへ  
 		if (myGameManager.quitRequest == SDL_TRUE) {
 			setupFlag = SDL_TRUE;
+			SDL_Delay(100);
 			return 0; // ゲーム終了 
 		}
 		else{
-			if (isKeyDowned(K_ENTER) == SDL_TRUE) {
+			if (isKeyDowned(K_ENTER)) {
 				myGameManager.sceneID = Scene_Wait;
 			}
 		

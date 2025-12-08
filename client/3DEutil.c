@@ -6,7 +6,6 @@ void closeWindow(void);
 int draw(Camera *camera);
 void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2);
 
-
 /**
  * @brief ウィンドウを初期化する
  * @param title ゲームタイトル
@@ -119,6 +118,7 @@ int draw(Camera *camera)
         displayPolygons(scene->polygonList);
         displayCars(scene->cars);
         displayAmmos();
+        displayPolygons(scene->course->checkPointPlaneList);
     }
 
 
@@ -210,6 +210,14 @@ void drawUI(void)
     glPopAttrib();
 }
 
+/**
+ * @brief 2つ車間で衝突処理を行う
+ * 
+ * @param c1 車1
+ * @param c2 車2
+ * 
+ * @return 衝突したらSDL_True,そうでないならSDL_False
+ */
 SDL_bool collisionCar(Car *c1 , Car *c2)
 {
     Rectangler *r1 = c1->collisionBox->data.rectangler;
@@ -304,6 +312,10 @@ SDL_bool collisionCar(Car *c1 , Car *c2)
     return SDL_FALSE;
 }
 
+/**
+ * @brief リスト全ての車と衝突処理を行う
+ * @param carList 車のリスト
+ */
 void collisionCars(List *carList)
 {
     ListNode *i;
@@ -355,6 +367,12 @@ void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2)
     */
 }
 
+/**
+ * @brief カメラを更新する
+ * 
+ * @param car 自分の操作する車
+ * @param camera カメラ
+ */
 void updateCamera(Car *car , Camera *camera)
 {
     Rectangler *r = car->collisionBox->data.rectangler;
