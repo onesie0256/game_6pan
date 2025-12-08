@@ -31,12 +31,22 @@ int mainScene(void)
     }
 
     
-    while (scene->sendInputDataPlayerNum != myGameManager.playerNum && myGameManager.quitRequest == SDL_FALSE){
-        ;
+    // 前のフレームの全プレイヤーデータを受信するまで待つ
+    // ただし、ビジーループでブロックするのではなく、gameLoopに戻る
+    if (scene->sendInputDataPlayerNum < myGameManager.playerNum) {
+        if (myGameManager.quitRequest == SDL_TRUE) { // 待っている間に終了要求が来た場合
+             endFlag = SDL_TRUE;
+        } else {
+            // まだ受信中なので、今回のフレームの送信・更新処理はスキップ
+            // ただし描画などは行いたいので、関数の末尾まで処理は継続させる
+        }
+    } else {
+        // 全員分のデータを受信したら、カウンタをリセットして、今回の自分の入力を送信する
+        scene->sendInputDataPlayerNum = 0;
+        if (myGameManager.quitRequest == SDL_FALSE) {
+            send_input_data();
+        }
     }
-    send_input_data();
-
-    scene->sendInputDataPlayerNum = 0;
 
     for (int i = 0 ; i < myGameManager.playerNum ; i++){
         if (myGameManager.clients[i].keyNow[K_ENTER] == SDL_TRUE){
@@ -61,7 +71,7 @@ int mainScene(void)
     //printf("next point : %f , %f , %f\n" , scene->myCar->nextCheckPoint->coord.x , scene->myCar->nextCheckPoint->coord.y , scene->myCar->nextCheckPoint->coord.z);
     //printf("順位: %d\n" , scene->myCar->place);
     //printf("c2.hp: %f\n" , c2->hp);
-    printf("弾数:%d\n" , scene->myCar->gun->bulletNum);
+    //printf("弾数:%d\n" , scene->myCar->gun->bulletNum);
 
 
 

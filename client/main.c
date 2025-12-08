@@ -65,16 +65,21 @@ int main(int argc , char* argv[])
     }
   
   //終了処理
+  // まず、ネットワーク処理を行っているスレッドが終了するのを待つ
+  SDL_WaitThread(myGameManager.key_thread , NULL); 
+  
+  #ifdef USE_JOY
+  // joy_threadも終了を待つ
+  SDL_WaitThread(myGameManager.joy_thread, NULL); 
+  #endif
+
+  // スレッドが終了した後で、ネットワーク接続を閉じる
   terminate_client();
 
   printf("good job\n");
   closeWindow();
 
-
-  SDL_WaitThread(myGameManager.key_thread , NULL); //キーボード監視スレッドの終了を待機
-  
   #ifdef USE_JOY
-  SDL_WaitThread(myGameManager.joy_thread, NULL); // Joy-Con監視スレッドの終了を待機
   joycon_close(&jc);
   #endif
 

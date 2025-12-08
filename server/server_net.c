@@ -94,9 +94,6 @@ void setup_server(int num_cl, u_short port) {
     send_data(i, &num_clients, sizeof(int));
     //自分ののIDを送信
     send_data(i, &i, sizeof(int));
-    for (j = 0; j < num_clients; j++) {
-      send_data(i, &clients[j], sizeof(SERVER_CLIENT));//クライアント情報を送信
-    }
   }
 
   num_socks = max_sock + 1;
@@ -120,69 +117,69 @@ int control_requests() {
     handle_error("select()");
   }
   
-
-  int i, result = 1;
+  int i;
   //全クライアントソケットをチェック
   for (i = 0; i < num_clients; i++) {
     if (FD_ISSET(clients[i].sock, &read_flag)) {
-      receive_data(i, &data, sizeof(data)); //データ受信
-      printf("data is ready. from id:%d , order:%c\n" , data.id , data.order);
+      // データ受信。戻り値が0以下ならクライアント切断かエラー
+      if (receive_data(i, &data, sizeof(data)) <= 0) {
+          fprintf(stderr, "Client %d disconnected. Sending quit command.\n", i);
+          // 他のクライアントに終了を通知
+          data.order = 'Q';
+          data.id = i;
+          send_data(BROADCAST, &data, sizeof(data));
+          return 0; // サーバー終了
+      }
+
+      //printf("data is ready. from id:%d , order:%c\n" , data.id , data.order);
       //コマンドに応じた処理
       switch (data.order) {
       case 'I': //入力情報を受け取った場合
       {
-      u_short id = data.id;
-      printf("recieve input data from id:%d\n" , data.id);
+        u_short id = data.id;
+        printf("recieve input data from id:%d\n" , data.id);
 
+        if (id < num_clients) {
+            memcpy(&inputBuffer[id], &data, sizeof(NetworkContainer));
+            inputReceived[id] = 1;    // 受信済フラグ
+        }
+      }
+        // 全員から揃ったかチェック
+        int all = 1;
+        for (int j = 0; j < num_clients; j++) {
+            if (!inputReceived[j]) {
+                all = 0;
+            }
+        }
 
-       if (id < num_clients) {
-           memcpy(&inputBuffer[id], &data, sizeof(NetworkContainer));
-           inputReceived[id] = 1;    // 受信済フラグ
-       }
-    }
-       // 全員から揃ったかチェック
-       int all = 1;
-       for (int j = 0; j < num_clients; j++) {
-           if (!inputReceived[j]) {
-               all = 0;
-               
-           }
-       }
-
-       if (all) {
-           // まとめて送信
-           for (int j = 0; j < num_clients; j++) {
-               send_data(BROADCAST, &inputBuffer[j], sizeof(NetworkContainer));
-               inputReceived[j] = 0; // 次フレームのためにリセット
-               printf("send input data to id:%d\n" , j);
-           }
-       }
-
-        //入力データを全クライアントへ送信
-        //send_data(BROADCAST, &data, sizeof(data));
-        result = 1;
+        if (all) {
+            // まとめて送信
+            for (int j = 0; j < num_clients; j++) {
+                send_data(BROADCAST, &inputBuffer[j], sizeof(NetworkContainer));
+                inputReceived[j] = 0; // 次フレームのためにリセット
+                printf("send input data to id:%d\n" , j);
+            }
+        }
         break;
-
 
       case 'Q': //Qの場合
-        fprintf(stderr, "client[%d]: quit\n", clients[i].id);
+        fprintf(stderr, "client[%d]: quit\n", data.id);
         send_data(BROADCAST, &data, sizeof(data)); //全クライアントへ終了コマンド送信
-        result = 0; //終了
-        break;
+        return 0; // サーバー終了
+        
       default: //無効なコマンドの場合
         fprintf(stderr, "control_requests(): %c is not a valid command.\n", data.order);
-        exit(1); //無効であることを示す
+        break; 
     }
     }
   }
 
-  return result;
+  return 1; // 継続
 }
 
 //データ送信関数
 static void send_data(int id, void *data, int size) {
   //不正なクライアントIDチェック
-  
   if ((id != BROADCAST) && (0 > id || id >= num_clients)) {
     fprintf(stderr, "send_data(): client id is illeagal.\n");
     exit(1);
@@ -193,18 +190,29 @@ static void send_data(int id, void *data, int size) {
     fprintf(stderr, "send_data(): data is illeagal.\n");
     exit(1);
   }
-//ブロードキャスト送信
+
+  // 堅牢な送信処理
+  void send_all(int sock, void *buf, int len) {
+    int bytes_sent = 0;
+    int result;
+    while (bytes_sent < len) {
+      result = write(sock, (char*)buf + bytes_sent, len - bytes_sent);
+      if (result < 0) {
+        handle_error("write() in send_all");
+        return;
+      }
+      bytes_sent += result;
+    }
+  }
+
+  //ブロードキャスト送信
   if (id == BROADCAST) {
     int i;
     for (i = 0; i < num_clients; i++) {
-      if (write(clients[i].sock, data, size) < 0) {
-        handle_error("write()");
-      }
+      send_all(clients[i].sock, data, size);
     }
   } else {
-    if (write(clients[id].sock, data, size) < 0) {
-      handle_error("write()"); //特定クライアントへ送信
-    }
+    send_all(clients[id].sock, data, size);
   }
 }
 
@@ -219,7 +227,23 @@ static int receive_data(int id, void *data, int size) {
   	exit(1);
   }
 
-  return read(clients[id].sock, data, size);
+  int bytes_received = 0;
+  int result;
+  while (bytes_received < size) {
+    result = read(clients[id].sock, (char *)data + bytes_received, size - bytes_received);
+    if (result < 0) {
+      // read エラー
+      perror("read in receive_data");
+      return result;
+    }
+    if (result == 0) {
+      // 接続が正常に閉じられた
+      fprintf(stderr, "Connection closed by client %d.\n", id);
+      return bytes_received; // 途中までしか読めなかったが、読めた分だけ返す
+    }
+    bytes_received += result;
+  }
+  return bytes_received;
 }
 
 //エラーハンドリング関数
@@ -233,6 +257,14 @@ static void handle_error(char *message) {
 //サーバ終了処理
 void terminate_server(void) {
   int i;
+  //全クライアントソケットの書き込みチャネルを閉じる
+  for (i = 0; i < num_clients; i++) {
+    shutdown(clients[i].sock, SHUT_WR);
+  }
+  
+  //念のため、データがクライアントに届くのを少し待つ
+  sleep(1);
+
   //全クライアントソケットをクローズ
   for (i = 0; i < num_clients; i++) {
     close(clients[i].sock);

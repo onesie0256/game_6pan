@@ -18,6 +18,7 @@ int waitScene(void)
     int running = 1;
     while (running) {
             if (myGameManager.quitRequest == SDL_TRUE) {
+                SDL_Delay(100);
                 return 0; // ゲーム終了
             }
             // キーが押されたときのイベント

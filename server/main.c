@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
   while (cond) {
       cond = control_requests();
   }
-
+  SDL_Delay(3000);
   terminate_server();
 
   return 0;

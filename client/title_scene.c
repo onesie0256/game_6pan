@@ -33,6 +33,7 @@ int titleScene(void)
 	
 		if (myGameManager.quitRequest == SDL_TRUE) {
 			setupFlag = SDL_TRUE;
+			SDL_Delay(100);
 			return 0; // ゲーム終了 
 		}
 		else{

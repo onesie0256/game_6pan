@@ -216,7 +216,7 @@ static int exe_command() {
   case 'I': //入力情報の場合
     //受信した入力データを処理
     if (data.id < n_clients) {
-      printf("recieve input data from id:%d" , data.id);
+      printf("recieve input data from id:%d\n" , data.id);
       //前フレームの状態を保存
       for (int i = 0; i < KEY_MAX; i++) {
         myGameManager.clients[data.id].keyPrev[i] = myGameManager.clients[data.id].keyNow[i];
@@ -277,11 +277,19 @@ static void send_data(void *data, int size) {
     fprintf(stderr, "send_data(): data is illeagal.\n");
     exit(1);
   }
-//ソケットへデータ書き込み
-  if (write(sock, data, size) == -1) {
-    handle_error("write()");
+
+  int bytes_sent = 0;
+  int result;
+  while (bytes_sent < size) {
+    result = write(sock, (char *)data + bytes_sent, size - bytes_sent);
+    if (result < 0) {
+      handle_error("write()");
+      return; // エラーが発生したら中断
+    }
+    bytes_sent += result;
   }
 }
+
 //データ受信関数
 static int receive_data(void *data, int size) {
   if ((data == NULL) || (size <= 0)) {
@@ -289,24 +297,31 @@ static int receive_data(void *data, int size) {
     exit(1);
   }
 
-  return read(sock, data, size);
-
-  
   int bytes_received = 0;
   int result;
   while (bytes_received < size) {
     result = read(sock, (char *)data + bytes_received, size - bytes_received);
-    if (result <= 0) {
-      // エラーまたは接続切断
-      perror("read");
-      fprintf(stderr, "Connection closed or error on read.\n");
-      return result; // エラーまたは0を返す
+    if (result < 0) {
+      // EAGAIN/EWOULDBLOCKは、非ブロッキングソケットではエラーではない
+      if (errno == EAGAIN || errno == EWOULDBLOCK) {
+        // データがまだ到着していない。少し待ってリトライ。
+        SDL_Delay(1);
+        continue;
+      }
+      // その他の致命的なエラー
+      handle_error("read()");
+      return result;
+    }
+    if (result == 0) {
+      // 接続が閉じられた
+      fprintf(stderr, "Connection closed by peer during receive.\n");
+      return bytes_received; // 読めた分だけ返す
     }
     bytes_received += result;
   }
-  return bytes_received; // 成功した場合は受信した合計バイト数を返す
-  
+  return bytes_received;
 }
+
 //エラーハンドリング関数
 //エラーメッセージを表示し終了
 static void handle_error(char *message) {
@@ -319,5 +334,4 @@ static void handle_error(char *message) {
 void terminate_client() {
   fprintf(stderr, "Connection is closed.\n");
   close(sock); //ソケットクローズ
-  exit(0);
 }

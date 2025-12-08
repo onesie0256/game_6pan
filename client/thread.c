@@ -50,18 +50,15 @@ void createThread(void)
  */
 int key_func(void *args)
 {
-    int running = 1;
-
-    while (running)
+    while (!myGameManager.quitRequest)
     {
         if (SDL_PollEvent(&myGameManager.event))
         {
             switch (myGameManager.event.type)
             {
             case SDL_QUIT: //終了処理へ
-                
+                myGameManager.quitRequest = SDL_TRUE;
                 send_Quit();
-                running = 0;
                 break;
 
             case SDL_WINDOWEVENT: //ウィンドウのサイズ変更
@@ -161,7 +158,10 @@ int key_func(void *args)
             
         }
 
-        control_requests();
+        // control_requestsが0を返したら、それは終了を意味する
+        if (control_requests() == 0) {
+            myGameManager.quitRequest = SDL_TRUE;
+        }
     }
     
     return 0;
