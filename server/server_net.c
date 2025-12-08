@@ -20,13 +20,11 @@
 int gClientNum;
 
 #define SERVER_PORT 50000
-#define BACKLOG 2  // 同時接続待ち上限
-#define MAX_Clients 2
+
 
 static int listen_sock = -1;
 static int client_sock = -1;
 
-static GameManager	gClients[MAX_Clients];	/* ���饤����� */
 
 static fd_set	gMask;					/* select()�ѤΥޥ��� */
 static int	gWidth;						/* gMask��Υ����å����٤��ӥåȿ� */
@@ -164,7 +162,6 @@ void CloseClient(int i)
 
     // クライアントリストから削除
     gClients[i].fd = -1;
-    gClients[i].name[0] = '\0';
 
     // 必要なら他のクライアントに通知
     SendAllName(); // 名前リスト更新など

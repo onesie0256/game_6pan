@@ -15,8 +15,15 @@
 #define FONT_MAX 5
 #define FPS_f 90.0f
 
+#define BACKLOG 2  // 同時接続待ち上限
+#define MAX_Clients 2
+
 struct list_t;
 typedef struct list_t List;
+
+struct client_t;
+typedef struct client Client;
+
 
 /**
  * @name GameManager
@@ -54,6 +61,8 @@ typedef struct
     float StickX;            //ジョイスティックのx方向の傾き
     float StickY;            //ジョイスティックのy方向の傾き
     #endif
+
+    Client gClient[MAX_Clients];
 }GameManager;
 
 /**
@@ -77,5 +86,12 @@ typedef struct{
     float stickX;               //スティック傾きX
     float stickY;               //スティック傾きY
 }NetworkContainer;
+
+typedef struct lient_t{
+    uint8_t id;                 //クライアントのid
+    SDL_bool keyNow[KEY_MAX];   //キーの状態
+    SDL_bool keyPrev[KEY_MAX];  //キーの状態(1フレーム前)
+}Client;
+ 
 
 extern GameManager myGameManager;
