@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <netinet/in.h>
-#include "common.h"
+#include "server.h"
 
 #define SERVER_PORT 50000
 
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
   while (cond) {
       cond = control_requests();
   }
-
+  SDL_Delay(3000);
   terminate_server();
 
   return 0;

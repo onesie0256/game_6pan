@@ -154,3 +154,18 @@ Vec3f euler_from_vectors(Vec3f v1, Vec3f v2) {
     // クォータニオンからオイラー角に変換する
     return quaternion_to_euler(q);
 }
+
+/**
+ * @brief ベクトルをクォータニオンで回転させる
+ * 
+ * @param v 回転させるベクトル
+ * @param angle 回転角度
+ * @param axis 回転軸のベクトル
+ * 
+ * @return 回転後のベクトル
+ */
+Vec3f rotateVecWithQuaternion(Vec3f v , float angle , Vec3f axis)
+{
+    Quaternion q = quaternion_from_axis_angle(axis , angle);
+    return quaternion_rotate_vector(v , q);
+}

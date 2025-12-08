@@ -1,168 +1,274 @@
-/*****************************************************************
- * ファイル名 : server_net.c
- * 機能       : クライアントとのTCP通信確立・送受信
- *****************************************************************/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
-#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include "server.h"
+#include <sys/types.h>
 #include <sys/select.h>
-#include <sys/time.h>
 
-#include "common.h"
+typedef unsigned short u_short;
 
-int gClientNum;
+//グローバル変数
+static SERVER_CLIENT clients[MAX_Clients]; //接続してきたクライアント情報を格納
+static int num_clients; //接続クライアント数
+static int num_socks; //最大ソケット番号＋1
+static fd_set mask; //ファイルディスクリプタ集合
+//static NetworkContainer data; //通信用の汎用データ構造体
+static NetworkContainer inputBuffer[MAX_Clients]; // 各クライアントの入力データ
+static int inputReceived[MAX_Clients] = {0};            // 受信したかどうか
 
-#define SERVER_PORT 50000
+//関数プロトタイプ宣言
+void setup_server(int, u_short);
+int control_requests();
+void terminate_server();
 
 
-static int listen_sock = -1;
-static int client_sock = -1;
+static void send_data(int id, void *data, int size);
+static int receive_data(int, void *, int);
+static void handle_error(char *message);
 
+//サーバの初期化処理
+void setup_server(int num_cl, u_short port) {
+  int rsock, sock = 0;
+  struct sockaddr_in sv_addr, cl_addr;//サーバ・クライアントアドレス構造体
 
-static fd_set	gMask;					/* select()�ѤΥޥ��� */
-static int	gWidth;						/* gMask��Υ����å����٤��ӥåȿ� */
+  fprintf(stderr, "Server setup is started.\n");
 
-
-/**
- * @brief クライアント接続を待ち、1人受け付ける
- * @return 成功: 1, 失敗: 0
- */
-int connectClient(void)
-{
-    struct sockaddr_in server_addr, client_addr;
-    socklen_t addr_len = sizeof(client_addr);
-
-    // ソケット作成
-    listen_sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (listen_sock < 0) {
-        perror("socket");
-        return 0;
+  num_clients = num_cl; //接続を受け付けるクライアント数を保持する
+//ソケット作成
+  rsock = socket(AF_INET, SOCK_STREAM, 0); //TCPソケット作成
+  if (rsock < 0) { //ソケット作成失敗
+    handle_error("socket()");
+  }
+  fprintf(stderr, "sock() for request socket is done successfully.\n");
+//サーバアドレス設定
+  sv_addr.sin_family = AF_INET; 
+  sv_addr.sin_port = htons(port); //ポート番号をネットワークバイトオーダーに変換
+  sv_addr.sin_addr.s_addr = INADDR_ANY; //任意のアドレスからの接続を受け付ける
+//ポート再利用設定
+  int opt = 1;
+  setsockopt(rsock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+//ソケットにアドレスを割り当てる
+  if (bind(rsock, (struct sockaddr *)&sv_addr, sizeof(sv_addr)) != 0) {
+    handle_error("bind()");
+  }
+  fprintf(stderr, "bind() is done successfully.\n");
+//クライアントからの接続要求を待機状態にする
+  if (listen(rsock, num_clients) != 0) {
+    handle_error("listen()");
+  }
+  fprintf(stderr, "listen() is started.\n");
+//クライアントからの接続要求を受け付ける
+  int i, max_sock = 0;
+  socklen_t len;
+  char src[MAX_LEN_ADDR];//クライアントipアドレス文字列格納用
+  for (i = 0; i < num_clients; i++) { //指定されたクライアント数だけ接続を受け付ける
+    len = sizeof(cl_addr);
+    sock = accept(rsock, (struct sockaddr *)&cl_addr, &len); //接続要求受け付け
+    if (sock < 0) { //接続要求受け付け失敗
+      handle_error("accept()");
+    }
+    if (max_sock < sock) { //最大ソケット番号を更新
+      max_sock = sock;
     }
 
-    // ソケット再利用設定
-    int yes = 1;
-    if (setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
-        perror("setsockopt");
-        close(listen_sock);
-        return 0;
-    }
+    //クライアント情報を構造体に保持
+    clients[i].id = i;
+    clients[i].sock = sock;
+    clients[i].addr = cl_addr;
+    memset(src, 0, sizeof(src));//ipアドレスを文字列に変換して表示
+    inet_ntop(AF_INET, (struct sockaddr *)&cl_addr.sin_addr, src, sizeof(src));
+    fprintf(stderr, "Client %d is accepted (address=%s, port=%d).\n", i, src, ntohs(cl_addr.sin_port));
 
-    // サーバーアドレス設定
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;  
-    server_addr.sin_port = htons(SERVER_PORT);
+  }
+//接続要求受付用ソケットは不要になるのでクローズ
+  close(rsock);
+  int j;
+  for (i = 0; i < num_clients; i++) {
+    //全体のクライアント数を送信
+    send_data(i, &num_clients, sizeof(int));
+    //自分ののIDを送信
+    send_data(i, &i, sizeof(int));
+  }
 
-    // バインド
-    if (bind(listen_sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        perror("bind");
-        close(listen_sock);
-        return 0;
-    }
+  num_socks = max_sock + 1;
+  FD_ZERO(&mask); //マスクを初期化
+  FD_SET(0, &mask); //標準入力を監視対象に設定 
 
-    // 接続待ち
-    if (listen(listen_sock, BACKLOG) < 0) {
-        perror("listen");
-        close(listen_sock);
-        return 0;
-    }
-
-    printf("Server listening on port %d...\n", SERVER_PORT);
-
-    // クライアント受け入れ
-    client_sock = accept(listen_sock, (struct sockaddr *)&client_addr, &addr_len);
-    if (client_sock < 0) {
-        perror("accept");
-        close(listen_sock);
-        return 0;
-    }
-
-    printf("Client connected \n");
-    return 1;
+  for (i = 0; i < num_clients; i++) {
+    FD_SET(clients[i].sock, &mask); //クライアントソケットを監視対象に設定
+  }
+  fprintf(stderr, "Server setup is done.\n");
 }
 
-/**
- * @brief クライアントにデータを送信する
- */
-int sendData(NetworkContainer *container)
-{
-    if (client_sock < 0) return 0;
+int control_requests() {
+  NetworkContainer data;
+  fd_set read_flag = mask; //コピー作成
+  memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
 
-    ssize_t n = send(client_sock, container, sizeof(NetworkContainer), 0);
-    if (n < 0) {
-        perror("send");
-        return 0;
-    }
+  fprintf(stderr, "select() is started.\n");
+  //読み込み可能データが来たか監視
+  if (select(num_socks, (fd_set *)&read_flag, NULL, NULL, NULL) == -1) {
+    handle_error("select()");
+  }
+  
+  int i;
+  //全クライアントソケットをチェック
+  for (i = 0; i < num_clients; i++) {
+    if (FD_ISSET(clients[i].sock, &read_flag)) {
+      // データ受信。戻り値が0以下ならクライアント切断かエラー
+      if (receive_data(i, &data, sizeof(data)) <= 0) {
+          fprintf(stderr, "Client %d disconnected. Sending quit command.\n", i);
+          // 他のクライアントに終了を通知
+          data.order = 'Q';
+          data.id = i;
+          send_data(BROADCAST, &data, sizeof(data));
+          return 0; // サーバー終了
+      }
 
-    return 1;
-}
+      //printf("data is ready. from id:%d , order:%c\n" , data.id , data.order);
+      //コマンドに応じた処理
+      switch (data.order) {
+      case 'I': //入力情報を受け取った場合
+      {
+        u_short id = data.id;
+        printf("recieve input data from id:%d\n" , data.id);
 
-/**
- * @brief クライアントからデータを受信する
- */
-int recvData(NetworkContainer *container)
-{
-    if (client_sock < 0) return 0;
-
-    ssize_t n = recv(client_sock, container, sizeof(NetworkContainer), 0);
-    if (n <= 0) {
-        if (n < 0) perror("recv");
-        else printf("Client disconnected.\n");
-        close(client_sock);
-        client_sock = -1;
-        return 0;
-    }
-
-    return 1;
-}
-
-int SendRecvManager(void)
-{
-    fd_set readOK = gMask;
-    int i, endFlag = 1;
-
-    if (select(gWidth, &readOK, NULL, NULL, NULL) < 0)
-        return endFlag;
-
-    for (i = 0; i < gClientNum; i++) {
-        if (FD_ISSET(gClients[i].fd, &readOK)) {
-            NetworkContainer pack;
-            int n = read(gClients[i].fd, &pack, sizeof(pack));
-            if (n <= 0) {
-                // クライアントが強制切断した場合も同じ処理
-                printf("Client %d disconnected unexpectedly.\n", i);
-                CloseClient(i);
-                continue;
-            }
-
-            if (pack.order == 'Q') {
-                printf("Client %d requested quit.\n", i);
-                CloseClient(i);
-            } else {
-                // 他のコマンド処理
-                ExecuteCommand(pack.order, i);
+        if (id < num_clients) {
+            memcpy(&inputBuffer[id], &data, sizeof(NetworkContainer));
+            inputReceived[id] = 1;    // 受信済フラグ
+        }
+      }
+        // 全員から揃ったかチェック
+        int all = 1;
+        for (int j = 0; j < num_clients; j++) {
+            if (!inputReceived[j]) {
+                all = 0;
             }
         }
+
+        if (all) {
+            // まとめて送信
+            for (int j = 0; j < num_clients; j++) {
+                send_data(BROADCAST, &inputBuffer[j], sizeof(NetworkContainer));
+                inputReceived[j] = 0; // 次フレームのためにリセット
+                printf("send input data to id:%d\n" , j);
+            }
+        }
+        break;
+
+      case 'Q': //Qの場合
+        fprintf(stderr, "client[%d]: quit\n", data.id);
+        send_data(BROADCAST, &data, sizeof(data)); //全クライアントへ終了コマンド送信
+        return 0; // サーバー終了
+        
+      default: //無効なコマンドの場合
+        fprintf(stderr, "control_requests(): %c is not a valid command.\n", data.order);
+        break; 
     }
-    return endFlag;
+    }
+  }
+
+  return 1; // 継続
 }
 
+//データ送信関数
+static void send_data(int id, void *data, int size) {
+  //不正なクライアントIDチェック
+  if ((id != BROADCAST) && (0 > id || id >= num_clients)) {
+    fprintf(stderr, "send_data(): client id is illeagal.\n");
+    exit(1);
+  }
+  
+  //不正なデータチェック
+  if ((data == NULL) || (size <= 0)) {
+    fprintf(stderr, "send_data(): data is illeagal.\n");
+    exit(1);
+  }
 
-void CloseClient(int i)
-{
-    close(gClients[i].fd);        // クライアントソケットを閉じる
-    FD_CLR(gClients[i].fd, &gMask); // select マスクから外す
+  // 堅牢な送信処理
+  void send_all(int sock, void *buf, int len) {
+    int bytes_sent = 0;
+    int result;
+    while (bytes_sent < len) {
+      result = write(sock, (char*)buf + bytes_sent, len - bytes_sent);
+      if (result < 0) {
+        handle_error("write() in send_all");
+        return;
+      }
+      bytes_sent += result;
+    }
+  }
 
-    // クライアントリストから削除
-    gClients[i].fd = -1;
+  //ブロードキャスト送信
+  if (id == BROADCAST) {
+    int i;
+    for (i = 0; i < num_clients; i++) {
+      send_all(clients[i].sock, data, size);
+    }
+  } else {
+    send_all(clients[id].sock, data, size);
+  }
+}
 
-    // 必要なら他のクライアントに通知
-    SendAllName(); // 名前リスト更新など
+//データ受信関数
+static int receive_data(int id, void *data, int size) {
+  if ((id != BROADCAST) && (0 > id || id >= num_clients)) {
+    fprintf(stderr, "receive_data(): client id is illeagal.\n");
+    exit(1);
+  }
+  if ((data == NULL) || (size <= 0)) {
+    fprintf(stderr, "receive_data(): data is illeagal.\n");
+  	exit(1);
+  }
+
+  int bytes_received = 0;
+  int result;
+  while (bytes_received < size) {
+    result = read(clients[id].sock, (char *)data + bytes_received, size - bytes_received);
+    if (result < 0) {
+      // read エラー
+      perror("read in receive_data");
+      return result;
+    }
+    if (result == 0) {
+      // 接続が正常に閉じられた
+      fprintf(stderr, "Connection closed by client %d.\n", id);
+      return bytes_received; // 途中までしか読めなかったが、読めた分だけ返す
+    }
+    bytes_received += result;
+  }
+  return bytes_received;
+}
+
+//エラーハンドリング関数
+//エラーメッセージを表示し終了
+static void handle_error(char *message) {
+  perror(message);
+  fprintf(stderr, "%d\n", errno);
+  exit(1);
+}
+
+//サーバ終了処理
+void terminate_server(void) {
+  int i;
+  //全クライアントソケットの書き込みチャネルを閉じる
+  for (i = 0; i < num_clients; i++) {
+    shutdown(clients[i].sock, SHUT_WR);
+  }
+  
+  //念のため、データがクライアントに届くのを少し待つ
+  sleep(1);
+
+  //全クライアントソケットをクローズ
+  for (i = 0; i < num_clients; i++) {
+    close(clients[i].sock);
+  }
+  fprintf(stderr, "All connections are closed.\n");
+  exit(0);
 }
