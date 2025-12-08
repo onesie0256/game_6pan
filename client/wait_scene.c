@@ -47,6 +47,11 @@ int waitScene(void)
             running = 0;
         }
 
+        if (isKeyDowned(K_ENTER) == SDL_TRUE){
+            myGameManager.sceneID = Scene_Main;
+            running = 0;
+        }
+
         SDL_Delay(16);
         
     }
