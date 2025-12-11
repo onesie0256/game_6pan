@@ -13,7 +13,7 @@ int waitScene(void)
 {
     // 待機画面の状態を初期化
     WaitScene waitSceneState;
-    waitSceneState.selectedWeaponIndex = 0; // 初期選択
+    waitSceneState.selectedWeaponIndex = 0; 
 
     int running = 1;
     while (running) {
@@ -21,29 +21,31 @@ int waitScene(void)
                 SDL_Delay(100);
                 return 0; // ゲーム終了
             }
-            // キーが押されたときのイベント
-            
                     if (isKeyDowned(K_LEFT) == SDL_TRUE){
-                         // 左キー
+                         //左キー
                         waitSceneState.selectedWeaponIndex--;
                         if (waitSceneState.selectedWeaponIndex < 0) {
                             waitSceneState.selectedWeaponIndex = WEAPON_TYPE_MAX - 1; // 末尾にループ
                         }
                     }
                     if (isKeyDowned(K_RIGHT) == SDL_TRUE) {
-                        // 右キー
+                        //右キー
                         waitSceneState.selectedWeaponIndex++;
                         waitSceneState.selectedWeaponIndex %= WEAPON_TYPE_MAX; // 先頭にループ
                     }
+                    if (isKeyDowned(K_ENTER) == SDL_TRUE) {
+                        running = 0;  //メイン画面へ
+                    } 
 
-    
-            
-
-        // 待機画面のUIを描画
-        UI_renderWaitScreen(&waitSceneState);
-
+        UI_updateWaitSurface(&waitSceneState);
 
         draw(NULL);
+        if (running == 0) myGameManager.sceneID = Scene_Main;
+
+        if (isKeyDowned(K_ENTER) == SDL_TRUE){
+            myGameManager.sceneID = Scene_Main;
+            running = 0;
+        }
 
         if (isKeyDowned(K_ENTER) == SDL_TRUE){
             myGameManager.sceneID = Scene_Main;
@@ -54,5 +56,5 @@ int waitScene(void)
         
     }
 
-    return 1; // 次のシーンへ
+    return 1; //メインシーンへ
 }

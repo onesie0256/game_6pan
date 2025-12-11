@@ -13,7 +13,7 @@ int draw(Camera *camera);
  */
 int initWindow(char *title)
 {
-    myGameManager.window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED , SDL_WINDOWPOS_CENTERED , 1920 , 1080 , SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    myGameManager.window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED , SDL_WINDOWPOS_CENTERED , WINDOW_WIDTH , WINDOW_HIGHT , SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
     if (myGameManager.window == NULL)
     {

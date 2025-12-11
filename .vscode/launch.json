@@ -8,12 +8,13 @@
             "name": "(gdb) client",
             "type": "cppdbg",
             "request": "launch",
+            // Makefileによってビルドされた実行可能ファイルのパスを指定します。
             "program": "${workspaceFolder}/game_client",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": false,
+            "externalConsole": true,
             "MIMode": "gdb",
             "setupCommands": [
                 {

@@ -73,6 +73,9 @@ int mainScene(void)
     updatePlace();
 
     updateCamera(scene->myCar , scene->camera);
+
+    UI_updateMainSurface(scene); 
+
     draw(scene->camera);
 
     
