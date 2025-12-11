@@ -42,6 +42,8 @@ static void send_data(void *, int);
 static int receive_data(void *, int);
 static void handle_error(char *);
 
+void unpackCar(CarInfo data , uint8_t id);
+
 //クライアント起動後の動き
 void setup_client(char *server_name, uint16_t port) {
 
@@ -116,21 +118,21 @@ void send_input_data(void) {
 
   data.id = my_id; //自分のIDを設定
   data.order = 'I'; //入力情報コマンド
-  data.keyInputs = 0;
+  data.container.inputData.keyInputs = 0;
   for (int i = 0; i < KEY_MAX; i++) {
     if (myGameManager.keyNow[i]) {
-      data.keyInputs |= 1;//ビット列に圧縮
+      data.container.inputData.keyInputs |= 1;//ビット列に圧縮
     }
-    data.keyInputs <<= 1;
+    data.container.inputData.keyInputs <<= 1;
   }
   
-  data.joyKeyInputs = 0;
+  data.container.inputData.joyKeyInputs = 0;
   #ifdef USE_JOY
   for (int i = 0; i < JOY_KEY_MAX; i++) {
     if (myGameManager.joyBotton[i]) {
-      data.joyKeyInputs |= 1;//ビット列に圧縮
+      data.container.inputData.joyKeyInputs |= 1;//ビット列に圧縮
     }
-    data.joyKeyInputs <<= 1;
+    data.container.inputData.joyKeyInputs <<= 1;
   }
   data.stickX = myGameManager.StickX;
   data.stickY = myGameManager.StickY;
@@ -163,13 +165,13 @@ void receive_input_data(void) {
 
     // 2. 次に今フレームの状態を復元する
     for (int i = KEY_MAX -1 ; i >= 0 ; i--) {
-        data.keyInputs >>= 1;
-        myGameManager.clients[data.id].keyNow[i] = (data.keyInputs & 1);
+        data.container.inputData.keyInputs >>= 1;
+        myGameManager.clients[data.id].keyNow[i] = (data.container.inputData.keyInputs & 1);
     }
     #ifdef USE_JOY
     for (int i = JOY_KEY_MAX - 1; i >= 0; i--) {
-        data.joyKeyInputs >>= 1;
-        myGameManager.clients[data.id].joyBotton[i] = (data.joyKeyInputs & 1);
+        data.container.inputData.joyKeyInputs >>= 1;
+        myGameManager.clients[data.id].joyBotton[i] = (data.container.inputData.joyKeyInputs & 1);
     }
     #endif
   }
@@ -229,13 +231,13 @@ static int exe_command() {
       
       //現在のフレームの状態を復元
       for (int i = KEY_MAX - 1; i >= 0; i--) {
-        data.keyInputs >>= 1;
-        myGameManager.clients[data.id].keyNow[i] = (data.keyInputs & 1);
+        data.container.inputData.keyInputs >>= 1;
+        myGameManager.clients[data.id].keyNow[i] = (data.container.inputData.keyInputs & 1);
       }
       #ifdef USE_JOY
       for (int i = JOY_KEY_MAX - 1; i >= 0; i--) {
-        data.joyKeyInputs >>= 1;
-        myGameManager.clients[data.id].joyBotton[i] = (data.joyKeyInputs & 1);
+        data.container.inputData.joyKeyInputs >>= 1;
+        myGameManager.clients[data.id].joyBotton[i] = (data.container.inputData.joyKeyInputs & 1);
       }
       #endif
       MainScene *scene = (MainScene *)myGameManager.scene;
@@ -250,6 +252,15 @@ static int exe_command() {
     myGameManager.quitRequest = SDL_TRUE;
     result = 0; //終了
     break;
+
+  case 'C': //Cの場合
+    unpackCar(data.container.carInfo , data.id);
+    MainScene *scene = (MainScene *)myGameManager.scene;
+    scene->sendCarInfoPlayerNum++;
+    
+    break;
+
+
 
   default: //無効なコマンドの場合
     fprintf(stderr, "exe_command(): %c is not a valid command.\n", data.order);
@@ -334,4 +345,24 @@ static void handle_error(char *message) {
 void terminate_client() {
   fprintf(stderr, "Connection is closed.\n");
   close(sock); //ソケットクローズ
+}
+
+void unpackCar(CarInfo data , uint8_t id)
+{
+  MainScene *scene = myGameManager.scene;
+
+  Car *car = getCarFromId(scene->cars , id);
+
+  if (car == NULL){
+    printf("unpackCar: failed to get car\n");
+    return;
+  }
+
+  car->shotFlag = data.isShotGun;
+  
+  car->center = (Vec3f){data.carX , data.carY , data.carZ};
+  car->hp = data.HP;
+
+  car->q_pre = car->q;
+  car->q = data.q;
 }

@@ -70,6 +70,7 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     memcpy(car->preCoordOfVertexs , car->collisionBox->data.rectangler->vertex , sizeof(Vec3f)*8);
     car->hp = 100.0f;
     car->speed = 0.0f;
+    car->shotFlag = SDL_FALSE;
     car->gun = createGun(kind , id);
 
     char id_char[6] = {0};
@@ -80,6 +81,8 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     car->checkPointNum = 0;
     car->nextPlane = nextPlaneZero;
     car->nextCheckPoint = nextCheckPointZero;
+    car->q = quaternion_identity();
+    car->q_pre = quaternion_identity();
 
     return car;
 }
@@ -126,7 +129,18 @@ void rotateCar(Car *car , int deg)
     Rectangler *r = car->collisionBox->data.rectangler;
 
     //Vec3f eulurs = euler_from_vectors((Vec3f){1.0f , 0.0f , 0.0f} , car->direction);
-    rotateRectacglerTo(r , 0 , 0 , deg , car->center);
+    //rotateRectacgler(r , 0 , 0 , deg , car->center);
+    Quaternion q_ = quaternion_from_axis_angle((Vec3f){0.0f , 1.0f , 0.0f} , deg);
+    car->q = quaternion_multiply(car->q , q_);
+    rotateRectacglerQuaternion_left(r , car->q , car->center);
+}
+
+void rotateCarEX(Car *car)
+{
+    Rectangler *r = car->collisionBox->data.rectangler;
+    rotateRectacglerQuaternion(r , quaternion_inverse(car->q_pre) , car->center);
+
+    rotateRectacglerQuaternion(r , car->q , car->center);
 }
 
 #define CURVE_DEGREE 1
@@ -150,8 +164,9 @@ void forwardCar(Car *car)
     }
 
     if (inputAry[K_LEFT]){
-        car->direction = rotateXYZ(car->direction , 0 , 0 , curve_deg);
         rotateCar(car , curve_deg);
+        car->direction = rotateVecWithQuaternion(car->direction , curve_deg , (Vec3f){0.0f , 1.0f , 0.0f});
+
         /*
         if (inputAry[K_SHIFT]){
             car->direction = rotateXYZ(car->direction , 0 , 0 , CURVE_DEGREE);
@@ -161,8 +176,9 @@ void forwardCar(Car *car)
     }
 
     if (inputAry[K_RIGHT]){
-        car->direction = rotateXYZ(car->direction , 0 , 0 , -curve_deg);
         rotateCar(car , -curve_deg);
+        car->direction = rotateVecWithQuaternion(car->direction , -curve_deg , (Vec3f){0.0f , 1.0f , 0.0f});
+
         /*
         if (inputAry[K_SHIFT]){
             car->direction = rotateXYZ(car->direction , 0 , 0 , CURVE_DEGREE);
@@ -194,6 +210,19 @@ void teleportCar(Car *car , Vec3f coord)
 {
     Vec3f delta = vecSub(coord , car->center);
     car->center = coord;
+    moveRectacgler(car->collisionBox->data.rectangler , delta , 1.0f);
+    updateCarCenter(car);
+}
+
+/**
+ * @brief 車を指定の座標に移動させる
+ * 
+ * @param car 車
+ * @return なし
+ */
+void teleportCarEX(Car *car)
+{
+    Vec3f delta = vecSub(car->center , car->preCenter);
     moveRectacgler(car->collisionBox->data.rectangler , delta , 1.0f);
     updateCarCenter(car);
 }

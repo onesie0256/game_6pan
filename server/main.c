@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
   fprintf(stderr, "Port number = %d\n", port);
 
   setup_server(num_cl, port);
+  setupPhysics();
 
   int cond = 1;
   while (cond) {

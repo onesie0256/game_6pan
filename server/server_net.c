@@ -21,6 +21,10 @@ static fd_set mask; //ファイルディスクリプタ集合
 //static NetworkContainer data; //通信用の汎用データ構造体
 static NetworkContainer inputBuffer[MAX_Clients]; // 各クライアントの入力データ
 static int inputReceived[MAX_Clients] = {0};            // 受信したかどうか
+//void packInputData(InputData *data , );
+void unpackInputData(uint16_t key , uint16_t joy , uint8_t id);
+void packCarInfo(Car *car , CarInfo *data);
+void sendCarInfo(void);
 
 //関数プロトタイプ宣言
 void setup_server(int, u_short);
@@ -85,6 +89,8 @@ void setup_server(int num_cl, u_short port) {
     inet_ntop(AF_INET, (struct sockaddr *)&cl_addr.sin_addr, src, sizeof(src));
     fprintf(stderr, "Client %d is accepted (address=%s, port=%d).\n", i, src, ntohs(cl_addr.sin_port));
 
+    myGameManager.playerNum = num_cl;
+
   }
 //接続要求受付用ソケットは不要になるのでクローズ
   close(rsock);
@@ -141,9 +147,22 @@ int control_requests() {
 
         if (id < num_clients) {
             memcpy(&inputBuffer[id], &data, sizeof(NetworkContainer));
+            
             inputReceived[id] = 1;    // 受信済フラグ
         }
+      unpackInputData(data.container.inputData.keyInputs , data.container.inputData.joyKeyInputs , data.id);
+      MainScene *scene = (MainScene *)myGameManager.scene;
+      scene->sendInputDataPlayerNum++;
+
+      
+      if (scene->sendInputDataPlayerNum == myGameManager.playerNum){
+        update_physics();
+        sendCarInfo();
+        scene->sendInputDataPlayerNum = 0;
+      
       }
+      
+      /*
         // 全員から揃ったかチェック
         int all = 1;
         for (int j = 0; j < num_clients; j++) {
@@ -159,6 +178,8 @@ int control_requests() {
                 inputReceived[j] = 0; // 次フレームのためにリセット
                 printf("send input data to id:%d\n" , j);
             }
+        }
+        */
         }
         break;
 
@@ -188,11 +209,12 @@ static void send_data(int id, void *data, int size) {
   //不正なデータチェック
   if ((data == NULL) || (size <= 0)) {
     fprintf(stderr, "send_data(): data is illeagal.\n");
-    exit(1);
   }
 
   // 堅牢な送信処理
-  void send_all(int sock, void *buf, int len) {
+
+
+  void send_all(int sock, void *buf, int len){
     int bytes_sent = 0;
     int result;
     while (bytes_sent < len) {
@@ -271,4 +293,68 @@ void terminate_server(void) {
   }
   fprintf(stderr, "All connections are closed.\n");
   exit(0);
+}
+
+void unpackInputData(uint16_t key , uint16_t joy , uint8_t id)
+{
+  //前フレームの状態を保存
+      for (int i = 0; i < KEY_MAX; i++) {
+        myGameManager.clients[id].keyPrev[i] = myGameManager.clients[id].keyNow[i];
+      }
+      #ifdef USE_JOY
+      for (int i = 0; i < JOY_KEY_MAX; i++) {
+        myGameManager.clients[id].joyBottonPrev[i] = myGameManager.clients[id].joyBotton[i];
+      }
+      #endif
+      
+      //現在のフレームの状態を復元
+      for (int i = KEY_MAX - 1; i >= 0; i--) {
+        key >>= 1;
+        myGameManager.clients[id].keyNow[i] = (key & 1);
+      }
+      #ifdef USE_JOY
+      for (int i = JOY_KEY_MAX - 1; i >= 0; i--) {
+        data.joyKeyInputs >>= 1;
+        myGameManager.clients[id].joyBotton[i] = (joy & 1);
+      }
+      #endif
+}
+
+void packCarInfo(Car *car , CarInfo *data)
+{
+  Rectangler *r = car->collisionBox->data.rectangler;
+
+  data->carX = car->center.x;
+  data->carY = car->center.y;
+  data->carZ = car->center.z;
+
+  data->q = car->q;
+
+  data->HP = car->hp;
+
+  if (myGameManager.clients[car->id].keyNow[K_ENTER]){
+    data->isShotGun = 1;
+  }
+
+  #ifdef USE_JOY
+  if (myGameManager.clients[car->id].joyBotton[JOY_B]){
+    data->isShotGun = 1;
+  }
+  #endif
+}
+
+void sendCarInfo(void)
+{
+  MainScene *scene = (MainScene *)myGameManager.scene;
+  ListNode *node;
+  foreach(node , scene->cars){
+    NetworkContainer con;
+
+    Car *car = (Car *)node->data;
+    packCarInfo(car , &con.container.carInfo);
+    con.id = car->id;
+    con.order = 'C';
+
+    send_data(BROADCAST , &con , sizeof(con));
+  }
 }

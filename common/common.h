@@ -15,6 +15,7 @@
 #define JOY_KEY_MAX 10
 #define FONT_MAX 5
 #define FPS_f 90.0f
+#define FPS_inv 1.0f/FPS_f
 
 #define MAX_LEN_NAME 100
 #define BACKLOG 10      // 同時接続待ち上限
@@ -138,18 +139,37 @@ typedef enum{
     Scene_Max
 }SceneKinds;
 
-
-
-typedef struct{
-    uint8_t id;                 //id
-    char order;                 //命令
-    uint8_t option;             //お好きにどうぞ
+typedef struct {
     uint16_t keyInputs;         //キーの情報
     uint16_t joyKeyInputs;      //ジョイスティックボタン
     float stickX;               //スティック傾きX
     float stickY;               //スティック傾きY
-}NetworkContainer;
+}InputData;
 
+typedef struct {
+    float carX;
+    float carY;
+    float carZ;
+
+    Quaternion q;
+    uint8_t isShotGun;
+    uint8_t HP;
+    
+}CarInfo;
+
+typedef union {
+    InputData inputData;
+    CarInfo carInfo;
+}NetworkContainer_u;
+
+
+
+typedef struct{
+    uint8_t id;                     //id
+    char order;                     //命令
+    uint8_t option;                 //お好きにどうぞ
+    NetworkContainer_u container;   //内容
+}NetworkContainer;
 
 /**
  * @brief 車の情報
@@ -170,6 +190,10 @@ typedef struct car_t
     Gun *gun;                   //所持する銃
     int rapNum;                 //周回数
     int checkPointNum;          //次のチェックポイント
+
+    Quaternion q;
+    Quaternion q_pre;
+    SDL_bool shotFlag;          //発射フラグ
 
     Polygon *nextPlane;         //次のチェックポイントの平面
     CheckPoint *nextCheckPoint; //次のチェックポイントの座標
@@ -257,6 +281,7 @@ typedef struct {
     CheckPoint *checkPointZero;     //最初のチェックポイントの座標
     int goaledPlayerNum;            //ゴールしたプレイヤーの数
     int sendInputDataPlayerNum;     //入力データを送信するプレイヤーの数
+    int sendCarInfoPlayerNum;       //車情報を送信するプレイヤーの数
 }MainScene;
 
 /* car.c */
@@ -267,7 +292,9 @@ void moveCar(List *carList , List *PolygonList);
 void damageCar(Car *car , float damage);
 Car *getCarFromId(List *carList , uint8_t id);
 void collisionCars(List *carList);
-
+void teleportCarEX(Car *car);
+void rotateCarEX(Car *car);
+void updateCarCenter(Car *car);
 
 /* gun.c */
 void register_ammoList(List *list);
@@ -279,6 +306,7 @@ void destroyAmmo(Ammo *ammo);
 void displayAmmos(void);
 void updateGuns(List *carList);
 void collisionAmmoCars(List *carList);
+void collisionAmmoCars_c(List *carList);
 
 /* course_manager.h */
 Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero);

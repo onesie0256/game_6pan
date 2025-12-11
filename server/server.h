@@ -1,5 +1,6 @@
 #pragma once
 #include "../common/common.h"
+#include <netinet/in.h>
 #define DEF_PORT 50100
 #define MAX_LEN_ADDR 32
 #define BROADCAST -1
@@ -22,3 +23,6 @@ typedef struct {
 void setup_server(int, u_short);
 int control_requests();
 void terminate_server();
+/* server_physics.c */
+void setupPhysics(void);
+void update_physics(void);
