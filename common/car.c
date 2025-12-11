@@ -132,7 +132,7 @@ void rotateCar(Car *car , int deg)
     //rotateRectacgler(r , 0 , 0 , deg , car->center);
     Quaternion q_ = quaternion_from_axis_angle((Vec3f){0.0f , 1.0f , 0.0f} , deg);
     car->q = quaternion_multiply(car->q , q_);
-    rotateRectacglerQuaternion_left(r , car->q , car->center);
+    rotateRectacglerQuaternion(r , car->q , car->center);
 }
 
 void rotateCarEX(Car *car)

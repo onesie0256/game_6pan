@@ -21,6 +21,7 @@ int mainScene(void)
 
     MainScene *scene = (MainScene *)myGameManager.scene;
 
+
     if (setupFlag){
         setupScene();
         setupFlag = SDL_FALSE;

@@ -60,8 +60,13 @@ void setupSceneLate(void)
     carPlaceAlgorithmSetup();
 }
 
-void update_physics(void)
+Uint32 update_physics(Uint32 interval , void *name)
 {
+    if (myGameManager.quitRequest == SDL_TRUE){
+        return 0;
+    }
+
+    
     for (int i = 0 ; i < myGameManager.playerNum ; i++){
         if (myGameManager.clients[i].keyNow[K_ENTER] == SDL_TRUE){
             Car *tmp = getCarFromId(scene_->cars , i);
@@ -82,4 +87,8 @@ void update_physics(void)
     //draw(scene_->camera);
 
     updateGuns(scene_->cars);
+
+    sendCarInfo();
+
+    return interval;
 }

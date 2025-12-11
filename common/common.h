@@ -116,6 +116,8 @@ typedef struct
     joycon_btn prev_btn; // 前回のボタン状態
     #endif 
     SDL_Thread * key_thread;
+    SDL_Thread * net_thread;
+    SDL_TimerID timer;
     SDL_bool keyNow[KEY_MAX]; //キーの状態
     SDL_bool keyPrev[KEY_MAX];//キーの状態(1フレーム前)
     #ifdef USE_JOY

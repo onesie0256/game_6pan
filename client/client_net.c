@@ -27,6 +27,7 @@ static int my_id; //自分のID
 static int sock; //ソケット
 static int num_sock; // 
 static fd_set mask; 
+static struct sockaddr_in sv_addr; //サーバアドレス構造体
 //static Client clients[MAX_Clients]; //クライアント情報
 
 void setup_client(char *serverName, uint16_t port); 
@@ -48,7 +49,6 @@ void unpackCar(CarInfo data , uint8_t id);
 void setup_client(char *server_name, uint16_t port) {
 
   struct hostent *server; //サーバ情報
-  struct sockaddr_in sv_addr; //サーバアドレス構造体
 
 //起動直後　Trying to connect serverとポート番号を表示
   fprintf(stderr, "Trying to connect server %s (port = %d).\n", server_name, port);
@@ -57,7 +57,7 @@ void setup_client(char *server_name, uint16_t port) {
   }
 
   //ソケット作成
-  sock = socket(AF_INET, SOCK_STREAM, 0);
+  sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {//ソケット作成失敗
     handle_error("socket()");
   }
@@ -67,10 +67,13 @@ void setup_client(char *server_name, uint16_t port) {
   sv_addr.sin_port = htons(port);//ポート番号をネットワークバイトオーダーに変換
   sv_addr.sin_addr.s_addr = *(u_int *) server ->h_addr_list[0];//IPアドレス設定
 
-  //サーバへ接続要求
-  if (connect(sock, (struct sockaddr *)&sv_addr, sizeof(sv_addr)) != 0) {
-    handle_error("connect()");
-  }
+  NetworkContainer data;
+  memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
+  data.order = 'S'; //接続要求
+
+  send_data(&data, sizeof(NetworkContainer)); //データをサーバへ送信
+
+
 
   fprintf(stderr, "Waiting for other clients...\n");
   //クライアント数を受信
@@ -83,32 +86,10 @@ void setup_client(char *server_name, uint16_t port) {
   receive_data(&my_id, sizeof(int));
   fprintf(stderr, "Your ID = %d.\n", my_id);
   myGameManager.myID = my_id;
-  
-
-  num_sock = sock + 1; //最大ソケット番号＋1を設定
-  FD_ZERO(&mask); //マスクを初期化
-  FD_SET(0, &mask); //標準入力を監視対象に設定
-  FD_SET(sock, &mask);//ソケットを監視対象に設定
 }
 
 int control_requests () {
-  fd_set read_flag = mask; //コピー作成
-
-  struct timeval timeout;
-  timeout.tv_sec = 0;
-  timeout.tv_usec = 30;//30マイクロ秒のタイムアウト設定
-
-  if (select(num_sock, (fd_set *)&read_flag, NULL, NULL, &timeout) == -1) {
-    handle_error("select()");
-  }
-
-  int result = 1;
-  if (FD_ISSET(0, &read_flag)) { //標準入力からの入力がある場合
-     result = in_command(); //コマンド処理
-  } else if (FD_ISSET(sock, &read_flag)) { //ソケットからの入力がある場合
-    result = exe_command(); //コマンド実行
-  }
-
+    int result = exe_command(); //コマンド実行
   return result;
 }
 
@@ -256,6 +237,11 @@ static int exe_command() {
   case 'C': //Cの場合
     unpackCar(data.container.carInfo , data.id);
     MainScene *scene = (MainScene *)myGameManager.scene;
+    if (scene == NULL){
+      printf("exe_command: failed to get scene\n");
+      break;
+    }
+
     scene->sendCarInfoPlayerNum++;
     
     break;
@@ -292,7 +278,7 @@ static void send_data(void *data, int size) {
   int bytes_sent = 0;
   int result;
   while (bytes_sent < size) {
-    result = write(sock, (char *)data + bytes_sent, size - bytes_sent);
+    result = sendto(sock, (char *)data + bytes_sent, size - bytes_sent , 0 , (struct sockaddr *)&sv_addr, sizeof(sv_addr));
     if (result < 0) {
       handle_error("write()");
       return; // エラーが発生したら中断
@@ -311,7 +297,7 @@ static int receive_data(void *data, int size) {
   int bytes_received = 0;
   int result;
   while (bytes_received < size) {
-    result = read(sock, (char *)data + bytes_received, size - bytes_received);
+    result = recvfrom(sock, (char *)data + bytes_received, size - bytes_received , 0 , NULL, NULL);
     if (result < 0) {
       // EAGAIN/EWOULDBLOCKは、非ブロッキングソケットではエラーではない
       if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -350,6 +336,14 @@ void terminate_client() {
 void unpackCar(CarInfo data , uint8_t id)
 {
   MainScene *scene = myGameManager.scene;
+  if (scene == NULL){
+    printf("unpackCar: failed to get scene\n");
+    return;
+  }
+  if (scene->cars == NULL){
+    printf("unpackCar: failed to get cars\n");
+    return;
+  }
 
   Car *car = getCarFromId(scene->cars , id);
 
@@ -359,7 +353,10 @@ void unpackCar(CarInfo data , uint8_t id)
   }
 
   car->shotFlag = data.isShotGun;
-  
+
+  if (car->shotFlag){
+    printf("id:%d shot\n" , id);
+  }
   car->center = (Vec3f){data.carX , data.carY , data.carZ};
   car->hp = data.HP;
 

@@ -40,11 +40,14 @@ int main(int argc, char *argv[]) {
   setup_server(num_cl, port);
   setupPhysics();
 
+  myGameManager.quitRequest = SDL_FALSE;
+
   int cond = 1;
   while (cond) {
       cond = control_requests();
   }
-  SDL_Delay(3000);
+  SDL_RemoveTimer(myGameManager.timer);
+  SDL_Delay(1000);
   terminate_server();
 
   return 0;
