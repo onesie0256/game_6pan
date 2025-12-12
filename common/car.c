@@ -84,6 +84,15 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     car->q = quaternion_identity();
     car->q_pre = quaternion_identity();
 
+    updateCarCenter(car);
+
+
+    car->centerZero = car->center;
+    for (int i = 0 ; i < 8 ; i++){
+        car->vertZero[i] = ((Rectangler *)(car->collisionBox->data.rectangler))->vertex[i];
+    }
+
+
     return car;
 }
 
@@ -138,9 +147,21 @@ void rotateCar(Car *car , int deg)
 void rotateCarEX(Car *car)
 {
     Rectangler *r = car->collisionBox->data.rectangler;
-    rotateRectacglerQuaternion(r , quaternion_inverse(car->q_pre) , car->center);
+    Vec3f vert[8];
 
-    rotateRectacglerQuaternion(r , car->q , car->center);
+    Vec3f delta = vecSub(car->center , car->centerZero);
+    
+    for (int i = 0 ; i < 8 ; i++){
+        vert[i] = car->vertZero[i];
+        vert[i] = quaternion_rotate_vector(vert[i] , car->q);
+        vert[i] = vecAdd(vert[i] , delta);
+    }
+
+    for (int i = 0 ; i < 8 ; i++){
+        r->vertex[i] = vert[i];
+    }
+
+    upadteRectangler(r);
 }
 
 #define CURVE_DEGREE 1

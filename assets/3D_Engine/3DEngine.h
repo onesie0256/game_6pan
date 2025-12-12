@@ -58,6 +58,7 @@ Vec3f rotateVecWithQuaternion_left(Vec3f v , float angle , Vec3f axis);
 
 /* fileIO.c */
 SDL_bool loadOBJ(const char* obj_filename , const char* texture_filename , Obj *obj);
+SDL_bool loadOBJ_collison(const char* obj_filename ,  List *list);
 
 /* polygone.c */
 Polygon* createRectangler(Vec3f coord , Vec3f size , Vec3f color , int pitch , int roll , int yaw , List *list);
@@ -80,6 +81,7 @@ void rotateRectacglerTo(Rectangler *rectangler , int pitch , int roll , int yaw 
 void rotateRectacglerQuaternion(Rectangler *rectangler , Quaternion q , Vec3f center);
 void rotateRectacglerQuaternion_left(Rectangler *rectangler , Quaternion q , Vec3f center);
 void destroyPolygon(Polygon *polygon);
+void upadteRectangler(Rectangler *rectangler);
 
 /* space.c */
 float lengthPointToPlaneAndH(Vec3f *H, Vec3f v , Vec3f n , Vec3f p);

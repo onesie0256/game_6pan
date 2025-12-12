@@ -83,6 +83,8 @@ int mainScene(void)
     //printf("順位: %d\n" , scene->myCar->place);
     //printf("c2.hp: %f\n" , c2->hp);
     //printf("弾数:%d\n" , scene->myCar->gun->bulletNum);
+    //printf("(x,y,z):(%f,%f,%f)\n" , scene->myCar->center.x , scene->myCar->center.y , scene->myCar->center.z);
+    
 
     if (endFlag){
         destroyScene();
@@ -141,8 +143,10 @@ int setupScene(void)
 
     #endif
     //createCar(scene->cars , 2 , (Vec3f){0.0f,7.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
-    createPlane4((Vec3f){-5.0f,-0.1f,5.0f} , 20.0f , 20.0f , (Vec3f){0.0f,1.0f,0.0f} , 90 , 0 , 0 , PT_PLANE4 , scene->polygonList);
-    createRectangler((Vec3f){-3.0f , 0.0f , 0.0f} , (Vec3f){1.0f , 1.0f , 1.0f} , (Vec3f){0.0f , 0.0f , 1.0f} , 0 , 0 , 30 , scene->polygonList);
+    //createPlane4((Vec3f){-5.0f,-0.1f,5.0f} , 20.0f , 20.0f , (Vec3f){0.0f,1.0f,0.0f} , 90 , 0 , 0 , PT_PLANE4 , scene->polygonList);
+    //createRectangler((Vec3f){-3.0f , 0.0f , 0.0f} , (Vec3f){1.0f , 1.0f , 1.0f} , (Vec3f){0.0f , 0.0f , 1.0f} , 0 , 0 , 30 , scene->polygonList);
+    createObj("assets/models/course.obj" , "assets/models/course.png" , (Vec3f){0.0f,0.0f,0.0f} , (Vec3f){1.0f,1.0f,1.0f} , 0 , 0 , 0 , scene->polygonList);
+
 
     
     //Polygon *obj = createObj("assets/models/coco.obj" , "assets/models/coco.png" , (Vec3f){0.0f,0.0f,0.0f} , (Vec3f){1.5f,1.5f,1.5f} , 0 , 0 , 0 , scene->polygonList);
@@ -175,15 +179,19 @@ int destroyScene(void)
 void updateCar_c(void)
 {
     MainScene *scene = (MainScene *)myGameManager.scene;
-
+    SDL_mutex *m = SDL_CreateMutex();
     ListNode *node;
     foreach(node , scene->cars){
         Car *car = (Car*)node->data;
+
         teleportCarEX(car);
         rotateCarEX(car);
-        car->preCenter = car->center;
+        
+        
         car->direction = quaternion_rotate_vector((Vec3f){-1.0f , 0.0f , 0.0f} , car->q);
         //car->direction = quaternion_rotate_vector_left(car->direction , car->q);
         updateCarCenter(car);
+        car->preCenter = car->center;
     }
+    SDL_DestroyMutex(m);
 }

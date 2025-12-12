@@ -121,7 +121,7 @@ void send_input_data(void) {
   
   //データをサーバへ送信
   send_data(&data, sizeof(NetworkContainer));
-  printf("send input data\n");
+  //printf("send input data\n");
 }   
 
 void receive_input_data(void) {

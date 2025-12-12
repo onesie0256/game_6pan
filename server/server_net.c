@@ -122,7 +122,7 @@ int control_requests() {
       case 'I': //入力情報を受け取った場合
       {
         u_short id = data.id;
-        printf("recieve input data from id:%d\n" , data.id);
+        //printf("recieve input data from id:%d\n" , data.id);
 
         if (id < num_clients) {
             memcpy(&inputBuffer[id], &data, sizeof(NetworkContainer));

@@ -199,6 +199,9 @@ typedef struct car_t
 
     Polygon *nextPlane;         //次のチェックポイントの平面
     CheckPoint *nextCheckPoint; //次のチェックポイントの座標
+
+    Vec3f centerZero;
+    Vec3f vertZero[8];
 }Car;
 
 /**

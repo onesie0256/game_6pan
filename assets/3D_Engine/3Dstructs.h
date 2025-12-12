@@ -128,7 +128,7 @@ typedef struct {
     Vec3f color;            //色
 
     float vertAry[9];
-    float normAry[3];
+    float normAry[9];
     float colorAry[9];
 
     PlaneType type;         //タイプ
