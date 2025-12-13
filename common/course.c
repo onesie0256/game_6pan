@@ -28,7 +28,7 @@ Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero
     course->checkPointPointList = createList();
     course->checkPointNum = 0;
 
-    
+    /*
     Polygon *p = createPlane4((Vec3f){0.0f,-1.0f,0.0f} , 20.0f , 20.0f , (Vec3f){0.0f,1.0f,0.0f} , 0 , 0 , 0 , PT_PLANE4 , NULL);
     addListNode(course->checkPointPlaneList , p , "0");
     course->checkPointNum++;
@@ -36,8 +36,8 @@ Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero
     Polygon *p2 = createPlane4((Vec3f){0.0f,-1.0f,-3.0f} , 20.0f , 20.0f , (Vec3f){1.0f,0.0f,0.0f} , 0 , 0 , 0 , PT_PLANE4 , NULL);
     addListNode(course->checkPointPlaneList , p2 , "1");
     course->checkPointNum++;
-    
-    //loadCheckPointData("assets/data/checkpointdata.data" , course);
+    */
+    loadCheckPointData("assets/data/checkpointdata.data" , course);
 
     ListNode *node;
     int id = 0;
@@ -79,8 +79,9 @@ SDL_bool checkCarPoint(Car *car , CheckPoint *cp , Polygon *plane_)
     Vec3f pb = vecSub(car->center , cp->coord);
     Vec3f C = cp->normal;
 
+    //isPointOnPlane4_(car->center , plane) && (vecMulIn(pa , C) < 0) && (vecMulIn(pb , C) > 0)
 
-    if (isPointOnPlane4_(car->center , plane) && (vecMulIn(pa , C) < 0) && (vecMulIn(pb , C) > 0)){
+    if (isPointOnPlane4_(car->center , plane) && (vecMulIn(pb , C) > 0)){
         printf("No.%d : チェックポイントを%d通過\n" , car->id , car->checkPointNum);
         return SDL_TRUE;
     }
