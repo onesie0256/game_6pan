@@ -32,18 +32,13 @@ int mainScene(void)
         endFlag = SDL_TRUE;
     }
 
-    
-    // 前のフレームの全プレイヤーデータを受信するまで待つ
-    // ただし、ビジーループでブロックするのではなく、gameLoopに戻る
     if (scene->sendCarInfoPlayerNum < myGameManager.playerNum) {
-        if (myGameManager.quitRequest == SDL_TRUE) { // 待っている間に終了要求が来た場合
+        if (myGameManager.quitRequest == SDL_TRUE) { 
              endFlag = SDL_TRUE;
         } else {
-            // まだ受信中なので、今回のフレームの送信・更新処理はスキップ
-            // ただし描画などは行いたいので、関数の末尾まで処理は継続させる
+            ;
         }
     } else {
-        // 全員分のデータを受信したら、カウンタをリセットして、今回の自分の入力を送信する
         scene->sendCarInfoPlayerNum = 0;
         if (myGameManager.quitRequest == SDL_FALSE) {
             send_input_data();
@@ -62,6 +57,9 @@ int mainScene(void)
         updateAmmos();
         collisionAmmoCars_c(scene->cars);
         updateGuns(scene->cars);
+
+        checkCarCheckPoint(scene->cars , scene->course);
+        updatePlace();
     }
 
     
@@ -69,8 +67,6 @@ int mainScene(void)
     //updateAmmos();
     //moveCar(scene->cars , scene->polygonList);
     //collisionAmmoCars(scene->cars);
-    checkCarCheckPoint(scene->cars , scene->course);
-    updatePlace();
 
     updateCamera(scene->myCar , scene->camera);
 

@@ -8,6 +8,7 @@ void destroyCourse(Course *course);
 Polygon *set_checkPointPlaneZero(void);
 CheckPoint *set_checkPointZero(void);
 void carPlaceAlgorithmSetup(void);
+void loadCheckPointData(char *filePath , Course *course);
 
 static MainScene *scene = NULL;
 static int placeAry[MAX_PLAYER];
@@ -27,6 +28,7 @@ Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero
     course->checkPointPointList = createList();
     course->checkPointNum = 0;
 
+    
     Polygon *p = createPlane4((Vec3f){0.0f,-1.0f,0.0f} , 20.0f , 20.0f , (Vec3f){0.0f,1.0f,0.0f} , 0 , 0 , 0 , PT_PLANE4 , NULL);
     addListNode(course->checkPointPlaneList , p , "0");
     course->checkPointNum++;
@@ -34,6 +36,8 @@ Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero
     Polygon *p2 = createPlane4((Vec3f){0.0f,-1.0f,-3.0f} , 20.0f , 20.0f , (Vec3f){1.0f,0.0f,0.0f} , 0 , 0 , 0 , PT_PLANE4 , NULL);
     addListNode(course->checkPointPlaneList , p2 , "1");
     course->checkPointNum++;
+    
+    //loadCheckPointData("assets/data/checkpointdata.data" , course);
 
     ListNode *node;
     int id = 0;
@@ -77,9 +81,7 @@ SDL_bool checkCarPoint(Car *car , CheckPoint *cp , Polygon *plane_)
 
 
     if (isPointOnPlane4_(car->center , plane) && (vecMulIn(pa , C) < 0) && (vecMulIn(pb , C) > 0)){
-        #ifdef DEGUG_3DE
-            printf("No.%d : チェックポイントを%d通過\n" , car->id , car->checkPointNum);
-        #endif
+        printf("No.%d : チェックポイントを%d通過\n" , car->id , car->checkPointNum);
         return SDL_TRUE;
     }
     return SDL_FALSE;
@@ -108,9 +110,7 @@ void checkCarCheckPoint(List *carList , Course *course)
             car->nextCheckPoint = scene->checkPointZero;
 
 
-            #ifdef DEGUG_3DE
-            printf("No.%d : %d周完了\n" , car->id , car->rapNum);
-            #endif
+        printf("No.%d : %d周完了\n" , car->id , car->rapNum);
         }
 
         sprintf(id_char , "%d" , car->checkPointNum);
@@ -187,4 +187,35 @@ void updatePlace(void)
         Car *car = carAry[placeAry[i]];
         car->place = i + 1;
     }
+}
+
+void loadCheckPointData(char *filePath , Course *course)
+{
+    FILE *fp = fopen(filePath , "r");
+    if (fp == NULL){
+        printf("couldn't open file\n");
+        return;
+    }
+
+    List *list = course->checkPointPlaneList;
+
+    char buf[256];
+    while (fgets(buf , sizeof(buf) , fp) != NULL){
+        Vec3f coord;
+        float sizeX , sizeY;
+        int yaw;
+
+        sscanf(buf , "%f,%f,%f %f,%f %d" , &coord.x , &coord.y , &coord.z , &sizeX , &sizeY , &yaw);
+
+        Polygon *p = createPlane4(coord , sizeX , sizeY , (Vec3f){0.0f , 1.0f , 0.0f} , 0 , 0 , yaw , PLT_Wall , NULL);
+        course->checkPointNum++;
+
+        static int id = 0;
+        char tmp[20] = {0};
+        sprintf(tmp , "%d" , id);
+        addListNode(list , p , tmp);
+        id++;
+    }
+
+    fclose(fp);
 }
