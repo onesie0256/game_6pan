@@ -27,6 +27,11 @@ static int inputReceived[MAX_Clients] = {0};            // 受信したかどう
 void unpackInputData(uint16_t key , uint16_t joy , uint8_t id);
 void packCarInfo(Car *car , CarInfo *data);
 void sendCarInfo(void);
+void sendACK(void);
+void sendAllClientData(void);
+void waitUntilAcks(int count);
+
+
 
 //関数プロトタイプ宣言
 void setup_server(int, u_short);
@@ -78,14 +83,14 @@ int control_requests() {
   NetworkContainer data;
   memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
   
-  struct sockaddr src_addr;
-  socklen_t src_addr_len;
+  struct sockaddr_in src_addr;
+  socklen_t src_addr_len = sizeof(src_addr);
 
       // データ受信。戻り値が0以下ならクライアント切断かエラー
-      if (receive_data(&data, sizeof(data), &src_addr, &src_addr_len) <= 0){
+      if (receive_data(&data, sizeof(data), (struct sockaddr *)&src_addr, &src_addr_len) <= 0){
           fprintf(stderr, "Client disconnected. Sending quit command.\n");
           // 他のクライアントに終了を通知
-          data.order = 'Q';
+          data.order = COMMAND_QUIT;
           //data.id = i;
           send_data(BROADCAST, &data, sizeof(data));
           return 0; // サーバー終了
@@ -95,12 +100,12 @@ int control_requests() {
       //コマンドに応じた処理
       switch (data.order) {
 
-      case 'S': //接続要求を受け取った場合
+      case COMMAND_SYN: //接続要求を受け取った場合
       {
         //クライアント情報を構造体に保持
         clients[clientId].id = clientId;
         //clients[clientId].sock = rsock;
-        clients[clientId].addr = *(struct sockaddr_in *)&src_addr;
+        clients[clientId].addr = src_addr;
         clients[clientId].addr_len = src_addr_len;
         
         printf("client %d connected\nip:%s\nport:%d\n" , clientId , inet_ntoa(clients[clientId].addr.sin_addr) , ntohs(clients[clientId].addr.sin_port));
@@ -108,18 +113,15 @@ int control_requests() {
         send_data(clientId, &num_clients, sizeof(int)); //クライアント数を送信
         send_data(clientId, &clientId, sizeof(int)); //自分のIDを送信
 
-
         clientId++;
-        if (clientId == num_clients){
+
+        if (clientId == num_clients) {
           printf("all client connected\n");
-          SDL_Delay(300);
-          setupPhysics();
-          myGameManager.timer = SDL_AddTimer(1000/60.0f, update_physics , "update_physics");
         }
         }
       break;
 
-      case 'I': //入力情報を受け取った場合
+      case COMMAND_INPUT_DATA: //入力情報を受け取った場合
       {
         u_short id = data.id;
         //printf("recieve input data from id:%d\n" , data.id);
@@ -141,12 +143,34 @@ int control_requests() {
         }
         break;
 
-      case 'Q': //Qの場合
+      case COMMAND_QUIT: //Qの場合
       {
         fprintf(stderr, "client[%d]: quit\n", data.id);
         send_data(BROADCAST, &data, sizeof(data)); //全クライアントへ終了コマンド送信
         myGameManager.quitRequest = SDL_TRUE;
         return 0; // サーバー終了
+      }
+      break;
+
+      case COMMAND_GUN:
+      {
+        int id = data.id;
+        myGameManager.clients[id].gunId = data.container.clientData.gunId;
+        printf("id:%d gun id:%d\n" , id , myGameManager.clients[id].gunId);
+        
+        static int count = 0;
+        count++;
+        if (count == myGameManager.playerNum){
+          printf("all client send gun id\n");
+          sendAllClientData();
+          SDL_Delay(100);
+          sendACK();
+          SDL_Delay(100);
+          setupPhysics();
+          sendACK();
+          SDL_Delay(100);
+          myGameManager.timer = SDL_AddTimer(1000/60.0f, update_physics , "update_physics");
+        }
       }
       break;
         
@@ -310,8 +334,37 @@ void sendCarInfo(void)
     Car *car = (Car *)node->data;
     packCarInfo(car , &con.container.carInfo);
     con.id = car->id;
-    con.order = 'C';
+    con.order = COMMAND_CARINFO;
 
     send_data(BROADCAST , &con , sizeof(con));
   }
+}
+
+void sendACK(void)
+{
+  NetworkContainer data;
+  memset(&data, 0, sizeof(NetworkContainer));
+  data.order = COMMAND_ACK;
+  send_data(BROADCAST , &data , sizeof(data));
+}
+
+void sendAllClientData(void)
+{
+  for (int i = 0 ; i < myGameManager.playerNum ; i++){
+    NetworkContainer data;
+    memset(&data, 0, sizeof(NetworkContainer));
+    data.order = COMMAND_CLIENT_DATA;
+    data.id = i;
+
+    data.container.clientData.gunId = myGameManager.clients[i].gunId;
+    send_data(BROADCAST , &data , sizeof(data));
+  }
+}
+
+void waitUntilAcks(int count)
+{
+  while (myGameManager.ackRequest != count){
+    ;
+  }
+  myGameManager.ackRequest = 0;
 }

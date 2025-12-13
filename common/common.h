@@ -23,6 +23,15 @@
 
 #define WEAPON_TYPE_MAX 3
 
+/* network orders */
+#define COMMAND_QUIT        'Q' //終了要求コマンド
+#define COMMAND_SYN         'S' //接続要求コマンド(クライアント->サーバー)
+#define COMMAND_INPUT_DATA  'I' //入力情報コマンド(クライアント->サーバー)
+#define COMMAND_CARINFO     'C' //車情報コマンド(サーバー->クライアント)
+#define COMMAND_GUN         'G' //銃の種類の送信コマンド(クライアント->サーバー)
+#define COMMAND_CLIENT_DATA 'c' //クライアントの情報のデータ
+#define COMMAND_ACK         'A' //ACKコマンド
+
 
 
 struct list_t;
@@ -94,6 +103,7 @@ typedef struct client_t{
 typedef struct
 {
     SDL_bool quitRequest;           //SDL_QUITが通知されたらTRUE
+    int ackRequest;            //ACKが通知されたらTRUE
     uint8_t myID;                   //ID
     uint8_t playerNum;              //プレイヤー人数
     uint8_t gunId;                  //自分の銃の種類
@@ -159,9 +169,15 @@ typedef struct {
     
 }CarInfo;
 
+typedef struct {
+    uint8_t gunId;
+    //char name[] //todo
+}ClientData;
+
 typedef union {
     InputData inputData;
     CarInfo carInfo;
+    ClientData clientData;
 }NetworkContainer_u;
 
 
@@ -202,6 +218,8 @@ typedef struct car_t
 
     Vec3f centerZero;
     Vec3f vertZero[8];
+
+    SDL_bool isGoaled;          //ゴールしたかどうか
 }Car;
 
 /**

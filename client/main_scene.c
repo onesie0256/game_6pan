@@ -135,7 +135,7 @@ int setupScene(void)
     c2 = createCar(scene->cars , 1 , (Vec3f){0.0f,5.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
     #else
     for (int i = 0 ; i < myGameManager.playerNum ; i++){
-        Car *car = createCar(scene->cars , i , (Vec3f){(float)i, 3.0f , 0.0f} , Shotgun , scene->checkPointPlaneZero , scene->checkPointZero);
+        Car *car = createCar(scene->cars , i , (Vec3f){(float)i, 3.0f , 0.0f} , myGameManager.clients[i].gunId , scene->checkPointPlaneZero , scene->checkPointZero);
         if (i == myGameManager.myID){
             scene->myCar = car;
         }
@@ -156,13 +156,15 @@ int setupScene(void)
     
 
     setupSceneLate();
+
+    waitUntilAck();
+    send_input_data();
     return 0;
 }
 
 int setupSceneLate(void)
 {
     carPlaceAlgorithmSetup();
-    send_input_data();
 }
 
 int destroyScene(void)

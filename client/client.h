@@ -74,6 +74,8 @@ void terminate_client();
 void send_input_data(void);
 void receive_input_data(void);
 void send_Quit(void);
+void waitUntilAck(void);
+void send_gunId(void);
 
 /* title_scene.c */
 int titleScene(void);

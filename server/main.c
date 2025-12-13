@@ -41,6 +41,7 @@ int main(int argc, char *argv[]) {
   setupPhysics();
 
   myGameManager.quitRequest = SDL_FALSE;
+  myGameManager.ackRequest = SDL_FALSE;
 
   int cond = 1;
   while (cond) {

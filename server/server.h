@@ -25,6 +25,8 @@ void setup_server(int, u_short);
 int control_requests();
 void terminate_server();
 void sendCarInfo(void);
+void sendACK(void);
+void sendAllClientData(void);
 
 /* server_physics.c */
 void setupPhysics(void);

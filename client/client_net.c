@@ -20,7 +20,7 @@ typedef unsigned int u_int;
 #define MAX_LEN_ADDR 32
 #define MAX_LEN_MESSAGE 256
 #define BROADCAST -1
-#define QUIT_COMMAND 'Q'
+
 
 static int n_clients; //クライアント数
 static int my_id; //自分のID
@@ -69,7 +69,7 @@ void setup_client(char *server_name, uint16_t port) {
 
   NetworkContainer data;
   memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
-  data.order = 'S'; //接続要求
+  data.order = COMMAND_SYN; //接続要求
 
   send_data(&data, sizeof(NetworkContainer)); //データをサーバへ送信
 
@@ -98,7 +98,7 @@ void send_input_data(void) {
   memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
 
   data.id = my_id; //自分のIDを設定
-  data.order = 'I'; //入力情報コマンド
+  data.order = COMMAND_INPUT_DATA; //入力情報コマンド
   data.container.inputData.keyInputs = 0;
   for (int i = 0; i < KEY_MAX; i++) {
     if (myGameManager.keyNow[i]) {
@@ -167,8 +167,8 @@ static int in_command() {
 
   switch (com) {
     //Qと入力されたらQUIT_COMMANDを送信
-  case QUIT_COMMAND:
-    data.order = 'Q';
+  case COMMAND_QUIT:
+    data.order = COMMAND_QUIT;
     data.id = my_id;
     send_data(&data, sizeof(NetworkContainer)); //データをサーバへ送信
     break;
@@ -196,7 +196,7 @@ static int exe_command() {
 //コマンドに応じた処理
   switch (data.order) {
 
-  case 'I': //入力情報の場合
+  case COMMAND_INPUT_DATA: //入力情報の場合
     //受信した入力データを処理
     if (data.id < n_clients) {
       printf("recieve input data from id:%d\n" , data.id);
@@ -228,13 +228,13 @@ static int exe_command() {
     break;
 
 
-  case QUIT_COMMAND: //Qの場合
+  case COMMAND_QUIT: //Qの場合
     fprintf(stderr, "client[%d] sent quit order.\n", data.id);
     myGameManager.quitRequest = SDL_TRUE;
     result = 0; //終了
     break;
 
-  case 'C': //Cの場合
+  case COMMAND_CARINFO: //Cの場合
     unpackCar(data.container.carInfo , data.id);
     MainScene *scene = (MainScene *)myGameManager.scene;
     if (scene == NULL){
@@ -246,6 +246,14 @@ static int exe_command() {
     
     break;
 
+  case COMMAND_ACK:
+    myGameManager.ackRequest++;
+    break;
+  
+  case COMMAND_CLIENT_DATA:
+    myGameManager.clients[data.id].gunId = data.container.clientData.gunId;
+    printf("id:%d gun id:%d\n" , data.id , myGameManager.clients[data.id].gunId);
+    break;
 
 
   default: //無効なコマンドの場合
@@ -262,7 +270,7 @@ void send_Quit(void)
     memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
 
     data.id = my_id; //自分のIDを設定
-    data.order = QUIT_COMMAND; //入力情報コマンド
+    data.order = COMMAND_QUIT; //入力情報コマンド
 
     send_data(&data, sizeof(NetworkContainer));
 }
@@ -362,4 +370,23 @@ void unpackCar(CarInfo data , uint8_t id)
 
   car->q_pre = car->q;
   car->q = data.q;
+}
+
+void waitUntilAck(void)
+{
+  while (myGameManager.ackRequest == 0)
+  {
+    ;
+  }
+  myGameManager.ackRequest = 0;
+}
+
+void send_gunId(void)
+{
+  NetworkContainer data;
+  memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
+  data.order = COMMAND_GUN;
+  data.id = my_id;
+  data.container.clientData.gunId = myGameManager.gunId;
+  send_data(&data, sizeof(data));
 }

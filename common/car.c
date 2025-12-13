@@ -72,6 +72,7 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     car->speed = 0.0f;
     car->shotFlag = SDL_FALSE;
     car->gun = createGun(kind , id);
+    car->isGoaled = SDL_FALSE;
 
     char id_char[6] = {0};
     sprintf(id_char , "%d" , id);
@@ -85,7 +86,6 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     car->q_pre = quaternion_identity();
 
     updateCarCenter(car);
-
 
     car->centerZero = car->center;
     for (int i = 0 ; i < 8 ; i++){

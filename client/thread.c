@@ -70,7 +70,7 @@ int key_func(void *args)
             switch (myGameManager.event.type)
             {
             case SDL_QUIT: //終了処理へ
-                myGameManager.quitRequest = SDL_TRUE;
+                //myGameManager.quitRequest = SDL_TRUE;
                 send_Quit();
                 break;
 
