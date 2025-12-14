@@ -64,7 +64,7 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     default:
         break;
     }
-    car->collisionBox = createRectangler(coord , (Vec3f){0.8f,0.5f,0.5f} , color , 0 , 0 , 0 , NULL);
+    car->collisionBox = createRectangler(coord , (Vec3f){0.3f,0.15f,0.15f} , color , 0 , 0 , 0 , NULL);
     car->velocity = (Vec3f){0.0f,0.0f,0.0f};
     car->direction = (Vec3f){-1.0f,0.0f,0.0f};
     memcpy(car->preCoordOfVertexs , car->collisionBox->data.rectangler->vertex , sizeof(Vec3f)*8);
@@ -135,13 +135,14 @@ void displayCars(List *list)
  */
 void rotateCar(Car *car , int deg)
 {
-    Rectangler *r = car->collisionBox->data.rectangler;
+    //Rectangler *r = car->collisionBox->data.rectangler;
 
     //Vec3f eulurs = euler_from_vectors((Vec3f){1.0f , 0.0f , 0.0f} , car->direction);
     //rotateRectacgler(r , 0 , 0 , deg , car->center);
     Quaternion q_ = quaternion_from_axis_angle((Vec3f){0.0f , 1.0f , 0.0f} , deg);
     car->q = quaternion_multiply(car->q , q_);
-    rotateRectacglerQuaternion(r , car->q , car->center);
+    rotateCarEX(car);
+    //rotateRectacglerQuaternion(r , car->q , car->center);
 }
 
 void rotateCarEX(Car *car)
@@ -149,11 +150,21 @@ void rotateCarEX(Car *car)
     Rectangler *r = car->collisionBox->data.rectangler;
     Vec3f vert[8];
 
+    // モデルのローカル座標系での中心を計算
+    Vec3f modelCenterOffset = vecMulSca(vecAdd(car->vertZero[0], car->vertZero[7]), 0.5f);
+    // ワールド空間での車の移動量を計算
     Vec3f delta = vecSub(car->center , car->centerZero);
     
     for (int i = 0 ; i < 8 ; i++){
+        // 1. 初期頂点を取得
         vert[i] = car->vertZero[i];
+        // 2. モデルの中心が原点に来るように移動
+        vert[i] = vecSub(vert[i], modelCenterOffset);
+        // 3. 原点中心で回転
         vert[i] = quaternion_rotate_vector(vert[i] , car->q);
+        // 4. モデルの中心を元の位置に戻す
+        vert[i] = vecAdd(vert[i], modelCenterOffset);
+        // 5. 車全体のワールド空間での移動を適用
         vert[i] = vecAdd(vert[i] , delta);
     }
 

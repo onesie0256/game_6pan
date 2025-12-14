@@ -222,5 +222,5 @@ void updateCamera(Car *car , Camera *camera)
     Rectangler *r = car->collisionBox->data.rectangler;
 
     camera->center = car->center;
-    camera->pos = vecAdd(car->center , vecAdd((Vec3f){0.0f,2.0f,0.0f} , vecMulSca(car->direction , -3.0f)));
+    camera->pos = vecAdd(car->center , vecAdd((Vec3f){0.0f,0.6f,0.0f} , vecMulSca(car->direction , -1.5f)));
 }
