@@ -124,6 +124,18 @@ SDL_bool init(void)
         return SDL_FALSE;
     }
 
+    // SDL_mixerの初期化（MP3ファイルを使用）
+    Mix_Init(MIX_INIT_MP3);
+
+    // オーディオデバイスの初期化
+    if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) < 0) {
+        printf("failed to initialize SDL_mixer.\n");
+        SDL_Quit();
+        return SDL_FALSE;
+    }
+
+
+
     #ifdef USE_JOY
     
     if (joycon_open(&myGameManager.jc , JOYCON_R) != 0){

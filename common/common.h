@@ -5,6 +5,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #ifdef USE_JOY
 #include <joyconlib.h>
@@ -150,6 +151,21 @@ typedef enum{
     Scene_Main,       //ゲーム画面
     Scene_Max
 }SceneKinds;
+
+/**
+ * @brief サウンドリスト
+ */
+typedef enum {
+    BGM_title, 
+    BGM_main,  
+    Sound_Gunshot,    
+    Sound_Engine,  
+    Sound_Acceleration, 
+    K_SHIFT, 
+    K_ENTER, 
+    K_ESCAPE,
+    S_MAX    //使用するサウンドの数
+}KeyNum;
 
 typedef struct {
     uint16_t keyInputs;         //キーの情報
