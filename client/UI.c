@@ -10,19 +10,11 @@ const WeaponInfo weapon_info[WEAPON_TYPE_MAX] = {
 
 /**
  * @name UI_init
- * @brief UIの初期化（SDL、TTF）
+ * @brief UIの初期化（TTFのみ）
  * 
  */
 int UI_init(void)
 {
-	/*
-	//SDLを初期化 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
-		return -1;
-	}
-	*/
-
 	//TTFを初期化 
 	if (TTF_WasInit() == 0) {
 		if (TTF_Init() == -1) {
@@ -31,7 +23,7 @@ int UI_init(void)
 	}
 
 	if (myGameManager.fonts[0] == NULL) {
-		/* フォント読み込み */
+		// フォント読み込み 
 		TTF_Font *f = TTF_OpenFont("assets/fonts/Aircruiser3Dital.ttf", 100);
 		if (f) {
 			if (f)
@@ -73,7 +65,7 @@ int UI_init(void)
  * @param y 描画するY座標
  * @param color テキストの色
  */
-static void UI_renderTextCentered(TTF_Font *font, const char *text, int y, SDL_Color color)
+static void UI_updateTextCenteredOnSurface(TTF_Font *font, const char *text, int y, SDL_Color color)
 {
 	if (myGameManager.UI == NULL) return;
 
@@ -91,12 +83,12 @@ static void UI_renderTextCentered(TTF_Font *font, const char *text, int y, SDL_C
  * @brief タイトル画面を描画する
  * @param titleScene タイトルシーンの状態。アニメーションなどに使用します。
  */
-void UI_renderTitleScreen(TitleScene *titleScene)
+void UI_updateTitleSurface(TitleScene *titleScene)
 {
 	if (myGameManager.UI == NULL || titleScene == NULL) return;
 
-	// 背景描画（白色）
-	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 0, 255, 255));
+	//背景描画（白色）
+	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 255, 255, 255));
 
 	//ビート効果を適用したタイトルボックスの描画
 	float scale = titleScene->beatScale;
@@ -136,8 +128,8 @@ void UI_renderTitleScreen(TitleScene *titleScene)
 
 	//Enterプロンプト点滅表示
 	Uint32 ticks = SDL_GetTicks();
-	if ((ticks / 500) % 2 == 0) {
-		UI_renderTextCentered(myGameManager.fonts[0], "Press Enter to Start", myGameManager.windowH*3/4 + 50, black);
+	if ((ticks / 500) % 2 == 0) { 
+		UI_updateTextCenteredOnSurface(myGameManager.fonts[0], "Press Enter to Start", myGameManager.windowH*3/4 + 50, black);
 	}
 }
 
@@ -145,35 +137,34 @@ void UI_renderTitleScreen(TitleScene *titleScene)
  * @brief 待機画面を描画する
  * @param waitScene 待機シーンの状態。選択中の武器表示などに使用
  */
-void UI_renderWaitScreen(WaitScene *waitScene)
+void UI_updateWaitSurface(WaitScene *waitScene)
 {
 	if (myGameManager.UI == NULL || waitScene == NULL) return;
 
 	//背景描画(水色)
-	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 0, 255, 255));
+	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 224, 255, 255));
 
 	//選択中の武器情報を取得
 	int index = waitScene->selectedWeaponIndex;
 	const WeaponInfo* selected_weapon = &weapon_info[index];
 
 	//画面中央: 武器名を描画
-	SDL_Color white = { 255, 255, 255, 255 };
-	UI_renderTextCentered(myGameManager.fonts[0], selected_weapon->name, myGameManager.windowH / 2 - 50, white);
+	SDL_Color black = {0, 0, 0, 0};
+	UI_updateTextCenteredOnSurface(myGameManager.fonts[0], selected_weapon->name, myGameManager.windowH / 2 - 50, black);
 
 	//画面中央: 武器画像を描画
-	//TODO: 3Dモデルに置き換えるまでの仮表示として画像を描画
 	
 
 	//画面上部: 操作説明を描画
-	UI_renderTextCentered(myGameManager.fonts[2], "左右キーで武器を選択", 60, white);
+	UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "左右キーで武器を選択", 60, black);
 
 	
 	//画面右下: 「通信待機中．．．」を表示
 	if (myGameManager.fonts[2]) { // 待機画面用フォント(インデックス2)を使用
-		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "通信待機中．．．", white);
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "通信待機中．．．", black);
 		if (textSurface) {
 			//右下から少し内側に配置
-			SDL_Rect dst = { myGameManager.windowW - textSurface->w - 60, myGameManager.windowH - textSurface->h - 20, textSurface->w, textSurface->h };
+			SDL_Rect dst = { myGameManager.windowW - textSurface->w - 130, myGameManager.windowH - textSurface->h - 20, textSurface->w, textSurface->h };
 			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
 			SDL_FreeSurface(textSurface);
 		}
@@ -181,27 +172,55 @@ void UI_renderWaitScreen(WaitScene *waitScene)
 }
 
 /**
- * @brief ロード画面を描画する
- * @param message 表示するメッセージ
+ * @brief メインゲーム画面のUIを描画する 
  */
-void UI_renderLoadingScreen(const char *message)
+void UI_updateMainSurface(MainScene *scene)
 {
-	if (myGameManager.UI == NULL) return;
-	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 20, 20, 20));
-	SDL_Color white = { 255, 255, 255, 255 };
-	if (message) UI_renderTextCentered(myGameManager.fonts[0], message, myGameManager.windowH/2, white);
-}
+	if (myGameManager.UI == NULL || scene == NULL || scene->myCar == NULL) return;
 
-/**
- * @brief メインゲーム画面のUIを描画する
- * @note 現在はプレースホルダーとしてテキストを表示するのみです。
- */
-void UI_renderMainScreen(void)
-{
-	if (myGameManager.UI == NULL) return;
-	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 10, 30, 10));
-	SDL_Color white = { 220, 220, 220, 255 };
-	UI_renderTextCentered(myGameManager.fonts[0], "Main Game Screen", myGameManager.windowH/2 - 20, white);
+	// UIサーフェイスを透明でクリア
+	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGBA(myGameManager.UI->format, 0, 0, 0, 0));
+
+	SDL_Color black = {0, 0, 0, 255};
+
+
+	Car *myCar = scene->myCar;
+	float hp_percentage = myCar->hp / 100.0f; 
+	if (hp_percentage < 0) hp_percentage = 0;
+	if (hp_percentage > 1) hp_percentage = 1;
+
+	int bar_width = 250;
+	int bar_height = 25;
+	int bar_x = myGameManager.windowW - bar_width - 20;
+	int bar_y = myGameManager.windowH - bar_height - 60; 
+
+	// HPバーの背景(灰色)
+	SDL_Rect hp_bar_bg = { bar_x, bar_y, bar_width, bar_height };
+	SDL_FillRect(myGameManager.UI, &hp_bar_bg, SDL_MapRGB(myGameManager.UI->format, 128, 128, 128));
+
+	// HPバーの前景(HP残量に応じて色が変わる)
+	Uint32 hp_bar_color;
+	if (hp_percentage <= 0.25f) {
+		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 255, 50, 50); // 赤
+	} else if (hp_percentage <= 0.5f) {
+		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 255, 255, 50); // 黄
+	} else {
+		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 50, 255, 50); // 緑
+	}
+
+	SDL_Rect hp_bar_fg = { bar_x, bar_y, (int)(bar_width * hp_percentage), bar_height };
+	SDL_FillRect(myGameManager.UI, &hp_bar_fg, hp_bar_color);
+
+	// HP 文字出力
+	if (myGameManager.fonts[2]) {
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "HP", black);
+		if (textSurface) {
+			// HPバーの左側に配置
+			SDL_Rect dst = { bar_x - textSurface->w - 10, bar_y + (bar_height - textSurface->h) / 2, 0, 0 };
+			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
+			SDL_FreeSurface(textSurface);
+		}
+	}
 }
 
 /**
@@ -276,4 +295,5 @@ void deleteUI(SceneKinds group)
         }
         temp = next;
     }
+
 }

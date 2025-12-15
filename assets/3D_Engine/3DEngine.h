@@ -45,20 +45,26 @@ void destroyList(List *list);
 
 /* quaternion.c */
 Quaternion quaternion_identity(void);
+Quaternion quaternion_inverse(Quaternion q);
 Quaternion quaternion_from_axis_angle(Vec3f axis, float angle_deg);
 Quaternion quaternion_multiply(Quaternion q1, Quaternion q2);
 Quaternion quaternion_normalize(Quaternion q);
 Vec3f quaternion_rotate_vector(Vec3f v, Quaternion q);
+Vec3f quaternion_rotate_vector_left(Vec3f v, Quaternion q);
 Vec3f quaternion_to_euler(Quaternion q);
 Vec3f euler_from_vectors(Vec3f v1, Vec3f v2);
+Vec3f rotateVecWithQuaternion(Vec3f v , float angle , Vec3f axis);
+Vec3f rotateVecWithQuaternion_left(Vec3f v , float angle , Vec3f axis);
 
 /* fileIO.c */
 SDL_bool loadOBJ(const char* obj_filename , const char* texture_filename , Obj *obj);
+SDL_bool loadOBJ_collison(const char* obj_filename ,  List *list);
 
 /* polygone.c */
 Polygon* createRectangler(Vec3f coord , Vec3f size , Vec3f color , int pitch , int roll , int yaw , List *list);
 Polygon* createSphere(Vec3f center , float radius , Vec3f color , List *list);
 Polygon* createPlane4(Vec3f coord , float sizeX , float sizeY , Vec3f color , int pitch , int roll , int yaw , PlaneType type , List *list);
+Polygon* createPlane3(Vec3f v0 , Vec3f v1 , Vec3f v2 , Vec3f color , List *list);
 Polygon* createObj(const char* obj_filename , const char* texture_filename , Vec3f coordOffset , Vec3f scale , int pitchOffset , int rollpitchOffset , int yawpitchOffset , List *list);
 Polygon* createDisc(Vec3f center , float radius , Vec3f color , List *list);
 Polygon* createCylinder(List *list);
@@ -66,12 +72,16 @@ void displayPolygons(List *list);
 void displayRectangler(Rectangler *rectangler);
 void displaySphere(Sphere *sphere);
 void displayPlane4(Plane4 *plane4);
+void displayPlane3(Plane3 *plane3);
 void displayObj(Obj *obj);
 void displayDisc(Disc *disc);
 void displayCylinder(Cylinder *cylinder);
 void moveRectacgler(Rectangler *rectangler , Vec3f velocity , float dt);
 void rotateRectacglerTo(Rectangler *rectangler , int pitch , int roll , int yaw , Vec3f center);
+void rotateRectacglerQuaternion(Rectangler *rectangler , Quaternion q , Vec3f center);
+void rotateRectacglerQuaternion_left(Rectangler *rectangler , Quaternion q , Vec3f center);
 void destroyPolygon(Polygon *polygon);
+void upadteRectangler(Rectangler *rectangler);
 
 /* space.c */
 float lengthPointToPlaneAndH(Vec3f *H, Vec3f v , Vec3f n , Vec3f p);
@@ -81,6 +91,7 @@ SDL_bool isPointInRect(Vec3f H , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f v4 , Vec
 SDL_bool isPointInCircle(Vec3f H , Vec3f center , float radius);
 SDL_bool isPointOnPlane(Vec3f p  , Vec3f v , Vec3f n);
 SDL_bool isPointOnPlane4(Vec3f p , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f v4 , Vec3f normal);
+SDL_bool isPointOnPlane3(Vec3f p , Vec3f v1 , Vec3f v2 , Vec3f v3 , Vec3f normal);
 Vec3f calcCollisionVel(Vec3f velocity , Vec3f normal);
 void moveCamera(Camera *camera , float dx , float dy , float dz);
 void rotateCamera(Camera *camera, float pitch_delta, float yaw_delta);

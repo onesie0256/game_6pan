@@ -280,6 +280,188 @@ void rotateRectacglerTo(Rectangler *rectangler , int pitch , int roll , int yaw 
 
 }
 
+void rotateRectacglerQuaternion(Rectangler *rectangler , Quaternion q , Vec3f center)
+{
+    //点の並行移動
+    for (int i = 0 ; i < 8 ; i++){
+        //rectangler->vertex[i] = rotateCenter(rectangler->vertex[i] , -rectangler->pitch , -rectangler->roll , -rectangler->yaw , center);
+        rectangler->vertex[i] = vecSub(rectangler->vertex[i] , center);
+        rectangler->vertex[i] = quaternion_rotate_vector(rectangler->vertex[i] , q);
+        rectangler->vertex[i] = vecAdd(rectangler->vertex[i] , center);
+    }
+
+    //法線ベクトルを計算
+    rectangler->normals[0] = calcNormalVec(rectangler->vertex[PP_LDF] , rectangler->vertex[PP_RDF] , rectangler->vertex[PP_LUF]);
+    rectangler->normals[1] = calcNormalVec(rectangler->vertex[PP_RDF] , rectangler->vertex[PP_RDB] , rectangler->vertex[PP_RUF]);
+    rectangler->normals[2] = calcNormalVec(rectangler->vertex[PP_RDB] , rectangler->vertex[PP_LDB] , rectangler->vertex[PP_RUB]);
+    rectangler->normals[3] = calcNormalVec(rectangler->vertex[PP_LDB] , rectangler->vertex[PP_LDF] , rectangler->vertex[PP_LUB]);
+    rectangler->normals[4] = calcNormalVec(rectangler->vertex[PP_LUF] , rectangler->vertex[PP_RUF] , rectangler->vertex[PP_LUB]);
+    rectangler->normals[5] = calcNormalVec(rectangler->vertex[PP_LDF] , rectangler->vertex[PP_LDB] , rectangler->vertex[PP_RDF]);
+
+    //頂点データ
+    //前面
+    rectangler->vertAry[0] = rectangler->vertex[PP_LDF].x; rectangler->vertAry[1] = rectangler->vertex[PP_LDF].y; rectangler->vertAry[2] = rectangler->vertex[PP_LDF].z;
+    rectangler->vertAry[3] = rectangler->vertex[PP_RDF].x; rectangler->vertAry[4] = rectangler->vertex[PP_RDF].y; rectangler->vertAry[5] = rectangler->vertex[PP_RDF].z;
+    rectangler->vertAry[6] = rectangler->vertex[PP_RUF].x; rectangler->vertAry[7] = rectangler->vertex[PP_RUF].y; rectangler->vertAry[8] = rectangler->vertex[PP_RUF].z;
+    rectangler->vertAry[9] = rectangler->vertex[PP_LUF].x; rectangler->vertAry[10] = rectangler->vertex[PP_LUF].y; rectangler->vertAry[11] = rectangler->vertex[PP_LUF].z;
+
+    //右面
+    rectangler->vertAry[12] = rectangler->vertex[PP_RDF].x; rectangler->vertAry[13] = rectangler->vertex[PP_RDF].y; rectangler->vertAry[14] = rectangler->vertex[PP_RDF].z;
+    rectangler->vertAry[15] = rectangler->vertex[PP_RDB].x; rectangler->vertAry[16] = rectangler->vertex[PP_RDB].y; rectangler->vertAry[17] = rectangler->vertex[PP_RDB].z;
+    rectangler->vertAry[18] = rectangler->vertex[PP_RUB].x; rectangler->vertAry[19] = rectangler->vertex[PP_RUB].y; rectangler->vertAry[20] = rectangler->vertex[PP_RUB].z;
+    rectangler->vertAry[21] = rectangler->vertex[PP_RUF].x; rectangler->vertAry[22] = rectangler->vertex[PP_RUF].y; rectangler->vertAry[23] = rectangler->vertex[PP_RUF].z;
+    
+    //背面
+    rectangler->vertAry[24] = rectangler->vertex[PP_RDB].x; rectangler->vertAry[25] = rectangler->vertex[PP_RDB].y; rectangler->vertAry[26] = rectangler->vertex[PP_RDB].z;
+    rectangler->vertAry[27] = rectangler->vertex[PP_LDB].x; rectangler->vertAry[28] = rectangler->vertex[PP_LDB].y; rectangler->vertAry[29] = rectangler->vertex[PP_LDB].z;
+    rectangler->vertAry[30] = rectangler->vertex[PP_LUB].x; rectangler->vertAry[31] = rectangler->vertex[PP_LUB].y; rectangler->vertAry[32] = rectangler->vertex[PP_LUB].z;
+    rectangler->vertAry[33] = rectangler->vertex[PP_RUB].x; rectangler->vertAry[34] = rectangler->vertex[PP_RUB].y; rectangler->vertAry[35] = rectangler->vertex[PP_RUB].z;
+
+    //左面
+    rectangler->vertAry[36] = rectangler->vertex[PP_LDB].x; rectangler->vertAry[37] = rectangler->vertex[PP_LDB].y; rectangler->vertAry[38] = rectangler->vertex[PP_LDB].z;
+    rectangler->vertAry[39] = rectangler->vertex[PP_LDF].x; rectangler->vertAry[40] = rectangler->vertex[PP_LDF].y; rectangler->vertAry[41] = rectangler->vertex[PP_LDF].z;
+    rectangler->vertAry[42] = rectangler->vertex[PP_LUF].x; rectangler->vertAry[43] = rectangler->vertex[PP_LUF].y; rectangler->vertAry[44] = rectangler->vertex[PP_LUF].z;
+    rectangler->vertAry[45] = rectangler->vertex[PP_LUB].x; rectangler->vertAry[46] = rectangler->vertex[PP_LUB].y; rectangler->vertAry[47] = rectangler->vertex[PP_LUB].z;
+
+    //上面
+    rectangler->vertAry[48] = rectangler->vertex[PP_LUF].x; rectangler->vertAry[49] = rectangler->vertex[PP_LUF].y; rectangler->vertAry[50] = rectangler->vertex[PP_LUF].z;
+    rectangler->vertAry[51] = rectangler->vertex[PP_RUF].x; rectangler->vertAry[52] = rectangler->vertex[PP_RUF].y; rectangler->vertAry[53] = rectangler->vertex[PP_RUF].z;
+    rectangler->vertAry[54] = rectangler->vertex[PP_RUB].x; rectangler->vertAry[55] = rectangler->vertex[PP_RUB].y; rectangler->vertAry[56] = rectangler->vertex[PP_RUB].z;
+    rectangler->vertAry[57] = rectangler->vertex[PP_LUB].x; rectangler->vertAry[58] = rectangler->vertex[PP_LUB].y; rectangler->vertAry[59] = rectangler->vertex[PP_LUB].z;
+
+    //下面
+    rectangler->vertAry[60] = rectangler->vertex[PP_LDF].x; rectangler->vertAry[61] = rectangler->vertex[PP_LDF].y; rectangler->vertAry[62] = rectangler->vertex[PP_LDF].z;
+    rectangler->vertAry[63] = rectangler->vertex[PP_LDB].x; rectangler->vertAry[64] = rectangler->vertex[PP_LDB].y; rectangler->vertAry[65] = rectangler->vertex[PP_LDB].z;
+    rectangler->vertAry[66] = rectangler->vertex[PP_RDB].x; rectangler->vertAry[67] = rectangler->vertex[PP_RDB].y; rectangler->vertAry[68] = rectangler->vertex[PP_RDB].z;
+    rectangler->vertAry[69] = rectangler->vertex[PP_RDF].x; rectangler->vertAry[70] = rectangler->vertex[PP_RDF].y; rectangler->vertAry[71] = rectangler->vertex[PP_RDF].z;
+
+    //法線データ
+    for (int i = 0 ; i < 24 ; i++){
+        rectangler->normAry[i*3 + 0] = rectangler->normals[i/4].x;
+        rectangler->normAry[i*3 + 1] = rectangler->normals[i/4].y;
+        rectangler->normAry[i*3 + 2] = rectangler->normals[i/4].z;
+    }
+
+}
+
+void rotateRectacglerQuaternion_left(Rectangler *rectangler , Quaternion q , Vec3f center)
+{
+    //点の並行移動
+    for (int i = 0 ; i < 8 ; i++){
+        //rectangler->vertex[i] = rotateCenter(rectangler->vertex[i] , -rectangler->pitch , -rectangler->roll , -rectangler->yaw , center);
+        rectangler->vertex[i] = vecSub(rectangler->vertex[i] , center);
+        rectangler->vertex[i] = quaternion_rotate_vector_left(rectangler->vertex[i] , q);
+        rectangler->vertex[i] = vecAdd(rectangler->vertex[i] , center);
+    }
+
+    //法線ベクトルを計算
+    rectangler->normals[0] = calcNormalVec(rectangler->vertex[PP_LDF] , rectangler->vertex[PP_RDF] , rectangler->vertex[PP_LUF]);
+    rectangler->normals[1] = calcNormalVec(rectangler->vertex[PP_RDF] , rectangler->vertex[PP_RDB] , rectangler->vertex[PP_RUF]);
+    rectangler->normals[2] = calcNormalVec(rectangler->vertex[PP_RDB] , rectangler->vertex[PP_LDB] , rectangler->vertex[PP_RUB]);
+    rectangler->normals[3] = calcNormalVec(rectangler->vertex[PP_LDB] , rectangler->vertex[PP_LDF] , rectangler->vertex[PP_LUB]);
+    rectangler->normals[4] = calcNormalVec(rectangler->vertex[PP_LUF] , rectangler->vertex[PP_RUF] , rectangler->vertex[PP_LUB]);
+    rectangler->normals[5] = calcNormalVec(rectangler->vertex[PP_LDF] , rectangler->vertex[PP_LDB] , rectangler->vertex[PP_RDF]);
+
+    //頂点データ
+    //前面
+    rectangler->vertAry[0] = rectangler->vertex[PP_LDF].x; rectangler->vertAry[1] = rectangler->vertex[PP_LDF].y; rectangler->vertAry[2] = rectangler->vertex[PP_LDF].z;
+    rectangler->vertAry[3] = rectangler->vertex[PP_RDF].x; rectangler->vertAry[4] = rectangler->vertex[PP_RDF].y; rectangler->vertAry[5] = rectangler->vertex[PP_RDF].z;
+    rectangler->vertAry[6] = rectangler->vertex[PP_RUF].x; rectangler->vertAry[7] = rectangler->vertex[PP_RUF].y; rectangler->vertAry[8] = rectangler->vertex[PP_RUF].z;
+    rectangler->vertAry[9] = rectangler->vertex[PP_LUF].x; rectangler->vertAry[10] = rectangler->vertex[PP_LUF].y; rectangler->vertAry[11] = rectangler->vertex[PP_LUF].z;
+
+    //右面
+    rectangler->vertAry[12] = rectangler->vertex[PP_RDF].x; rectangler->vertAry[13] = rectangler->vertex[PP_RDF].y; rectangler->vertAry[14] = rectangler->vertex[PP_RDF].z;
+    rectangler->vertAry[15] = rectangler->vertex[PP_RDB].x; rectangler->vertAry[16] = rectangler->vertex[PP_RDB].y; rectangler->vertAry[17] = rectangler->vertex[PP_RDB].z;
+    rectangler->vertAry[18] = rectangler->vertex[PP_RUB].x; rectangler->vertAry[19] = rectangler->vertex[PP_RUB].y; rectangler->vertAry[20] = rectangler->vertex[PP_RUB].z;
+    rectangler->vertAry[21] = rectangler->vertex[PP_RUF].x; rectangler->vertAry[22] = rectangler->vertex[PP_RUF].y; rectangler->vertAry[23] = rectangler->vertex[PP_RUF].z;
+    
+    //背面
+    rectangler->vertAry[24] = rectangler->vertex[PP_RDB].x; rectangler->vertAry[25] = rectangler->vertex[PP_RDB].y; rectangler->vertAry[26] = rectangler->vertex[PP_RDB].z;
+    rectangler->vertAry[27] = rectangler->vertex[PP_LDB].x; rectangler->vertAry[28] = rectangler->vertex[PP_LDB].y; rectangler->vertAry[29] = rectangler->vertex[PP_LDB].z;
+    rectangler->vertAry[30] = rectangler->vertex[PP_LUB].x; rectangler->vertAry[31] = rectangler->vertex[PP_LUB].y; rectangler->vertAry[32] = rectangler->vertex[PP_LUB].z;
+    rectangler->vertAry[33] = rectangler->vertex[PP_RUB].x; rectangler->vertAry[34] = rectangler->vertex[PP_RUB].y; rectangler->vertAry[35] = rectangler->vertex[PP_RUB].z;
+
+    //左面
+    rectangler->vertAry[36] = rectangler->vertex[PP_LDB].x; rectangler->vertAry[37] = rectangler->vertex[PP_LDB].y; rectangler->vertAry[38] = rectangler->vertex[PP_LDB].z;
+    rectangler->vertAry[39] = rectangler->vertex[PP_LDF].x; rectangler->vertAry[40] = rectangler->vertex[PP_LDF].y; rectangler->vertAry[41] = rectangler->vertex[PP_LDF].z;
+    rectangler->vertAry[42] = rectangler->vertex[PP_LUF].x; rectangler->vertAry[43] = rectangler->vertex[PP_LUF].y; rectangler->vertAry[44] = rectangler->vertex[PP_LUF].z;
+    rectangler->vertAry[45] = rectangler->vertex[PP_LUB].x; rectangler->vertAry[46] = rectangler->vertex[PP_LUB].y; rectangler->vertAry[47] = rectangler->vertex[PP_LUB].z;
+
+    //上面
+    rectangler->vertAry[48] = rectangler->vertex[PP_LUF].x; rectangler->vertAry[49] = rectangler->vertex[PP_LUF].y; rectangler->vertAry[50] = rectangler->vertex[PP_LUF].z;
+    rectangler->vertAry[51] = rectangler->vertex[PP_RUF].x; rectangler->vertAry[52] = rectangler->vertex[PP_RUF].y; rectangler->vertAry[53] = rectangler->vertex[PP_RUF].z;
+    rectangler->vertAry[54] = rectangler->vertex[PP_RUB].x; rectangler->vertAry[55] = rectangler->vertex[PP_RUB].y; rectangler->vertAry[56] = rectangler->vertex[PP_RUB].z;
+    rectangler->vertAry[57] = rectangler->vertex[PP_LUB].x; rectangler->vertAry[58] = rectangler->vertex[PP_LUB].y; rectangler->vertAry[59] = rectangler->vertex[PP_LUB].z;
+
+    //下面
+    rectangler->vertAry[60] = rectangler->vertex[PP_LDF].x; rectangler->vertAry[61] = rectangler->vertex[PP_LDF].y; rectangler->vertAry[62] = rectangler->vertex[PP_LDF].z;
+    rectangler->vertAry[63] = rectangler->vertex[PP_LDB].x; rectangler->vertAry[64] = rectangler->vertex[PP_LDB].y; rectangler->vertAry[65] = rectangler->vertex[PP_LDB].z;
+    rectangler->vertAry[66] = rectangler->vertex[PP_RDB].x; rectangler->vertAry[67] = rectangler->vertex[PP_RDB].y; rectangler->vertAry[68] = rectangler->vertex[PP_RDB].z;
+    rectangler->vertAry[69] = rectangler->vertex[PP_RDF].x; rectangler->vertAry[70] = rectangler->vertex[PP_RDF].y; rectangler->vertAry[71] = rectangler->vertex[PP_RDF].z;
+
+    //法線データ
+    for (int i = 0 ; i < 24 ; i++){
+        rectangler->normAry[i*3 + 0] = rectangler->normals[i/4].x;
+        rectangler->normAry[i*3 + 1] = rectangler->normals[i/4].y;
+        rectangler->normAry[i*3 + 2] = rectangler->normals[i/4].z;
+    }
+
+}
+
+void upadteRectangler(Rectangler *rectangler)
+{
+    //法線ベクトルを計算
+    rectangler->normals[0] = calcNormalVec(rectangler->vertex[PP_LDF] , rectangler->vertex[PP_RDF] , rectangler->vertex[PP_LUF]);
+    rectangler->normals[1] = calcNormalVec(rectangler->vertex[PP_RDF] , rectangler->vertex[PP_RDB] , rectangler->vertex[PP_RUF]);
+    rectangler->normals[2] = calcNormalVec(rectangler->vertex[PP_RDB] , rectangler->vertex[PP_LDB] , rectangler->vertex[PP_RUB]);
+    rectangler->normals[3] = calcNormalVec(rectangler->vertex[PP_LDB] , rectangler->vertex[PP_LDF] , rectangler->vertex[PP_LUB]);
+    rectangler->normals[4] = calcNormalVec(rectangler->vertex[PP_LUF] , rectangler->vertex[PP_RUF] , rectangler->vertex[PP_LUB]);
+    rectangler->normals[5] = calcNormalVec(rectangler->vertex[PP_LDF] , rectangler->vertex[PP_LDB] , rectangler->vertex[PP_RDF]);
+
+    //頂点データ
+    //前面
+    rectangler->vertAry[0] = rectangler->vertex[PP_LDF].x; rectangler->vertAry[1] = rectangler->vertex[PP_LDF].y; rectangler->vertAry[2] = rectangler->vertex[PP_LDF].z;
+    rectangler->vertAry[3] = rectangler->vertex[PP_RDF].x; rectangler->vertAry[4] = rectangler->vertex[PP_RDF].y; rectangler->vertAry[5] = rectangler->vertex[PP_RDF].z;
+    rectangler->vertAry[6] = rectangler->vertex[PP_RUF].x; rectangler->vertAry[7] = rectangler->vertex[PP_RUF].y; rectangler->vertAry[8] = rectangler->vertex[PP_RUF].z;
+    rectangler->vertAry[9] = rectangler->vertex[PP_LUF].x; rectangler->vertAry[10] = rectangler->vertex[PP_LUF].y; rectangler->vertAry[11] = rectangler->vertex[PP_LUF].z;
+
+    //右面
+    rectangler->vertAry[12] = rectangler->vertex[PP_RDF].x; rectangler->vertAry[13] = rectangler->vertex[PP_RDF].y; rectangler->vertAry[14] = rectangler->vertex[PP_RDF].z;
+    rectangler->vertAry[15] = rectangler->vertex[PP_RDB].x; rectangler->vertAry[16] = rectangler->vertex[PP_RDB].y; rectangler->vertAry[17] = rectangler->vertex[PP_RDB].z;
+    rectangler->vertAry[18] = rectangler->vertex[PP_RUB].x; rectangler->vertAry[19] = rectangler->vertex[PP_RUB].y; rectangler->vertAry[20] = rectangler->vertex[PP_RUB].z;
+    rectangler->vertAry[21] = rectangler->vertex[PP_RUF].x; rectangler->vertAry[22] = rectangler->vertex[PP_RUF].y; rectangler->vertAry[23] = rectangler->vertex[PP_RUF].z;
+    
+    //背面
+    rectangler->vertAry[24] = rectangler->vertex[PP_RDB].x; rectangler->vertAry[25] = rectangler->vertex[PP_RDB].y; rectangler->vertAry[26] = rectangler->vertex[PP_RDB].z;
+    rectangler->vertAry[27] = rectangler->vertex[PP_LDB].x; rectangler->vertAry[28] = rectangler->vertex[PP_LDB].y; rectangler->vertAry[29] = rectangler->vertex[PP_LDB].z;
+    rectangler->vertAry[30] = rectangler->vertex[PP_LUB].x; rectangler->vertAry[31] = rectangler->vertex[PP_LUB].y; rectangler->vertAry[32] = rectangler->vertex[PP_LUB].z;
+    rectangler->vertAry[33] = rectangler->vertex[PP_RUB].x; rectangler->vertAry[34] = rectangler->vertex[PP_RUB].y; rectangler->vertAry[35] = rectangler->vertex[PP_RUB].z;
+
+    //左面
+    rectangler->vertAry[36] = rectangler->vertex[PP_LDB].x; rectangler->vertAry[37] = rectangler->vertex[PP_LDB].y; rectangler->vertAry[38] = rectangler->vertex[PP_LDB].z;
+    rectangler->vertAry[39] = rectangler->vertex[PP_LDF].x; rectangler->vertAry[40] = rectangler->vertex[PP_LDF].y; rectangler->vertAry[41] = rectangler->vertex[PP_LDF].z;
+    rectangler->vertAry[42] = rectangler->vertex[PP_LUF].x; rectangler->vertAry[43] = rectangler->vertex[PP_LUF].y; rectangler->vertAry[44] = rectangler->vertex[PP_LUF].z;
+    rectangler->vertAry[45] = rectangler->vertex[PP_LUB].x; rectangler->vertAry[46] = rectangler->vertex[PP_LUB].y; rectangler->vertAry[47] = rectangler->vertex[PP_LUB].z;
+
+    //上面
+    rectangler->vertAry[48] = rectangler->vertex[PP_LUF].x; rectangler->vertAry[49] = rectangler->vertex[PP_LUF].y; rectangler->vertAry[50] = rectangler->vertex[PP_LUF].z;
+    rectangler->vertAry[51] = rectangler->vertex[PP_RUF].x; rectangler->vertAry[52] = rectangler->vertex[PP_RUF].y; rectangler->vertAry[53] = rectangler->vertex[PP_RUF].z;
+    rectangler->vertAry[54] = rectangler->vertex[PP_RUB].x; rectangler->vertAry[55] = rectangler->vertex[PP_RUB].y; rectangler->vertAry[56] = rectangler->vertex[PP_RUB].z;
+    rectangler->vertAry[57] = rectangler->vertex[PP_LUB].x; rectangler->vertAry[58] = rectangler->vertex[PP_LUB].y; rectangler->vertAry[59] = rectangler->vertex[PP_LUB].z;
+
+    //下面
+    rectangler->vertAry[60] = rectangler->vertex[PP_LDF].x; rectangler->vertAry[61] = rectangler->vertex[PP_LDF].y; rectangler->vertAry[62] = rectangler->vertex[PP_LDF].z;
+    rectangler->vertAry[63] = rectangler->vertex[PP_LDB].x; rectangler->vertAry[64] = rectangler->vertex[PP_LDB].y; rectangler->vertAry[65] = rectangler->vertex[PP_LDB].z;
+    rectangler->vertAry[66] = rectangler->vertex[PP_RDB].x; rectangler->vertAry[67] = rectangler->vertex[PP_RDB].y; rectangler->vertAry[68] = rectangler->vertex[PP_RDB].z;
+    rectangler->vertAry[69] = rectangler->vertex[PP_RDF].x; rectangler->vertAry[70] = rectangler->vertex[PP_RDF].y; rectangler->vertAry[71] = rectangler->vertex[PP_RDF].z;
+
+    //法線データ
+    for (int i = 0 ; i < 24 ; i++){
+        rectangler->normAry[i*3 + 0] = rectangler->normals[i/4].x;
+        rectangler->normAry[i*3 + 1] = rectangler->normals[i/4].y;
+        rectangler->normAry[i*3 + 2] = rectangler->normals[i/4].z;
+    }
+}
 /**
  * @brief 球体を1つ生成する
  */
@@ -377,6 +559,46 @@ Polygon* createPlane4(Vec3f coord , float sizeX , float sizeY , Vec3f color , in
     return rtn;
 }
 
+Polygon* createPlane3(Vec3f v0 , Vec3f v1 , Vec3f v2 , Vec3f color , List *list)
+{
+    Polygon *rtn = (Polygon *)malloc(sizeof(Polygon));
+    Plane3 *p = (Plane3 *)malloc(sizeof(Plane3));
+
+    p->vertex[0] = v0;
+    p->vertex[1] = v1;
+    p->vertex[2] = v2;
+
+    for (int i = 0 ; i < 3 ; i++){
+        p->vertAry[i*3]   = p->vertex[i].x;
+        p->vertAry[i*3+1] = p->vertex[i].y;
+        p->vertAry[i*3+2] = p->vertex[i].z;
+    }
+
+    p->normal = calcNormalVec(v0 , v1 , v2);
+
+    for (int i = 0 ; i < 3 ; i++){
+        p->normAry[i*3  ] = p->normal.x;
+        p->normAry[i*3+1] = p->normal.y;
+        p->normAry[i*3+2] = p->normal.z;
+    }
+
+    p->color = color;
+
+    for (int i = 0; i < 3 ; i++){
+        p->colorAry[i*3]   = color.x;
+        p->colorAry[i*3+1] = color.y;
+        p->colorAry[i*3+2] = color.z;
+    }
+
+    rtn->type = PT_PLANE3;
+    rtn->isDisplay = SDL_TRUE;
+    rtn->data.plane3 = p;
+
+    if (list != NULL) addListNode(list , rtn , NULL);
+
+    return rtn;
+}
+
 /**
  * @brief 円盤を1つ生成する
  */
@@ -427,11 +649,17 @@ Polygon* createObj(const char* obj_filename , const char* texture_filename , Vec
 
     loadOBJ(obj_filename , texture_filename , obj);
 
-    SDL_Surface *surface = IMG_Load(texture_filename);
+    SDL_Surface *surfaceRaw = IMG_Load(texture_filename);
 
-    if (!surface) {
+    if (!surfaceRaw) {
         printf("IMG_Load error: %s\n", IMG_GetError());
         free(obj);
+        return NULL;
+    }
+
+    SDL_Surface *surface = SDL_ConvertSurfaceFormat(surfaceRaw, SDL_PIXELFORMAT_RGBA32, 0);
+    if (!surface) {
+        printf("SDL_ConvertSurfaceFormat error: %s\n", SDL_GetError());
         return NULL;
     }
 
@@ -555,6 +783,24 @@ void displayPlane4(Plane4 *plane4)
     glDisableClientState(GL_COLOR_ARRAY);
 }
 
+void displayPlane3(Plane3 *plane3)
+{
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer(3 , GL_FLOAT , 0 , plane3->vertAry);
+    glNormalPointer(GL_FLOAT , 0 , plane3->normAry);
+    glColorPointer(3 , GL_FLOAT , 0 , plane3->colorAry);
+    //glDrawElements(GL_QUADS , 24 , GL_UNSIGNED_BYTE , rectIdxAry);
+    glDrawArrays(GL_TRIANGLES , 0 , 3);
+
+    
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+}
+
 /**
  * @brief 円盤を表示
  * 
@@ -628,7 +874,7 @@ void displayObj(Obj *obj)
     glTexCoordPointer(2 , GL_FLOAT , 0 , &(obj->texCoordAry[0]));
     glNormalPointer(GL_FLOAT , 0 , &(obj->normAry[0]));
 
-    glDrawArrays(GL_QUADS , 0 , obj->vertAryNum / 3);
+    glDrawArrays(GL_TRIANGLES , 0 , obj->vertAryNum / 3);
 
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -684,6 +930,11 @@ void displayPolygons(List *list)
         case PT_PLANE4:
             displayPlane4(data->data.plane4);
             break;
+
+        case PT_PLANE3:
+            displayPlane3(data->data.plane3);
+            break;
+
 
         case PT_DISC:
             displayDisc(data->data.disc);

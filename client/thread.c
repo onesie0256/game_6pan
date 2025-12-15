@@ -6,9 +6,22 @@
  *
  */
 
+ int net_func(void *args);
+
 void createThread(void)
 {
     //スレッド作成
+    myGameManager.net_thread = SDL_CreateThread(net_func, "net_thread", NULL);
+
+    if (!myGameManager.net_thread){
+        printf("SDL_CreateThread error (net_thread)%s\n" , SDL_GetError());
+
+        SDL_DestroyWindow(myGameManager.window);
+        SDL_GL_DeleteContext(myGameManager.context);
+        SDL_Quit();
+        return ;
+    }
+
     myGameManager.key_thread = SDL_CreateThread(key_func, "key_thread", NULL); 
 
     //エラー処理
@@ -50,17 +63,15 @@ void createThread(void)
  */
 int key_func(void *args)
 {
-    int running = 1;
-
-    while (running)
+    while (!myGameManager.quitRequest)
     {
         if (SDL_PollEvent(&myGameManager.event))
         {
             switch (myGameManager.event.type)
             {
             case SDL_QUIT: //終了処理へ
-                myGameManager.quitRequest = SDL_TRUE;
-                running = 0;
+                //myGameManager.quitRequest = SDL_TRUE;
+                send_Quit();
                 break;
 
             case SDL_WINDOWEVENT: //ウィンドウのサイズ変更
@@ -159,11 +170,24 @@ int key_func(void *args)
             }
             
         }
+
+        
     }
     
     return 0;
 }
 
+int net_func(void *args)
+{
+    while (myGameManager.quitRequest != SDL_TRUE)
+    {
+        // control_requestsが0を返したら、それは終了を意味する
+        if (control_requests() == 0) {
+            myGameManager.quitRequest = SDL_TRUE;
+        }
+    }
+    return 0;
+}
 #ifdef USE_JOY
 // Joy-Conの状態を監視する関数
 int joy_func(void *args)

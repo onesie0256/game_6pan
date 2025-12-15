@@ -13,6 +13,10 @@ Quaternion quaternion_identity(void) {
     return (Quaternion){1.0f, 0.0f, 0.0f, 0.0f};
 }
 
+Quaternion quaternion_inverse(Quaternion q) {
+    return (Quaternion){q.w, -q.x, -q.y, -q.z};
+}
+
 /**
  * @brief 指定された軸と角度（度数法）からクォータニオンを生成する
  * 
@@ -71,6 +75,19 @@ Vec3f quaternion_rotate_vector(Vec3f v, Quaternion q) {
     Quaternion q_conj = {q.w, -q.x, -q.y, -q.z}; // 共役クォータニオン
     Quaternion temp = quaternion_multiply(q, p);
     Quaternion result_q = quaternion_multiply(temp, q_conj);
+    return (Vec3f){result_q.x, result_q.y, result_q.z};
+}
+
+
+
+/**
+ * @brief クォータニオンでベクトルを回転させる
+ */
+Vec3f quaternion_rotate_vector_left(Vec3f v, Quaternion q) {
+    Quaternion p = {0.0f, v.x, v.y, v.z};
+    Quaternion q_conj = {q.w, -q.x, -q.y, -q.z}; // 共役クォータニオン
+    Quaternion temp = quaternion_multiply(p, q);
+    Quaternion result_q = quaternion_multiply(q_conj, temp);
     return (Vec3f){result_q.x, result_q.y, result_q.z};
 }
 
@@ -153,4 +170,34 @@ Vec3f euler_from_vectors(Vec3f v1, Vec3f v2) {
 
     // クォータニオンからオイラー角に変換する
     return quaternion_to_euler(q);
+}
+
+/**
+ * @brief ベクトルをクォータニオン(相対角)で回転させる
+ * 
+ * @param v 回転させるベクトル
+ * @param angle 回転角度
+ * @param axis 回転軸のベクトル
+ * 
+ * @return 回転後のベクトル
+ */
+Vec3f rotateVecWithQuaternion(Vec3f v , float angle , Vec3f axis)
+{
+    Quaternion q = quaternion_from_axis_angle(axis , angle);
+    return quaternion_rotate_vector(v , q);
+}
+
+/**
+ * @brief ベクトルをクォータニオン(絶対角)で回転させる
+ * 
+ * @param v 回転させるベクトル
+ * @param angle 回転角度
+ * @param axis 回転軸のベクトル
+ * 
+ * @return 回転後のベクトル
+ */
+Vec3f rotateVecWithQuaternion_left(Vec3f v , float angle , Vec3f axis)
+{
+    Quaternion q = quaternion_from_axis_angle(axis , angle);
+    return quaternion_rotate_vector_left(v , q);
 }

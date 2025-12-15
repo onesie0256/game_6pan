@@ -182,6 +182,7 @@ SDL_bool loadOBJ(const char* obj_filename , const char* texture_filename ,  Obj 
             else if (line[1] == 't'){
                 Vec3f v;
                 sscanf(line , "vt %f %f" , &v.x , &v.y);
+                v.y = 1.0f - v.y;
                 obj->texCoord[obj->texCoordNum] = v;
                 obj->texCoordNum++;
             }
@@ -195,40 +196,104 @@ SDL_bool loadOBJ(const char* obj_filename , const char* texture_filename ,  Obj 
 
         case 'f':
         {
-            int v[4], t[4], n[4]; // 頂点, テクスチャ, 法線のインデックス
+            int v[4], t[4], n[4];
             int items_read = sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d",
-                                    &v[0], &t[0], &n[0],
-                                    &v[1], &t[1], &n[1],
-                                    &v[2], &t[2], &n[2],
-                                    &v[3], &t[3], &n[3]);
+                                    &v[0], &t[0], &n[0], &v[1], &t[1], &n[1],
+                                    &v[2], &t[2], &n[2], &v[3], &t[3], &n[3]);
 
-            int vertex_count = 0;
-            if (items_read == 12) { // 四角形の場合
-                vertex_count = 4;
-            } else if (items_read == 9) { // 三角形の場合
-                vertex_count = 3;
-            } else {
-                // 対応していない形式か、読み込みエラー
-                continue;
+            if (items_read == 9) { // 三角形の場合
+                for (int i = 0; i < 3; i++) {
+                    // 頂点、テクスチャ、法線をコピー
+                    obj->vertAry[obj->vertAryNum++] = obj->vertex[v[i] - 1].x;
+                    obj->vertAry[obj->vertAryNum++] = obj->vertex[v[i] - 1].y;
+                    obj->vertAry[obj->vertAryNum++] = obj->vertex[v[i] - 1].z;
+
+                    obj->texCoordAry[obj->texCoordAryNum++] = obj->texCoord[t[i] - 1].x;
+                    obj->texCoordAry[obj->texCoordAryNum++] = obj->texCoord[t[i] - 1].y;
+
+                    obj->normAry[obj->normAryNum++] = obj->normal[n[i] - 1].x;
+                    obj->normAry[obj->normAryNum++] = obj->normal[n[i] - 1].y;
+                    obj->normAry[obj->normAryNum++] = obj->normal[n[i] - 1].z;
+                }
+            } else if (items_read == 12) { // 四角形の場合 -> 2つの三角形に分割
+                int indices[] = {0, 1, 2, 0, 2, 3}; // v1,v2,v3 と v1,v3,v4
+                for (int i = 0; i < 6; i++) {
+                    int idx = indices[i];
+                    // 頂点、テクスチャ、法線をコピー
+                    obj->vertAry[obj->vertAryNum++] = obj->vertex[v[idx] - 1].x;
+                    obj->vertAry[obj->vertAryNum++] = obj->vertex[v[idx] - 1].y;
+                    obj->vertAry[obj->vertAryNum++] = obj->vertex[v[idx] - 1].z;
+
+                    obj->texCoordAry[obj->texCoordAryNum++] = obj->texCoord[t[idx] - 1].x;
+                    obj->texCoordAry[obj->texCoordAryNum++] = obj->texCoord[t[idx] - 1].y;
+
+                    obj->normAry[obj->normAryNum++] = obj->normal[n[idx] - 1].x;
+                    obj->normAry[obj->normAryNum++] = obj->normal[n[idx] - 1].y;
+                    obj->normAry[obj->normAryNum++] = obj->normal[n[idx] - 1].z;
+                }
             }
+            break;
+        }
 
-            for (int i = 0; i < vertex_count; i++) {
-                // 頂点座標をコピー
-                obj->vertAry[obj->vertAryNum + 0] = obj->vertex[v[i] - 1].x;
-                obj->vertAry[obj->vertAryNum + 1] = obj->vertex[v[i] - 1].y;
-                obj->vertAry[obj->vertAryNum + 2] = obj->vertex[v[i] - 1].z;
-                obj->vertAryNum += 3;
+        default:
+            break;
+        }
+    }
 
-                // テクスチャ座標をコピー
-                obj->texCoordAry[obj->texCoordAryNum + 0] = obj->texCoord[t[i] - 1].x;
-                obj->texCoordAry[obj->texCoordAryNum + 1] = obj->texCoord[t[i] - 1].y;
-                obj->texCoordAryNum += 2;
+    fclose(fp);
+    return SDL_TRUE;
+}
 
-                // 法線ベクトルをコピー
-                obj->normAry[obj->normAryNum + 0] = obj->normal[n[i] - 1].x;
-                obj->normAry[obj->normAryNum + 1] = obj->normal[n[i] - 1].y;
-                obj->normAry[obj->normAryNum + 2] = obj->normal[n[i] - 1].z;
-                obj->normAryNum += 3;
+/**
+ * @brief .objファイルから3dデータを読み込み...
+ * 
+ * @param obj_filename .objファイル名
+ * @param [out] list 出力先
+ * 
+ * @return 読み込みに成功したらSDL_TRUE,失敗したらSDL_FALSE
+ */
+SDL_bool loadOBJ_collison(const char* obj_filename ,  List *list)
+{
+    FILE* fp = fopen(obj_filename, "r");
+    if (fp == NULL) {
+        printf("could not open file %s\n" , obj_filename);
+        return SDL_FALSE;
+    }
+
+    Vec3f vertex[10000];
+    int vertNum = 0;
+
+    char line[LINE_MAX];
+    while (fgets(line, LINE_MAX, fp) != NULL)
+    {
+        switch (line[0])
+        {
+        case '#':
+            break;
+        
+        case 'v':
+            if (line[1] == ' '){
+                Vec3f v;
+                sscanf(line , "v %f %f %f" , &v.x , &v.y , &v.z);
+                vertex[vertNum] = v;
+                vertNum++;
+            }
+            break;
+
+        case 'f':
+        {
+            int v[4], t[4], n[4];
+            int items_read = sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d",
+                                    &v[0], &t[0], &n[0], &v[1], &t[1], &n[1],
+                                    &v[2], &t[2], &n[2], &v[3], &t[3], &n[3]);
+
+            if (items_read == 9) { // 三角形の場合
+                
+                createPlane3(vertex[v[0] - 1] , vertex[v[1] - 1] , vertex[v[2] - 1] , (Vec3f){0.0f,1.0f,0.0f} , list);
+            } else if (items_read == 12) { // 四角形の場合 -> 2つの三角形に分割
+                
+                createPlane3(vertex[v[0] - 1] , vertex[v[1] - 1] , vertex[v[2] - 1] , (Vec3f){0.0f,1.0f,0.0f} , list);
+                createPlane3(vertex[v[0] - 1] , vertex[v[2] - 1] , vertex[v[3] - 1] , (Vec3f){0.0f,1.0f,0.0f} , list);
             }
             break;
         }

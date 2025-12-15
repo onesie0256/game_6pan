@@ -26,7 +26,7 @@
         {
             "label": "Build All (make)",
             "type": "shell",
-            "command": "make game_client",
+            "command": "make",
             "group": {
                 "kind": "build",
                 "isDefault": true
