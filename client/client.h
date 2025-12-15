@@ -231,6 +231,7 @@ int UI_init(void);
 void UI_updateTitleSurface(TitleScene *titleScene);
 void UI_updateWaitSurface(WaitScene *waitScene);
 void UI_updateMainSurface(MainScene *scene);
+void UI_drawBullets(Gun *gun);
 void UI_cleanup(void);
 
 /* thread.c */
