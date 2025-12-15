@@ -5,6 +5,8 @@
 
 #define SERVER_PORT 50000
 
+GameManager myGameManager;
+
 extern int connectClient(void);
 extern void CloseClient(int i);
 
@@ -36,12 +38,17 @@ int main(int argc, char *argv[]) {
   fprintf(stderr, "Port number = %d\n", port);
 
   setup_server(num_cl, port);
+  setupPhysics();
+
+  myGameManager.quitRequest = SDL_FALSE;
+  myGameManager.ackRequest = SDL_FALSE;
 
   int cond = 1;
   while (cond) {
       cond = control_requests();
   }
-  SDL_Delay(3000);
+  SDL_RemoveTimer(myGameManager.timer);
+  SDL_Delay(1000);
   terminate_server();
 
   return 0;

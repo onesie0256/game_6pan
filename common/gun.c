@@ -1,4 +1,4 @@
-#include "client.h"
+#include "common.h"
 
 const WeaponInfo sniper_ = (WeaponInfo){.kind = Sniper , .name = "Sniper"};
 const WeaponInfo shotgun_ = (WeaponInfo){.kind = Shotgun , .name = "Shotgun"};
@@ -223,6 +223,8 @@ void updateAmmos(void)
     }
 }
 
+
+
 /**
  * @brief 銃弾を削除し,リストから取り除く
  */
@@ -368,6 +370,23 @@ void collisionAmmoCars(List *carList)
             
             if (collisonAmmoCar(ammo , car)){
                 damageCar(car , ammo->damage);
+                destroyAmmo(ammo);
+            }
+        }
+    }
+}
+
+void collisionAmmoCars_c(List *carList)
+{
+    ListNode *i;
+    foreach(i , carList){
+        ListNode *j;
+        foreach(j , ammoList){
+            Car *car = (Car *)i->data;
+            Ammo *ammo = (Ammo *)j->data;
+            if (car->id == ammo->carId) continue;
+            
+            if (collisonAmmoCar(ammo , car)){
                 destroyAmmo(ammo);
             }
         }

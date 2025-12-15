@@ -70,5 +70,8 @@ int waitScene(void)
         SDL_Delay(16);
     }
 
+    myGameManager.gunId = waitSceneState.selectedWeaponIndex;
+    send_gunId();
+    waitUntilAck();
     return 1; //メインシーンへ
 }

@@ -67,6 +67,8 @@ int main(int argc , char* argv[])
   //終了処理
   // まず、ネットワーク処理を行っているスレッドが終了するのを待つ
   SDL_WaitThread(myGameManager.key_thread , NULL); 
+
+  SDL_WaitThread(myGameManager.net_thread , NULL);
   
   #ifdef USE_JOY
   // joy_threadも終了を待つ
@@ -99,6 +101,10 @@ SDL_bool init(void)
 {
     //初期化
     myGameManager.UI = NULL;
+
+    myGameManager.quitRequest = SDL_FALSE;
+    myGameManager.ackRequest = 0;
+
 
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0){
         printf("SDL_init error %s\n" , SDL_GetError());
