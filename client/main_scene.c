@@ -71,6 +71,7 @@ int mainScene(void)
     updateCamera(scene->myCar , scene->camera);
 
     UI_updateMainSurface(scene); 
+    if(scene->myCar) UI_drawBullets(scene->myCar->gun);
 
     draw(scene->camera);
 
