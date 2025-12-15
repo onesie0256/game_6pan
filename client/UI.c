@@ -156,7 +156,7 @@ void UI_updateWaitSurface(WaitScene *waitScene)
 	UI_updateTextCenteredOnSurface(myGameManager.fonts[0], selected_weapon->name, myGameManager.windowH / 2 - 50, black);
 
 	//画面中央: 武器画像を描画
-	
+	/*後で*/
 
 	//画面上部: 操作説明を描画
 	UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "左右キーで武器を選択", 60, black);
@@ -226,14 +226,6 @@ void UI_updateMainSurface(MainScene *scene)
 	}
 
 	/*画面右下(HPバーの上): 弾数表示*/
-	static SDL_Surface* bulletSurface = NULL;
-	if (bulletSurface == NULL) {
-		bulletSurface = IMG_Load("assets/images/bullet.png"); 
-		if (bulletSurface == NULL) {
-			fprintf(stderr, "Failed to load image: assets/pictures/bullet.jpg. Error: %s\n", IMG_GetError());
-		}
-	}
-	
 	Gun *myGun = myCar->gun;
 	if (myGun) {
 		if (myGun->reloadFrameNow > 0) {
@@ -248,18 +240,57 @@ void UI_updateMainSurface(MainScene *scene)
 				}
 			}
 		} 
-		if (bulletSurface) {
-			SDL_Rect dst;
-			dst.w = bulletSurface->w;
-			dst.h = bulletSurface->h; 
-			dst.x = (myGameManager.windowW - dst.w) / 2; 
-			dst.y = (myGameManager.windowH - dst.h) / 2;
-			SDL_BlitSurface(bulletSurface, NULL, myGameManager.UI, &dst);
-		}
+	
 	}
 	
+	/* 画面左下: 順位表示 */
+	if (myGameManager.fonts[0]) {
+		char rankText[16];
+		snprintf(rankText, sizeof(rankText), "%d", myCar->place);
+
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], rankText, black);
+		if (textSurface) {
+			SDL_Rect dst = { 90, myGameManager.windowH - textSurface->h - 20, textSurface->w, textSurface->h };
+			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
+			SDL_FreeSurface(textSurface);
+		}
+	} 
+
+	// 弾の描画
+	UI_drawBullets(myCar->gun);
 }
 
+
+/**
+ * @brief 弾数を画像で描画する
+ * @param gun プレイヤーの銃情報
+ */
+void UI_drawBullets(Gun *gun)
+{
+	if (gun == NULL || gun->reloadFrameNow > 0) {
+		return; // 銃がない、またはリロード中は弾画像を表示しない
+	}
+
+	static SDL_Surface* bulletSurface = NULL;
+	if (bulletSurface == NULL) {
+		bulletSurface = IMG_Load("assets/pictures/bullet.png");
+		if (bulletSurface == NULL) {
+			fprintf(stderr, "Failed to load image: assets/pictures/bullet.png. Error: %s\n", IMG_GetError());
+			return;
+		}
+	}
+
+	int bullet_w = bulletSurface->w / 10;
+	int bullet_h = bulletSurface->h / 4;
+	int padding = 2;
+	int start_x = myGameManager.windowW - 20 - (gun->bulletNum * (bullet_w + padding));
+	int start_y = myGameManager.windowH - 60 - 25 - bullet_h - 10; // HPバーの上
+
+	for (int i = 0; i < gun->bulletNum; i++) {
+		SDL_Rect dst = { start_x + i * (bullet_w + padding), start_y, bullet_w, bullet_h };
+		SDL_BlitScaled(bulletSurface, NULL, myGameManager.UI, &dst);
+	}
+}
 /**
  * @name UI_cleanup
  * @brief UI関連のリソースを解放する
