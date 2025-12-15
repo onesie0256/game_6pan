@@ -27,31 +27,27 @@ int titleScene(void)
 	}
 
 	//イベント処理:Enter(Joy-conではX)で次シーンへ  
-		if (myGameManager.quitRequest == SDL_TRUE) {
-			setupFlag = SDL_TRUE;
-			SDL_Delay(100);
-			return 0; // ゲーム終了 
-		}
-		else{
-			if (isKeyDowned(K_ENTER)) {
-				myGameManager.sceneID = Scene_Wait;
-			}
-		
-		#ifdef USE_JOY
-
-		if (myGameManager.joyBotton[JOY_Home] == SDL_TRUE ) {
+	if (myGameManager.quitRequest == SDL_TRUE) {
+		setupFlag = SDL_TRUE;
+		SDL_Delay(100);
+		return 0; // ゲーム終了 
+	}
+	else {if (isKeyDowned(K_ENTER)) {
 			myGameManager.sceneID = Scene_Wait;
-			break;
 		}
+		
+	#ifdef USE_JOY
 
-		#endif 
-		}
+	if (myGameManager.joyBotton[JOY_X] == SDL_TRUE ) {
+		myGameManager.sceneID = Scene_Wait;
+		break;
+	}
 
-	//アニメーション更新
-	titleState.animationTimer += 16; 
+	#endif 
+	}
 
-	// ビート効果（拡大縮小）: sin波で0.9～1.1をループ 
-	float beatPhase = (titleState.animationTimer % 1000) / 1000.0f; /* 0.0～1.0 */
+	//ビート効果（拡大縮小）: sin波でループ
+	float beatPhase = (titleState.animationTimer % 2000) / 2000.0f; /* 0.0～1.0 */
 	titleState.beatScale = 1.0f + 0.15f * sinf(beatPhase * 2.0f * 3.14159f);
 
 	UI_updateTitleSurface(&titleState);
