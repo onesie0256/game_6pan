@@ -243,3 +243,66 @@ SDL_bool loadOBJ(const char* obj_filename , const char* texture_filename ,  Obj 
     fclose(fp);
     return SDL_TRUE;
 }
+
+/**
+ * @brief .objファイルから3dデータを読み込み...
+ * 
+ * @param obj_filename .objファイル名
+ * @param [out] list 出力先
+ * 
+ * @return 読み込みに成功したらSDL_TRUE,失敗したらSDL_FALSE
+ */
+SDL_bool loadOBJ_collison(const char* obj_filename ,  List *list)
+{
+    FILE* fp = fopen(obj_filename, "r");
+    if (fp == NULL) {
+        printf("could not open file %s\n" , obj_filename);
+        return SDL_FALSE;
+    }
+
+    Vec3f vertex[10000];
+    int vertNum = 0;
+
+    char line[LINE_MAX];
+    while (fgets(line, LINE_MAX, fp) != NULL)
+    {
+        switch (line[0])
+        {
+        case '#':
+            break;
+        
+        case 'v':
+            if (line[1] == ' '){
+                Vec3f v;
+                sscanf(line , "v %f %f %f" , &v.x , &v.y , &v.z);
+                vertex[vertNum] = v;
+                vertNum++;
+            }
+            break;
+
+        case 'f':
+        {
+            int v[4], t[4], n[4];
+            int items_read = sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d",
+                                    &v[0], &t[0], &n[0], &v[1], &t[1], &n[1],
+                                    &v[2], &t[2], &n[2], &v[3], &t[3], &n[3]);
+
+            if (items_read == 9) { // 三角形の場合
+                
+                createPlane3(vertex[v[0] - 1] , vertex[v[1] - 1] , vertex[v[2] - 1] , (Vec3f){0.0f,1.0f,0.0f} , list);
+            } else if (items_read == 12) { // 四角形の場合 -> 2つの三角形に分割
+                
+                createPlane3(vertex[v[0] - 1] , vertex[v[1] - 1] , vertex[v[2] - 1] , (Vec3f){0.0f,1.0f,0.0f} , list);
+                createPlane3(vertex[v[0] - 1] , vertex[v[2] - 1] , vertex[v[3] - 1] , (Vec3f){0.0f,1.0f,0.0f} , list);
+            }
+            break;
+        }
+
+        default:
+            break;
+        }
+    }
+
+    fclose(fp);
+    return SDL_TRUE;
+}

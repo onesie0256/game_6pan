@@ -3,6 +3,7 @@
 void collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity);
 SDL_bool collisionPlane(Rectangler *rectangler , Plane4 *plane , Vec3f preCoordOfVertex[]);
 SDL_bool collisionRectangler(Rectangler *rectangler_s , Rectangler *rectangler_d , Vec3f preCoordOfVertex[] , Vec3f *velocity);
+SDL_bool collisionPlane3(Rectangler *rectangler , Plane3 *plane , Vec3f preCoordOfVertex[]);
 
 /**
  * @brief 四角形と衝突処理する
@@ -25,7 +26,13 @@ void collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , 
             break;
         
         case PT_PLANE3:
+            if(collisionPlane3(rectangler , polygon->data.plane3 , preCoordOfVertex)){
+                *velocity = calcCollisionVel(*velocity , polygon->data.plane3->normal);
+                *velocity = vecMulSca(*velocity , 0.98f);
+            }
             break;
+        
+
         default:
             break;
         }
