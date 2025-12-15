@@ -30,6 +30,7 @@ typedef struct client_t{
     SDL_bool keyPrev[KEY_MAX];  //キーの状態(1フレーム前)
     SDL_bool joyBotton[JOY_KEY_MAX];  //ジョイコンのボタンの状態
     SDL_bool joyBottonPrev[JOY_KEY_MAX];
+    SDL_bool gunReady;
 }Client;
 
 
@@ -99,11 +100,7 @@ typedef struct{
     float stickY;               //スティック傾きY
 }NetworkContainer;
 
-typedef struct lient_t{
-    uint8_t id;                 //クライアントのid
-    SDL_bool keyNow[KEY_MAX];   //キーの状態
-    SDL_bool keyPrev[KEY_MAX];  //キーの状態(1フレーム前)
-}Client;
+
  
 
 extern GameManager myGameManager;

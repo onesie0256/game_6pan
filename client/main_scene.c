@@ -124,12 +124,18 @@ int setupScene(void)
     scene->myCar = createCar(scene->cars , 0 , (Vec3f){0.0f,3.0f,0.0f} , Sniper , scene->checkPointPlaneZero , scene->checkPointZero);
     c2 = createCar(scene->cars , 1 , (Vec3f){0.0f,5.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
     #else
-    for (int i = 0 ; i < myGameManager.playerNum ; i++){
-        Car *car = createCar(scene->cars , i , (Vec3f){(float)i, 3.0f , 0.0f} , Shotgun , scene->checkPointPlaneZero , scene->checkPointZero);
-        if (i == myGameManager.myID){
-            scene->myCar = car;
-        }
+    for (int i = 0; i < myGameManager.playerNum; i++) {
+    GunKinds kind = (i == myGameManager.myID)? myGameManager.gunId: myGameManager.clients[i].gunId;
+
+    Car *car = createCar(
+        scene->cars, i, (Vec3f){(float)i, 3.0f, 0.0f}, kind,scene->checkPointPlaneZero,scene->checkPointZero
+    );
+
+    if (i == myGameManager.myID) {
+        scene->myCar = car;
     }
+}
+
 
     #endif
     //createCar(scene->cars , 2 , (Vec3f){0.0f,7.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);

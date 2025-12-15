@@ -1,14 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <errno.h>
+
 #include "server.h"
-#include <sys/types.h>
 #include <sys/select.h>
 
 typedef unsigned short u_short;
@@ -21,6 +12,8 @@ static fd_set mask; //ファイルディスクリプタ集合
 //static NetworkContainer data; //通信用の汎用データ構造体
 static NetworkContainer inputBuffer[MAX_Clients]; // 各クライアントの入力データ
 static int inputReceived[MAX_Clients] = {0};            // 受信したかどうか
+static NetworkContainer gunBuffer[MAX_Clients]; // 各クライアントの銃データ
+static int gunReceived[MAX_Clients] = {0};            // 受信したかどうか
 
 //関数プロトタイプ宣言
 void setup_server(int, u_short);
@@ -158,6 +151,34 @@ int control_requests() {
                 send_data(BROADCAST, &inputBuffer[j], sizeof(NetworkContainer));
                 inputReceived[j] = 0; // 次フレームのためにリセット
                 printf("send input data to id:%d\n" , j);
+            }
+        }
+        break;
+      
+      case 'G': //銃データを受け取った場合
+      {
+        u_short id = data.id;
+        printf("recieve gun data from id:%d\n" , data.id);
+
+        if (id < num_clients) {
+            memcpy(&gunBuffer[id], &data, sizeof(NetworkContainer));
+            gunReceived[id] = 1;    // 受信済フラグ
+        }
+      }
+        // 全員から揃ったかチェック
+        int all_gun = 1;
+        for (int j = 0; j < num_clients; j++) {
+            if (!gunReceived[j]) {
+                all_gun = 0;
+            }
+        }
+
+        if (all_gun) {
+            // まとめて送信
+            for (int j = 0; j < num_clients; j++) {
+                send_data(BROADCAST, &gunBuffer[j], sizeof(NetworkContainer));
+                gunReceived[j] = 0; // 次フレームのためにリセット
+                printf("send gun data to id:%d\n" , j);
             }
         }
         break;

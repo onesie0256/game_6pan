@@ -34,6 +34,9 @@ int control_requests();
 void terminate_client();
 void send_input_data(void);
 void receive_input_data(void);
+void send_gun_data(void);
+void input_gun_data(void);
+void send_fire_data(void);
 void send_Quit(void);
 
 static int in_command(void);
@@ -41,6 +44,10 @@ static int exe_command(void);
 static void send_data(void *, int);
 static int receive_data(void *, int);
 static void handle_error(char *);
+
+// 全クライアント分の武器データを受信した数
+int gunReadyCount = 0;
+
 
 //クライアント起動後の動き
 void setup_client(char *server_name, uint16_t port) {
@@ -87,6 +94,11 @@ void setup_client(char *server_name, uint16_t port) {
   FD_ZERO(&mask); //マスクを初期化
   FD_SET(0, &mask); //標準入力を監視対象に設定
   FD_SET(sock, &mask);//ソケットを監視対象に設定
+  for (int i = 0; i < n_clients; i++) {
+    myGameManager.clients[i].gunId = Pistol;     // デフォルト
+    myGameManager.clients[i].gunReady = SDL_FALSE;
+}
+
 }
 
 int control_requests () {
@@ -175,6 +187,33 @@ void receive_input_data(void) {
   }
 }
 
+void send_gun_data(void)
+{
+  NetworkContainer data;
+  memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
+
+  data.id = my_id; //自分のIDを設定
+  data.order = 'G'; //銃情報コマンド
+  data.option = myGameManager.gunId; // 銃の種類をセット
+  
+  //データをサーバへ送信
+  send_data(&data, sizeof(NetworkContainer));
+  printf("send gun data\n");
+}
+
+void input_gun_data(void)
+{
+  NetworkContainer data;
+  memset(&data, 0, sizeof(NetworkContainer));
+  //ソケットからデータ受信
+  receive_data(&data, sizeof(data));
+
+  //受信した銃データをクライアント情報に反映
+  if (data.id < n_clients) {
+     myGameManager.clients[data.id].gunId = data.option; // 銃の種類をセット
+  }
+}
+
 static int in_command() { 
   NetworkContainer data;
   char com;
@@ -238,11 +277,33 @@ static int exe_command() {
         myGameManager.clients[data.id].joyBotton[i] = (data.joyKeyInputs & 1);
       }
       #endif
+      if (myGameManager.sceneID == Scene_Main && myGameManager.scene != NULL) {
+
       MainScene *scene = (MainScene *)myGameManager.scene;
       scene->sendInputDataPlayerNum++;
+      }
     }
-    result = 1;
     break;
+
+ case 'G':
+    if (data.id < n_clients) {
+
+        // gunId保存
+        myGameManager.clients[data.id].gunId = data.option;
+
+        // 初めて受信したプレイヤーのみカウント
+        if (myGameManager.clients[data.id].gunReady == SDL_FALSE) {
+            myGameManager.clients[data.id].gunReady = SDL_TRUE;
+            gunReadyCount++;
+        }
+
+        // 全員分そろったら MainScene へ
+        if (gunReadyCount == myGameManager.playerNum) {
+            myGameManager.sceneID = Scene_Main;
+    }
+    }
+    break;
+
 
 
   case QUIT_COMMAND: //Qの場合

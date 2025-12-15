@@ -25,6 +25,11 @@ typedef struct course_t Course;
 struct checkPoint_t;
 typedef struct checkPoint_t CheckPoint;
 
+// 武器選択の同期管理
+SDL_bool myGunSent;
+int gunReadyCount;
+
+
 
 
 
@@ -214,6 +219,8 @@ int control_requests();
 void terminate_client();
 void send_input_data(void);
 void receive_input_data(void);
+void send_gun_data(void);
+void input_gun_data(void);
 void send_Quit(void);
 
 /* title_scene.c */

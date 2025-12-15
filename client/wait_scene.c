@@ -14,6 +14,9 @@ int waitScene(void)
     // 待機画面の状態を初期化
     WaitScene waitSceneState;
     waitSceneState.selectedWeaponIndex = 0; 
+    myGunSent = SDL_FALSE;
+    gunReadyCount = 0;
+
 
     int running = 1;
     while (running) {
@@ -34,24 +37,19 @@ int waitScene(void)
                         waitSceneState.selectedWeaponIndex %= WEAPON_TYPE_MAX; // 先頭にループ
                     }
                     if (isKeyDowned(K_ENTER) == SDL_TRUE) {
-                        running = 0;  //メイン画面へ
+                        // 選択した武器を反映
+                        myGameManager.gunId = weapon_info[waitSceneState.selectedWeaponIndex].kind;
+                        send_gun_data(); // 銃データをサーバに送信
+                        myGunSent = SDL_TRUE;     // 準備完了
                     } 
+                    if (myGameManager.sceneID == Scene_Main) {
+                    // 全員分のGを受信済み
+                    return 1;
+                    }
 
         UI_updateWaitSurface(&waitSceneState);
 
         draw(NULL);
-        if (running == 0) myGameManager.sceneID = Scene_Main;
-
-        if (isKeyDowned(K_ENTER) == SDL_TRUE){
-            myGameManager.sceneID = Scene_Main;
-            running = 0;
-        }
-
-        if (isKeyDowned(K_ENTER) == SDL_TRUE){
-            myGameManager.sceneID = Scene_Main;
-            running = 0;
-        }
-
         SDL_Delay(16);
         
     }

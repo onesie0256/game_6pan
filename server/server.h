@@ -1,9 +1,21 @@
 #pragma once
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <sys/select.h>
+
 #include "../common/common.h"
 #define DEF_PORT 50100
 #define MAX_LEN_ADDR 32
 #define BROADCAST -1
-#define MAX_NUM_CLIENTS 2
+#define MAX_NUM_CLIENTS 4
 
 typedef unsigned short u_short;
 
