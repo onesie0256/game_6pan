@@ -98,8 +98,8 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 	int scaledBoxH = (int)(baseBoxH * scale);
 
 	SDL_Rect titleBox = { (myGameManager.windowW - scaledBoxW) / 2,
-						  myGameManager.windowH / 3 + (baseBoxH - scaledBoxH) / 2,
-						  scaledBoxW, scaledBoxH };
+										  myGameManager.windowH / 3 + (baseBoxH - scaledBoxH) / 2,
+										  scaledBoxW, scaledBoxH };
 
 	SDL_FillRect(myGameManager.UI, &titleBox, SDL_MapRGB(myGameManager.UI->format, 60, 120, 200));
 
@@ -257,7 +257,85 @@ void UI_updateMainSurface(MainScene *scene)
 			SDL_BlitSurface(bulletSurface, NULL, myGameManager.UI, &dst);
 		}
 	}
+
+	/* 画面左下: 順位表示 */
+	char rank_text[8];
+	sprintf(rank_text, "%d", myCar->place);
+
+	if (myGameManager.fonts[0]) {
+		SDL_Color white = {255, 255, 255, 255};
+
+		// 白い文字のSurfaceを作成
+		SDL_Surface* textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], rank_text, white);
+		if (textSurface) {
+            float scale = 3.0f; 
+			SDL_Rect dst;
+            dst.w = (int)(textSurface->w * scale);
+            dst.h = (int)(textSurface->h * scale);
+			dst.x = 20; 
+			dst.y = myGameManager.windowH - dst.h - 20; 
+
+			SDL_BlitScaled(textSurface, NULL, myGameManager.UI, &dst);
+			SDL_FreeSurface(textSurface);
+		}
+	}
 	
+}
+
+/**
+ * @brief 右下に弾の画像を描画する
+ * @param gun プレイヤーの銃
+ */
+void UI_drawBullets(Gun *gun)
+{
+	if (gun == NULL || myGameManager.UI == NULL) return;
+
+	// HPバーの位置情報を参考にする
+	int bar_width = 250;
+	int bar_height = 25;
+	int bar_x = myGameManager.windowW - bar_width - 20;
+	int bar_y = myGameManager.windowH - bar_height - 60;
+
+	if (gun->reloadFrameNow > 0) {
+		// リロード中はテキストを表示
+		if (myGameManager.fonts[2]) {
+			SDL_Color black = {0, 0, 0, 255};
+			SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "Reloading...", black);
+			if (textSurface) {
+				// HPバーの上に表示
+				SDL_Rect dst = {bar_x, bar_y - textSurface->h - 10, textSurface->w, textSurface->h };
+				SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
+				SDL_FreeSurface(textSurface);
+			}
+		}
+		return; // リロード中は弾画像を表示しない
+	}
+
+	static SDL_Surface* bulletSurface = NULL;
+	if (bulletSurface == NULL) {
+		bulletSurface = IMG_Load("assets/pictures/bullet.png"); 
+		if (bulletSurface == NULL) {
+			fprintf(stderr, "Failed to load image: assets/pictures/bullet.png. Error: %s\n", IMG_GetError());
+			return;
+		}
+	}
+
+	int bullet_w = bulletSurface->w / 3; 
+	int bullet_h = bulletSurface->h / 3;
+	int padding = 2;
+
+	// 弾の描画開始Y座標（HPバーの少し上）
+	int draw_y = bar_y - bullet_h - 10;
+	// 弾の描画ブロックの右端をHPバーの右端に合わせる
+	int total_width = gun->bulletNum * (bullet_w + padding) - padding;
+	if (gun->bulletNum == 0) total_width = 0;
+	
+	int start_x = (bar_x + bar_width) - total_width;
+
+	for (int i = 0; i < gun->bulletNum; i++) {
+		SDL_Rect dst = { start_x + i * (bullet_w + padding), draw_y, bullet_w, bullet_h };
+		SDL_BlitScaled(bulletSurface, NULL, myGameManager.UI, &dst);
+	}
 }
 
 /**
@@ -311,7 +389,7 @@ void createUIwithIMG(SceneKinds group , char *filename , SDL_Rect dst)
         printf("IMG_Load error: %s\n", IMG_GetError());
     }
     else
-    addListNode(myGameManager.UIList , rtn , NULL);
+    addListNode(myGameManager.UIList ,rtn , NULL);
     
 }
 
