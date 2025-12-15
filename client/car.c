@@ -138,15 +138,28 @@ void rotateCar(Car *car , int deg)
  */
 void forwardCar(Car *car)
 {
+<<<<<<< Updated upstream
     if (car->id != 0) return;
+<<<<<<< HEAD
 
     int curve_deg = CURVE_DEGREE;
     SDL_bool *inputAry = myGameManager.clients[car->id].keyNow;
+=======
+=======
+
+    int curve_deg = CURVE_DEGREE;
+    SDL_bool *inputAry = myGameManager.clients[car->id].keyNow;
+    SDL_bool *preinputAry = myGameManager.clients[car->id].keyPrev;
+>>>>>>> 1f83553a1727adb50d2cc55ec98e1411eb53afeb
 
     if (inputAry[K_SHIFT]){
         curve_deg *= 2;
     }
 
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+>>>>>>> 1f83553a1727adb50d2cc55ec98e1411eb53afeb
     if (inputAry[K_LEFT]){
         car->direction = rotateXYZ(car->direction , 0 , 0 , curve_deg);
         rotateCar(car , curve_deg);
@@ -177,7 +190,7 @@ void forwardCar(Car *car)
         car->velocity = vecAdd(car->velocity , vecMulSca(car->direction , -0.1f));
     }
 
-    if (isKeyDowned(K_SPACE)){
+    if (inputAry[K_ENTER] && !preinputAry[K_ENTER]){
         car->velocity = vecAdd(car->velocity , (Vec3f){0.0f,3.0f,0.0f});
     }
 }
