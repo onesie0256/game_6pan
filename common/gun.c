@@ -12,9 +12,9 @@ static Gun sniper = (Gun){
     .fireCoolFrame = 60 ,
     .damage = 80 ,
     .model = NULL ,
-    .ammoSpeed = 30.0f ,
+    .ammoSpeed = 40.0f ,
     .maxAmmoLivingFrame = 60 ,
-    .ammoRadius = 0.3f};
+    .ammoRadius = 0.5f};
 
 //ショットガンの基礎ステータス
 static Gun shotgun = (Gun){
@@ -32,13 +32,13 @@ static Gun shotgun = (Gun){
 static Gun pistol = (Gun){
     .kind = Pistol ,
     .maxBulletNum = 10 ,
-    .reloadFrame = 10 ,
-    .fireCoolFrame = 10 ,
-    .damage = 20 ,
+    .reloadFrame = 60 ,
+    .fireCoolFrame = 15 ,
+    .damage = 15 ,
     .model = NULL ,
-    .ammoSpeed = 10.0f ,
+    .ammoSpeed = 30.0f ,
     .maxAmmoLivingFrame = 60 ,
-    .ammoRadius = 1.0f};
+    .ammoRadius = 0.3f};
 
 static List *ammoList = NULL;
 void register_ammoList(List *list);

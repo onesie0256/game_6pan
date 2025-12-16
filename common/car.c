@@ -73,6 +73,7 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     car->shotFlag = SDL_FALSE;
     car->gun = createGun(kind , id);
     car->isGoaled = SDL_FALSE;
+    car->isOnGround = SDL_FALSE;
 
     char id_char[6] = {0};
     sprintf(id_char , "%d" , id);
@@ -191,6 +192,17 @@ void forwardCar(Car *car)
     SDL_bool *inputAry = myGameManager.clients[car->id].keyNow;
     SDL_bool *preinputAry = myGameManager.clients[car->id].keyPrev;
 
+    Vec3f dir = car->direction;
+    if (car->isOnGround){
+        Vec3f delta = vecSub(car->center , car->preCenter);
+        //printf("delta.y = %f\n" , delta.y);
+        if (delta.y >= 0.002f){
+            dir.y = delta.y*100.0f;
+            //dir = vecNormalize(dir);
+            printf("directon = (%f , %f , %f)\n" , dir.x , dir.y , dir.z);
+        }
+    }
+
     if (inputAry[K_SHIFT]){
         curve_deg *= 2;
     }
@@ -220,11 +232,11 @@ void forwardCar(Car *car)
     }
 
     if (inputAry[K_UP]){
-        car->velocity = vecAdd(car->velocity , vecMulSca(car->direction , 0.1f));
+        car->velocity = vecAdd(car->velocity , vecMulSca(dir , 0.2f));
     }
 
     if (inputAry[K_DOWN]){
-        car->velocity = vecAdd(car->velocity , vecMulSca(car->direction , -0.1f));
+        car->velocity = vecAdd(car->velocity , vecMulSca(dir , -0.2f));
     }
 
     if (inputAry[K_SPACE] && !preinputAry[K_SPACE]){
@@ -272,11 +284,11 @@ void moveCar(List *carList , List *PolygonList)
     foreach(node , carList){
         Car *car = ((Car *)node->data);
         Rectangler *r = car->collisionBox->data.rectangler;
-        car->preCenter = car->center;
 
         updateCarCenter(car);
 
         forwardCar(car);
+        car->preCenter = car->center;
 
         //car->velocity.x = -1.0f;
         car->velocity = vecAdd(car->velocity , (Vec3f){0.0f,-0.1f,0.0f});
@@ -286,7 +298,12 @@ void moveCar(List *carList , List *PolygonList)
         if (r->vertex[0].y < -10.0f){
             teleportCar(car , (Vec3f){0.0f,3.0f,0.0f});
         }
-        collision(PolygonList , car->collisionBox->data.rectangler , car->preCoordOfVertexs , &car->velocity);
+
+        updateCarCenter(car);
+
+
+        car->isOnGround = SDL_FALSE;
+        car->isOnGround = collision(PolygonList , car->collisionBox->data.rectangler , car->preCoordOfVertexs , &car->velocity);
     
         
 

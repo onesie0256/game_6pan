@@ -212,6 +212,7 @@ typedef struct car_t
     Quaternion q;
     Quaternion q_pre;
     SDL_bool shotFlag;          //発射フラグ
+    SDL_bool isOnGround;        //地面にいるかどうか
 
     Polygon *nextPlane;         //次のチェックポイントの平面
     CheckPoint *nextCheckPoint; //次のチェックポイントの座標

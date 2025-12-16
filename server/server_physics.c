@@ -42,9 +42,13 @@ void setupPhysics(void)
 
     #endif
     //createCar(scene->cars , 2 , (Vec3f){0.0f,7.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
-    //createPlane4((Vec3f){-5.0f,-0.1f,5.0f} , 20.0f , 20.0f , (Vec3f){0.0f,1.0f,0.0f} , 90 , 0 , 0 , PT_PLANE4 , scene->polygonList);
-    //createRectangler((Vec3f){-3.0f , 0.0f , 0.0f} , (Vec3f){1.0f , 1.0f , 1.0f} , (Vec3f){0.0f , 0.0f , 1.0f} , 0 , 0 , 30 , scene->polygonList);
-    loadOBJ_collison("assets/obj/course.obj" , scene->polygonList);
+    //当たり判定のサポート
+    createRectangler((Vec3f){-5.2f,3.0f,-13.0f} , (Vec3f){9.0f,0.5f,1.5f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 3 , 0 , scene->polygonList);
+
+    createRectangler((Vec3f){-10.0f,1.9f,-12.8f} , (Vec3f){5.7f,0.5f,1.9f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 13 , 0 , scene->polygonList);
+    createRectangler((Vec3f){-18.0f,0.1f,-12.3f} , (Vec3f){9.0f,0.5f,2.4f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 13 , 0 , scene->polygonList);
+
+    loadOBJ_collison("assets/models/course.obj" , scene->polygonList);
 
 
     

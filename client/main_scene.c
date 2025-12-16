@@ -126,7 +126,15 @@ int setupScene(void)
 
     scene->myCar = NULL;
 
-    //createRectangler((Vec3f){0.0f,0.0f,0.0f} , (Vec3f){1.0f,1.0f,1.0f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 0 , 0 , scene->polygonList);
+    //当たり判定のサポート
+    //createRectangler((Vec3f){-5.2f,3.0f,-13.0f} , (Vec3f){9.0f,0.5f,1.5f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 3 , 0 , scene->polygonList);
+
+    //createRectangler((Vec3f){-10.0f,1.9f,-12.8f} , (Vec3f){5.7f,0.5f,1.9f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 13 , 0 , scene->polygonList);
+    //createRectangler((Vec3f){-18.0f,0.1f,-12.3f} , (Vec3f){9.0f,0.5f,2.4f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 13 , 0 , scene->polygonList);
+
+
+
+
     #ifdef DEGUG_3DE
     scene->myCar = createCar(scene->cars , 0 , (Vec3f){0.0f,3.0f,0.0f} , Sniper , scene->checkPointPlaneZero , scene->checkPointZero);
     c2 = createCar(scene->cars , 1 , (Vec3f){0.0f,5.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
