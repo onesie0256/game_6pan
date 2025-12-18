@@ -83,7 +83,7 @@ SDL_bool checkCarPoint(Car *car , CheckPoint *cp , Polygon *plane_)
     //isPointOnPlane4_(car->center , plane) && (vecMulIn(pa , C) < 0) && (vecMulIn(pb , C) > 0)
 
     if (isPointOnPlane4_(car->center , plane) && (vecMulIn(pb , C) > 0)){
-        printf("No.%d : チェックポイントを%d通過\n" , car->id , car->checkPointNum);
+        //printf("No.%d : チェックポイントを%d通過\n" , car->id , car->checkPointNum);
         return SDL_TRUE;
     }
     return SDL_FALSE;

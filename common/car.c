@@ -238,10 +238,11 @@ void forwardCar(Car *car)
     if (inputAry[K_DOWN]){
         car->velocity = vecAdd(car->velocity , vecMulSca(dir , -0.2f));
     }
-
+    /*
     if (inputAry[K_SPACE] && !preinputAry[K_SPACE]){
         car->velocity = vecAdd(car->velocity , (Vec3f){0.0f,0.3f,0.0f});
     }
+    */
 }
 
 /**
@@ -298,7 +299,7 @@ void moveCar(List *carList , List *PolygonList , int count)
         moveRectacgler(car->collisionBox->data.rectangler , car->velocity , 1.0f/60.0f);
 
         if (r->vertex[0].y < -10.0f){
-            teleportCar(car , (Vec3f){0.0f,3.0f,0.0f});
+            teleportCar(car , (Vec3f){0.3f,2.0f,0.7f});
         }
 
         updateCarCenter(car);
