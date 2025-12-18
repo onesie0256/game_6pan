@@ -3,9 +3,9 @@
 
 //武器情報の定義(client.hでextern宣言したものの実体)
 const WeaponInfo weapon_info[WEAPON_TYPE_MAX] = {
-    { Pistol,   "PISTOL",    "assets/images/pistol.png" },
-    { Shotgun, "SHOTGUN",   "assets/images/shotgun.png" },
-    { Sniper,  "SNIPER",    "assets/images/sniper.png" }
+    { Pistol,   "PISTOL",    "assets/pictures/pistol.png" },
+    { Shotgun, "SHOTGUN",   "assets/pictures/shotgun.png" },
+    { Sniper,  "SNIPER",    "assets/pictures/sniper.png" }
 };
 
 /**
@@ -153,10 +153,23 @@ void UI_updateWaitSurface(WaitScene *waitScene)
 
 	//画面中央: 武器名を描画
 	SDL_Color black = {0, 0, 0, 0};
-	UI_updateTextCenteredOnSurface(myGameManager.fonts[0], selected_weapon->name, myGameManager.windowH / 2 - 50, black);
+	UI_updateTextCenteredOnSurface(myGameManager.fonts[0], selected_weapon->name, myGameManager.windowH / 3 - 50, black);
 
 	//画面中央: 武器画像を描画
-	/*後で*/
+	SDL_Surface* weaponImage = IMG_Load(selected_weapon->image_path);
+	if (weaponImage) {
+		int img_w = 300; // 描画する画像の幅を固定
+		int img_h = 200; // 描画する画像の高さを固定
+		SDL_Rect dst;
+		// 画像をウィンドウの中央に配置
+		dst.x = (myGameManager.windowW - img_w) / 2;
+		// 武器名の少し下に配置
+		dst.y = myGameManager.windowH / 3 + 40;
+		dst.w = img_w;
+		dst.h = img_h;
+		SDL_BlitScaled(weaponImage, NULL, myGameManager.UI, &dst);
+		SDL_FreeSurface(weaponImage);
+	}
 
 	//画面上部: 操作説明を描画
 	UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "左右キーで武器を選択", 60, black);
