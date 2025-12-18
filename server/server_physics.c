@@ -21,6 +21,7 @@ void setupPhysics(void)
     scene->goaledPlayerNum = 0;
     scene->sendInputDataPlayerNum = 0;
     scene->sendCarInfoPlayerNum = 0;
+    scene->count = 0;
 
     myGameManager.scene = scene;
     myGameManager.sceneID = Scene_Main;
@@ -74,22 +75,23 @@ Uint32 update_physics(Uint32 interval , void *name)
         return 0;
     }
 
-    
-    for (int i = 0 ; i < myGameManager.playerNum ; i++){
-        if (myGameManager.clients[i].keyNow[K_ENTER] == SDL_TRUE){
-            Car *tmp = getCarFromId(scene_->cars , i);
-            if (tmp != NULL){
-                fireGun(tmp , tmp->gun);
-            }
+    if (scene_->count >= 300){
+        for (int i = 0 ; i < myGameManager.playerNum ; i++){
+            if (myGameManager.clients[i].keyNow[K_ENTER] == SDL_TRUE){
+                Car *tmp = getCarFromId(scene_->cars , i);
+                if (tmp != NULL){
+                    fireGun(tmp , tmp->gun);
+                }
             
+            }
         }
     }
 
     updateAmmos();
-    moveCar(scene_->cars , scene_->polygonList);
+    moveCar(scene_->cars , scene_->polygonList , scene_->count);
     collisionAmmoCars(scene_->cars);
-    //checkCarCheckPoint(scene_->cars , scene_->course);
-    //updatePlace();
+    checkCarCheckPoint(scene_->cars , scene_->course);
+    updatePlace();
 
     //updateCamera(scene_->myCar , scene_->camera);
     //draw(scene_->camera);
@@ -97,6 +99,49 @@ Uint32 update_physics(Uint32 interval , void *name)
     updateGuns(scene_->cars);
 
     sendCarInfo();
+
+    scene_->count++;
+
+    switch (scene_->count)
+    {
+    case 120:
+        sendCount(3);
+        break;
+    
+    case 180:
+        sendCount(2);
+        break;
+
+    case 240:
+        sendCount(1);
+        break;
+    
+    case 300:
+        sendCount(0);
+        break;
+
+    case 360:
+        sendCount(5);
+        break;
+
+    case 1000000:
+        scene_->count = 361;
+        break;
+    
+    default:
+        break;
+    }
+    //printf("%d,%d\n" , myGameManager.playerNum , scene_->goaledPlayerNum);
+    if (scene_->goaledPlayerNum == myGameManager.playerNum){
+        
+        static int endCount = 0;
+        endCount++;
+        if (endCount == 180){
+            printf("all player goaled , send quit\n");
+            sendQuit();
+            myGameManager.quitRequest = SDL_TRUE;
+        }
+    }
 
     return interval;
 }

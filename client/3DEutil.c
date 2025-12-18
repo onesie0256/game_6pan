@@ -113,7 +113,7 @@ int draw(Camera *camera)
     //gluLookAt(camera->pos.x, camera->pos.y, camera->pos.z, center_pos.x, center_pos.y, center_pos.z, up_vec.x, up_vec.y, up_vec.z);
     gluLookAt(camera->pos.x, camera->pos.y, camera->pos.z, camera->center.x, camera->center.y, camera->center.z, 0.0, 1.0, 0.0);
 
-    if (myGameManager.sceneID == Scene_Main){
+    if (myGameManager.sceneID == Scene_Main && myGameManager.scene != NULL){
         MainScene *scene = (MainScene *)myGameManager.scene;
         displayPolygons(scene->polygonList);
         displayCars(scene->cars);

@@ -31,6 +31,7 @@
 #define COMMAND_GUN         'G' //銃の種類の送信コマンド(クライアント->サーバー)
 #define COMMAND_CLIENT_DATA 'c' //クライアントの情報のデータ
 #define COMMAND_ACK         'A' //ACKコマンド
+#define COMMAND_COUNT       'D' //スタート時のカウントダウン
 
 
 
@@ -139,6 +140,7 @@ typedef struct
 
     Client clients[MAX_Clients];    //クライアントのリスト
 
+    Polygon *carModels[3];           //車のモデル
 }GameManager;
 
 /**
@@ -164,7 +166,8 @@ typedef struct {
     float carZ;
 
     Quaternion q;
-    uint8_t isShotGun;
+    //下位1ビット目に発射ボタンを押したかどうか,下位2ビット目に地面の上にいるかの情報を仕込む
+    uint8_t param;
     uint8_t HP;
     
 }CarInfo;
@@ -185,7 +188,6 @@ typedef union {
 typedef struct{
     uint8_t id;                     //id
     char order;                     //命令
-    uint8_t option;                 //お好きにどうぞ
     NetworkContainer_u container;   //内容
 }NetworkContainer;
 
@@ -306,12 +308,13 @@ typedef struct {
     int goaledPlayerNum;            //ゴールしたプレイヤーの数
     int sendInputDataPlayerNum;     //入力データを送信するプレイヤーの数
     int sendCarInfoPlayerNum;       //車情報を送信するプレイヤーの数
+    int count;                      //カウントダウン
 }MainScene;
 
 /* car.c */
 Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *nextPlaneZero , CheckPoint *nextCheckPointZero);
 void displayCars(List *list);
-void moveCar(List *carList , List *PolygonList);
+void moveCar(List *carList , List *PolygonList , int count);
 //void destroyCar(Car *car);
 void damageCar(Car *car , float damage);
 Car *getCarFromId(List *carList , uint8_t id);

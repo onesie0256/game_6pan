@@ -199,7 +199,7 @@ void forwardCar(Car *car)
         if (delta.y >= 0.002f){
             dir.y = delta.y*100.0f;
             //dir = vecNormalize(dir);
-            printf("directon = (%f , %f , %f)\n" , dir.x , dir.y , dir.z);
+            //printf("directon = (%f , %f , %f)\n" , dir.x , dir.y , dir.z);
         }
     }
 
@@ -278,7 +278,7 @@ void teleportCarEX(Car *car)
  * @param PolygonList 衝突判定させるポリゴンのリスト
  * @return なし
  */
-void moveCar(List *carList , List *PolygonList)
+void moveCar(List *carList , List *PolygonList , int count)
 {
     ListNode *node;
     foreach(node , carList){
@@ -287,7 +287,9 @@ void moveCar(List *carList , List *PolygonList)
 
         updateCarCenter(car);
 
-        forwardCar(car);
+        if (count > 120 + 60*3)
+            forwardCar(car);
+
         car->preCenter = car->center;
 
         //car->velocity.x = -1.0f;
@@ -332,7 +334,7 @@ void damageCar(Car *car , float damage)
     car->hp -= damage;
     if (car->hp <= 0.0f){
         car->hp = 100.0f;
-        car->velocity = vecMulSca(car->velocity , 0.3f);
+        car->velocity = vecMulSca(car->velocity , 0.15f);
         car->velocity.y += 8.0f;
     }
 }
