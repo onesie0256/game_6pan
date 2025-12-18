@@ -114,7 +114,7 @@ void checkCarCheckPoint(List *carList , Course *course)
 
             //printf("No.%d : %d周完了\n" , car->id , car->rapNum);
 
-            if (car->rapNum == 1){
+            if (car->rapNum == 3){
                 scene->goaledPlayerNum++;
                 car->isGoaled = SDL_TRUE;
                 //printf("%d,%d\n" , myGameManager.playerNum , scene->goaledPlayerNum);
