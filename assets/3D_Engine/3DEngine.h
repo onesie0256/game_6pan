@@ -98,7 +98,7 @@ void rotateCamera(Camera *camera, float pitch_delta, float yaw_delta);
 //void updateCamera(Camera *camera);
 
 /* collision.c */
-void collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity);
+SDL_bool collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity);
 
 /* list */
 /**

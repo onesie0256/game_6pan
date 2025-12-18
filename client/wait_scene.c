@@ -14,6 +14,7 @@ int waitScene(void)
     // 待機画面の状態を初期化
     WaitScene waitSceneState;
     waitSceneState.selectedWeaponIndex = 0; 
+    waitSceneState.isSendGunId = SDL_FALSE;
 
     int running = 1;
     while (running) {
@@ -45,7 +46,6 @@ int waitScene(void)
 
         draw(NULL);
             
-        if (running == 0) myGameManager.sceneID = Scene_Main;
 
         if (isKeyDowned(K_ENTER) == SDL_TRUE){
             myGameManager.sceneID = Scene_Main;
@@ -71,7 +71,13 @@ int waitScene(void)
     }
 
     myGameManager.gunId = waitSceneState.selectedWeaponIndex;
+    myGameManager.scene = NULL;
     send_gunId();
+    waitSceneState.isSendGunId = SDL_TRUE;
+    UI_updateWaitSurface(&waitSceneState);
+    draw(NULL);
+    
     waitUntilAck();
+    myGameManager.sceneID = Scene_Main;
     return 1; //メインシーンへ
 }

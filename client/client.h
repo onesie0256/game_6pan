@@ -52,6 +52,7 @@ typedef struct {
  */
 typedef struct {
     int selectedWeaponIndex; // 選択中の武器のインデックス
+    SDL_bool isSendGunId;    //武器情報送ったかどうか
 } WaitScene;
 
 
