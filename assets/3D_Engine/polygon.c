@@ -689,8 +689,7 @@ Polygon* createObj(const char* obj_filename , const char* texture_filename , Vec
     rtn->isDisplay   = SDL_TRUE;
     rtn->type        = PT_OBJ;
 
-    //双方向リストに格納
-    addListNode(list , rtn, NULL);
+    if (list != NULL) addListNode(list , rtn, NULL);
 
     return rtn;
 }

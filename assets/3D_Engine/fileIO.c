@@ -2,6 +2,17 @@
 
 #define LINE_MAX 100
 
+// Obj構造体の配列サイズ
+#define MAX_VERTICES 150000
+#define MAX_VERT_ARY 600000
+#define MAX_NORMALS 150000
+#define MAX_NORM_ARY 600000
+#define MAX_TEXCOORDS 150000
+#define MAX_TEXCOORD_ARY 600000
+
+// loadOBJ_collisonの頂点配列サイズ
+#define MAX_COLLISION_VERTICES 10000
+
 /**
  * @brief .dataファイルからステージの情報を読み込む
  * 
@@ -174,12 +185,22 @@ SDL_bool loadOBJ(const char* obj_filename , const char* texture_filename ,  Obj 
         
         case 'v':
             if (line[1] == ' '){
+                if (obj->vertNum >= MAX_VERTICES) {
+                    fprintf(stderr, "Error: Too many vertices in %s\n", obj_filename);
+                    fclose(fp);
+                    return SDL_FALSE;
+                }
                 Vec3f v;
                 sscanf(line , "v %f %f %f" , &v.x , &v.y , &v.z);
                 obj->vertex[obj->vertNum] = v;
                 obj->vertNum++;
             }
             else if (line[1] == 't'){
+                if (obj->texCoordNum >= MAX_TEXCOORDS) {
+                    fprintf(stderr, "Error: Too many texture coords in %s\n", obj_filename);
+                    fclose(fp);
+                    return SDL_FALSE;
+                }
                 Vec3f v;
                 sscanf(line , "vt %f %f" , &v.x , &v.y);
                 v.y = 1.0f - v.y;
@@ -187,6 +208,11 @@ SDL_bool loadOBJ(const char* obj_filename , const char* texture_filename ,  Obj 
                 obj->texCoordNum++;
             }
             else if (line[1] == 'n'){
+                if (obj->normalNum >= MAX_NORMALS) {
+                    fprintf(stderr, "Error: Too many normals in %s\n", obj_filename);
+                    fclose(fp);
+                    return SDL_FALSE;
+                }
                 Vec3f v;
                 sscanf(line , "vn %f %f %f" , &v.x , &v.y , &v.z);
                 obj->normal[obj->normalNum] = v;
@@ -203,6 +229,13 @@ SDL_bool loadOBJ(const char* obj_filename , const char* texture_filename ,  Obj 
 
             if (items_read == 9) { // 三角形の場合
                 for (int i = 0; i < 3; i++) {
+                    
+                    if (obj->vertAryNum + 3 > MAX_VERT_ARY || obj->texCoordAryNum + 2 > MAX_TEXCOORD_ARY || obj->normAryNum + 3 > MAX_NORM_ARY) {
+                        fprintf(stderr, "Error: Too many face elements in %s\n", obj_filename);
+                        fclose(fp);
+                        return SDL_FALSE;
+                    }
+                    
                     // 頂点、テクスチャ、法線をコピー
                     obj->vertAry[obj->vertAryNum++] = obj->vertex[v[i] - 1].x;
                     obj->vertAry[obj->vertAryNum++] = obj->vertex[v[i] - 1].y;
@@ -218,6 +251,13 @@ SDL_bool loadOBJ(const char* obj_filename , const char* texture_filename ,  Obj 
             } else if (items_read == 12) { // 四角形の場合 -> 2つの三角形に分割
                 int indices[] = {0, 1, 2, 0, 2, 3}; // v1,v2,v3 と v1,v3,v4
                 for (int i = 0; i < 6; i++) {
+                    
+                    if (obj->vertAryNum + 3 > MAX_VERT_ARY || obj->texCoordAryNum + 2 > MAX_TEXCOORD_ARY || obj->normAryNum + 3 > MAX_NORM_ARY) {
+                        fprintf(stderr, "Error: Too many face elements in %s\n", obj_filename);
+                        fclose(fp);
+                        return SDL_FALSE;
+                    }
+                    
                     int idx = indices[i];
                     // 頂点、テクスチャ、法線をコピー
                     obj->vertAry[obj->vertAryNum++] = obj->vertex[v[idx] - 1].x;
@@ -260,7 +300,7 @@ SDL_bool loadOBJ_collison(const char* obj_filename ,  List *list)
         return SDL_FALSE;
     }
 
-    Vec3f vertex[10000];
+    Vec3f vertex[MAX_COLLISION_VERTICES];
     int vertNum = 0;
 
     char line[LINE_MAX];
@@ -273,6 +313,11 @@ SDL_bool loadOBJ_collison(const char* obj_filename ,  List *list)
         
         case 'v':
             if (line[1] == ' '){
+                if (vertNum >= MAX_COLLISION_VERTICES) {
+                    fprintf(stderr, "Error: Too many vertices for collision in %s\n", obj_filename);
+                    fclose(fp);
+                    return SDL_FALSE;
+                }
                 Vec3f v;
                 sscanf(line , "v %f %f %f" , &v.x , &v.y , &v.z);
                 vertex[vertNum] = v;

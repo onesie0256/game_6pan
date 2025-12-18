@@ -176,11 +176,24 @@ void UI_updateWaitSurface(WaitScene *waitScene)
 
 	
 	//画面右下: 「通信待機中．．．」を表示
-	if (myGameManager.fonts[2]) { 
-		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "通信待機中．．．", black);
+	if (myGameManager.fonts[2] && waitScene->isSendGunId) { 
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "他のプレイヤーを待機中．．．", black);
 		if (textSurface) {
 			//右下から少し内側に配置
 			SDL_Rect dst = { myGameManager.windowW - textSurface->w - 130, myGameManager.windowH - textSurface->h - 20, textSurface->w, textSurface->h };
+			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
+			SDL_FreeSurface(textSurface);
+		}
+	}
+
+	/* 画面左:操作方法 */
+	{
+		char text[300];
+		snprintf(text , sizeof(text) , "操作方法\n← → : 武器変更\nEnter:決定");
+
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended_Wrapped(myGameManager.fonts[2], text , black , 1000);
+		if (textSurface) {
+			SDL_Rect dst = {50, myGameManager.windowH - textSurface->h - 20, textSurface->w, textSurface->h };
 			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
 			SDL_FreeSurface(textSurface);
 		}
@@ -259,7 +272,22 @@ void UI_updateMainSurface(MainScene *scene)
 	/* 画面左下: 順位表示 */
 	if (myGameManager.fonts[0]) {
 		char rankText[16];
-		snprintf(rankText, sizeof(rankText), "%d", myCar->place);
+
+		switch (myCar->place)
+		{
+		case 1:
+			snprintf(rankText, sizeof(rankText), "%d st.", myCar->place);
+			break;
+		case 2:
+			snprintf(rankText, sizeof(rankText), "%d nd.", myCar->place);
+			break;
+		case 3:
+			snprintf(rankText, sizeof(rankText), "%d rd.", myCar->place);
+			break;
+		default:
+			snprintf(rankText, sizeof(rankText), "%d th.", myCar->place);
+			break;
+		}
 
 		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], rankText, black);
 		if (textSurface) {
@@ -271,6 +299,70 @@ void UI_updateMainSurface(MainScene *scene)
 
 	// 弾の描画
 	UI_drawBullets(myCar->gun);
+
+	/* 画面中央:スタート前のカウントダウン */
+	if (0 < scene->count && scene->count < 4){
+		char countText[16];
+		snprintf(countText, sizeof(countText), "%d", scene->count);
+
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], countText , black);
+		if (textSurface) {
+			SDL_Rect dst = {myGameManager.windowW/2 - textSurface->w/2, myGameManager.windowH/4, textSurface->w, textSurface->h };
+			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
+			SDL_FreeSurface(textSurface);
+		}
+
+	}
+	else if (scene->count == 0){
+		char goText[16];
+		snprintf(goText, sizeof(goText), "GO!");
+
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], goText , black);
+		if (textSurface) {
+			SDL_Rect dst = {myGameManager.windowW/2 - textSurface->w/2, myGameManager.windowH/4, textSurface->w, textSurface->h };
+			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
+			SDL_FreeSurface(textSurface);
+		}
+	}
+
+	/* 画面中央:ゴールの文字 */
+	if (scene->myCar->isGoaled){
+		char goalText[16];
+		snprintf(goalText, sizeof(goalText), "GOAL!");
+
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], goalText , black);
+		if (textSurface) {
+			SDL_Rect dst = {myGameManager.windowW/2 - textSurface->w/2, myGameManager.windowH/4, textSurface->w, textSurface->h };
+			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
+			SDL_FreeSurface(textSurface);
+		}
+	}
+
+	/* 画面左:操作方法 */
+	{
+		char text[300];
+		snprintf(text , sizeof(text) , "操作方法\n↑ : アクセル\n← → : ハンドル\n↓ : バック\nEnter:ショット");
+
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended_Wrapped(myGameManager.fonts[2], text , black , 1000);
+		if (textSurface) {
+			SDL_Rect dst = {50, myGameManager.windowH/5, textSurface->w, textSurface->h };
+			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
+			SDL_FreeSurface(textSurface);
+		}
+	}
+
+	/* 画面左下:ラップ数 */
+	{
+		char rapText[16];
+		snprintf(rapText , sizeof(rapText) , "RAP %d/3" , scene->myCar->rapNum+1);
+
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended_Wrapped(myGameManager.fonts[0], rapText , black , 1000);
+		if (textSurface) {
+			SDL_Rect dst = {50, myGameManager.windowH*3/4, textSurface->w, textSurface->h };
+			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
+			SDL_FreeSurface(textSurface);
+		}
+	}
 }
 
 

@@ -30,7 +30,7 @@ void sendCarInfo(void);
 void sendACK(void);
 void sendAllClientData(void);
 void waitUntilAcks(int count);
-
+void sendQuit(void);
 
 
 //関数プロトタイプ宣言
@@ -168,7 +168,7 @@ int control_requests() {
           SDL_Delay(100);
           setupPhysics();
           sendACK();
-          SDL_Delay(100);
+          SDL_Delay(300);
           myGameManager.timer = SDL_AddTimer(1000/60.0f, update_physics , "update_physics");
         }
       }
@@ -313,7 +313,11 @@ void packCarInfo(Car *car , CarInfo *data)
   data->HP = car->hp;
 
   if (myGameManager.clients[car->id].keyNow[K_ENTER]){
-    data->isShotGun = 1;
+    data->param |= 1;
+  }
+
+  if (car->isOnGround){
+    data->param |= 2;
   }
 
   #ifdef USE_JOY
@@ -367,4 +371,23 @@ void waitUntilAcks(int count)
     ;
   }
   myGameManager.ackRequest = 0;
+}
+
+void sendCount(int count)
+{
+  NetworkContainer data;
+  memset(&data, 0, sizeof(NetworkContainer));
+
+  data.order = COMMAND_COUNT;
+  data.container.clientData.gunId = count;
+
+  send_data(BROADCAST , &data , sizeof(data));
+}
+
+void sendQuit(void)
+{
+  NetworkContainer data;
+  memset(&data, 0, sizeof(NetworkContainer));
+  data.order = COMMAND_QUIT;
+  send_data(BROADCAST , &data , sizeof(data));
 }
