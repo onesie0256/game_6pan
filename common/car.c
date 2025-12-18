@@ -240,7 +240,7 @@ void forwardCar(Car *car)
     }
 
     if (inputAry[K_SPACE] && !preinputAry[K_SPACE]){
-        car->velocity = vecAdd(car->velocity , (Vec3f){0.0f,3.0f,0.0f});
+        car->velocity = vecAdd(car->velocity , (Vec3f){0.0f,0.3f,0.0f});
     }
 }
 
