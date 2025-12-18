@@ -37,7 +37,10 @@ void setupPhysics(void)
     #else
     for (int i = 0 ; i < myGameManager.playerNum ; i++){
         Vec3f coord = (Vec3f){0.3f + (float)i*0.5f , 2.0f , 0.7f - (float)i*0.3f};
-        if (i == 5) coord.z += 1.5f;
+        if (i >= 5) {
+            coord.z += 1.5f;
+            coord.x -= 2.2f;
+        }
         Car *car = createCar(scene->cars , i , coord , myGameManager.clients[i].gunId , scene->checkPointPlaneZero , scene->checkPointZero);
     }
 
