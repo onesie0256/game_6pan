@@ -123,6 +123,11 @@ void displayCars(List *list)
         Car *car = ((Car *)node->data);
 
         displayRectangler(car->collisionBox->data.rectangler);
+
+        Vec3f eulurs = quaternion_to_euler(car->q);
+        car->gun->model->yaw = eulurs.y*RAD_TO_DEG;
+        printf("yaw: %d\n" , car->gun->model->yaw);
+        displayObjEX(&myGameManager.models[car->gun->kind] , car->gun->model);
     }
 }
 

@@ -140,7 +140,7 @@ typedef struct
 
     Client clients[MAX_Clients];    //クライアントのリスト
 
-    Polygon *carModels[3];           //車のモデル
+    ObjEX models[WEAPON_TYPE_MAX+MAX_Clients];  //銃と車のモデルを格納
 }GameManager;
 
 /**
@@ -198,7 +198,7 @@ typedef struct car_t
 {
     uint8_t id;                 //操作するプレイヤーのid
     Polygon *collisionBox;      //当たり判定の直方体
-    Obj *model;                 //3Dモデル
+    ObjInfo *model;             //3Dモデルの情報
     Vec3f center;               //中心座標
     Vec3f preCenter;            //1フレーム前の中心座標
     Vec3f velocity;             //速度
@@ -256,7 +256,7 @@ typedef struct gun_t{
     float ammoSpeed;                //弾薬の速度
     int maxAmmoLivingFrame;         //弾薬の残存フレーム
     float ammoRadius;               //弾薬の半径
-    Obj *model;                     //3Dモデル
+    ObjInfo *model;                 //3Dモデルの情報
 }Gun;
 
 typedef struct {

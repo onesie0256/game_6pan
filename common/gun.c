@@ -90,6 +90,8 @@ Gun* createGun(GunKinds kind , int carId)
 
     rtn->carId = carId;
 
+    rtn->model = createObjInfo((Vec3f){0.0f , 0.3f , 0.0f} , (Vec3f){0.2f , 0.2f , 0.2f} , 0 , 0 , 270);
+
     return rtn;
 }
 
@@ -260,6 +262,9 @@ void updateGuns(List *carList)
     foreach(node , carList){
         Car *car = node->data;
         Gun *gun = car->gun;
+
+        gun->model->coord = car->center;
+
         if (gun->reloadFrameNow > 0){
             gun->reloadFrameNow--;
         }
