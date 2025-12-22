@@ -90,7 +90,7 @@ Gun* createGun(GunKinds kind , int carId)
 
     rtn->carId = carId;
 
-    rtn->model = createObjInfo((Vec3f){0.0f , 0.3f , 0.0f} , (Vec3f){0.2f , 0.2f , 0.2f} , 0 , 0 , 270);
+    rtn->model = createObjInfo((Vec3f){0.0f , 0.1f , 0.0f} , (Vec3f){0.1f , 0.1f , 0.1f} , 0 , 0 , 270);
 
     return rtn;
 }

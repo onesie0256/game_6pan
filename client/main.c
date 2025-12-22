@@ -186,6 +186,6 @@ void loadModels(void)
   createObjEX(&myGameManager.models[Shotgun] , "assets/models/shotgun_o.obj" , "assets/models/shotgun.png" , NULL);
   createObjEX(&myGameManager.models[Sniper] , "assets/models/sniper_o.obj" , "assets/models/sniper.png" , NULL);
   createObjEX(&myGameManager.models[Pistol] , "assets/models/pistol_o.obj" , "assets/models/pistol.png" , NULL);
-  printf("pistl:: v:%d , n:%d , t:%d\nva:%d , na:%d , ta:%d\n" , myGameManager.models[Pistol].vertNum , myGameManager.models[Pistol].normalNum , myGameManager.models[Pistol].texCoordNum , myGameManager.models[Pistol].vertAryNum , myGameManager.models[Pistol].normAryNum , myGameManager.models[Pistol].texCoordAryNum);
+  //printf("pistl:: v:%d , n:%d , t:%d\nva:%d , na:%d , ta:%d\n" , myGameManager.models[Pistol].vertNum , myGameManager.models[Pistol].normalNum , myGameManager.models[Pistol].texCoordNum , myGameManager.models[Pistol].vertAryNum , myGameManager.models[Pistol].normAryNum , myGameManager.models[Pistol].texCoordAryNum);
 
 }

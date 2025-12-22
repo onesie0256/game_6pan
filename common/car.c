@@ -126,7 +126,26 @@ void displayCars(List *list)
 
         Vec3f eulurs = quaternion_to_euler(car->q);
         car->gun->model->yaw = eulurs.y*RAD_TO_DEG;
-        printf("yaw: %d\n" , car->gun->model->yaw);
+        //printf("yaw: %d\n" , car->gun->model->yaw);
+
+        /*
+        if (car->isOnGround){
+            Vec3f tmp = vecNormalize(vecSub(car->center , car->preCenter));
+            eulurs = euler_from_vectors(tmp , car->direction);
+
+            car->gun->model->pitch = eulurs.x*RAD_TO_DEG;
+
+            if (car->gun->model->pitch == 180){
+                car->gun->model->pitch = 0;
+            }
+
+            printf("pitch: %d\n" , car->gun->model->pitch);
+        }
+        else {
+            car->gun->model->pitch = 0.0f;
+        }
+        */
+        
         displayObjEX(&myGameManager.models[car->gun->kind] , car->gun->model);
     }
 }
