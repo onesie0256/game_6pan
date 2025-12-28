@@ -26,17 +26,6 @@ struct checkPoint_t;
 typedef struct checkPoint_t CheckPoint;
 
 
-
-
-
-
-/**
- * @brief タイトルシーン
- */
-typedef struct{
-    List *polygonList;  //立体図形のリスト
-}TitleScene3D;
-
 /**
  * @brief タイトルシーンの状態管理 
  */
@@ -45,6 +34,7 @@ typedef struct {
 	float beatScale;    // タイトルテキストの拡大・縮小スケール
     float carX;
     int carAnimState;
+    int flag;
 }TitleScene;
 
 /**

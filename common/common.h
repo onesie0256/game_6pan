@@ -21,6 +21,8 @@
 #define BACKLOG 10      // 同時接続待ち上限
 #define MAX_Clients 10
 
+#define MYNAME_MAX 30
+
 #define WEAPON_TYPE_MAX 3
 
 /* network orders */
@@ -108,6 +110,7 @@ typedef struct
     uint8_t myID;                   //ID
     uint8_t playerNum;              //プレイヤー人数
     uint8_t gunId;                  //自分の銃の種類
+    char myName[MYNAME_MAX];        //自分の名前
     char serverName[MAX_LEN_NAME];               //サーバーの名前
     uint16_t serverPort;             //サーバーのポート番号
     SDL_Window *window;
