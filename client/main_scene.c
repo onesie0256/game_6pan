@@ -130,7 +130,14 @@ int setupScene(void)
     SDL_FillRect(myGameManager.UI , NULL , SDL_MapRGBA(myGameManager.UI->format , 0 , 0 , 0 , 0));
 
 
+    scene->bulletTextureID = loadTexture("assets/pictures/bullet.png");
+    if (scene->bulletTextureID == 0) {
+        printf("Failed to load bullet texture!\n");
+        // NOTE: Consider more robust error handling
+    }
+
     myGameManager.scene = scene;
+    myGameManager.sceneID = Scene_Main;
     myGameManager.sceneID = Scene_Main;
 
     #ifdef DEGUG_3DE

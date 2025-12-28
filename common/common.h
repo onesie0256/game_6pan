@@ -309,6 +309,7 @@ typedef struct {
     int sendInputDataPlayerNum;     //入力データを送信するプレイヤーの数
     int sendCarInfoPlayerNum;       //車情報を送信するプレイヤーの数
     int count;                      //カウントダウン
+    GLuint bulletTextureID;
 }MainScene;
 
 /* car.c */
