@@ -46,8 +46,10 @@ int titleScene(void)
 	#endif 
 	}
 
+	titleState.animationTimer++; //タイマーを更新
+
 	//ビート効果（拡大縮小）: sin波でループ
-	float beatPhase = (titleState.animationTimer % 2000) / 2000.0f; /* 0.0～1.0 */
+	float beatPhase = (titleState.animationTimer % 100) / 100.0f; 
 	titleState.beatScale = 1.0f + 0.15f * sinf(beatPhase * 2.0f * 3.14159f);
 
 	UI_updateTitleSurface(&titleState);
