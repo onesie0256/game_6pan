@@ -13,7 +13,7 @@
 
 #define KEY_MAX 10
 #define JOY_KEY_MAX 10
-#define FONT_MAX 5
+#define FONT_MAX 7
 #define FPS_f 90.0f
 #define FPS_inv 1.0f/FPS_f
 
