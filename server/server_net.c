@@ -156,7 +156,8 @@ int control_requests() {
       {
         int id = data.id;
         myGameManager.clients[id].gunId = data.container.clientData.gunId;
-        printf("id:%d gun id:%d\n" , id , myGameManager.clients[id].gunId);
+        strncpy(myGameManager.clients[id].name , data.container.clientData.name , MYNAME_MAX);
+        printf("id:%d name:%s gun id:%d\n" , id , myGameManager.clients[id].name ,myGameManager.clients[id].gunId);
         
         static int count = 0;
         count++;
@@ -361,6 +362,7 @@ void sendAllClientData(void)
     data.id = i;
 
     data.container.clientData.gunId = myGameManager.clients[i].gunId;
+    strncpy(data.container.clientData.name , myGameManager.clients[i].name , MYNAME_MAX);
     send_data(BROADCAST , &data , sizeof(data));
   }
 }

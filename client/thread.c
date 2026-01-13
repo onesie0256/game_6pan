@@ -63,6 +63,7 @@ void createThread(void)
  */
 int key_func(void *args)
 {
+    static int strPointer = 0;
     while (!myGameManager.quitRequest)
     {
         if (SDL_PollEvent(&myGameManager.event))
@@ -117,6 +118,15 @@ int key_func(void *args)
                     myGameManager.keyNow[K_ESCAPE] = SDL_TRUE;
                     break;
 
+                case SDLK_BACKSPACE:
+                    if (myGameManager.sceneID == Scene_Title){
+                        myGameManager.myName[strPointer] = '\0';
+                        if (strPointer != 0){
+                            strPointer--;
+                        }
+                    }
+                    break;
+
                 }
                 break;
 
@@ -156,6 +166,14 @@ int key_func(void *args)
                     myGameManager.keyNow[K_ESCAPE] = SDL_FALSE;
                     break;
                     
+                }
+                break;
+
+            case SDL_TEXTINPUT:
+                if (strlen(myGameManager.myName)+strlen(myGameManager.event.text.text) <= MYNAME_MAX)
+                {
+                    strcat(myGameManager.myName , myGameManager.event.text.text);
+                    strPointer = strlen(myGameManager.myName) - 1;
                 }
                 break;
             /*

@@ -253,6 +253,7 @@ static int exe_command() {
   
   case COMMAND_CLIENT_DATA:
     myGameManager.clients[data.id].gunId = data.container.clientData.gunId;
+    strncpy(myGameManager.clients[data.id].name , data.container.clientData.name , MYNAME_MAX);
     //printf("id:%d gun id:%d\n" , data.id , myGameManager.clients[data.id].gunId);
     break;
   
@@ -394,5 +395,6 @@ void send_gunId(void)
   data.order = COMMAND_GUN;
   data.id = my_id;
   data.container.clientData.gunId = myGameManager.gunId;
+  strncpy(data.container.clientData.name , myGameManager.myName , MYNAME_MAX);
   send_data(&data, sizeof(data));
 }

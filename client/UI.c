@@ -22,8 +22,8 @@ int UI_init(void)
 		}
 	}
 
+	//タイトル用のフォントを読み込む
 	if (myGameManager.fonts[0] == NULL) {
-		// フォント読み込み 
 		TTF_Font *f = TTF_OpenFont("assets/fonts/Aircruiser3Dital.ttf", 100);
 		if (f) {
 			if (f)
@@ -33,9 +33,10 @@ int UI_init(void)
 			myGameManager.fonts[0] = f;
 		}
 	}
-	//小さいフォントを読み込む(待機画面用)
+
+	//タイトル画面下の文字用のフォントを読み込む
 	if (myGameManager.fonts[1] == NULL) {
-		TTF_Font *f = TTF_OpenFont("assets/fonts/Aircruiser.ttf", 24); // サイズを小さく
+		TTF_Font *f = TTF_OpenFont("assets/fonts/aircruiser.ttf", 24); 
 		if (f) {
 			myGameManager.fonts[1] = f;
 		}
@@ -54,6 +55,50 @@ int UI_init(void)
 			myGameManager.fonts[2] = f;
 		}
 	}
+
+	//デジタル表記のフォントを読み込む(メイン画面用)
+	if (myGameManager.fonts[3] == NULL) {
+		TTF_Font *f = TTF_OpenFont("assets/fonts/DS-DIGIT.TTF", 70);
+		if (f) {
+			myGameManager.fonts[3] = f;
+		}
+		else if (f = TTF_OpenFont("./../assets/fonts/DS-DIGIT.TTF", 70)){
+			myGameManager.fonts[3] = f;
+		}
+	}
+
+	//武器名
+	if (myGameManager.fonts[4] == NULL) {
+		TTF_Font *f = TTF_OpenFont("assets/fonts/Starjout.ttf", 100);
+		if (f) {
+			myGameManager.fonts[4] = f;
+		}
+		else if (f = TTF_OpenFont("./../assets/fonts/Starjout.ttf", 100)){
+			myGameManager.fonts[4] = f;
+		}
+	}
+
+	// //カウントダウン用
+	// if (myGameManager.fonts[5] == NULL) {
+	// 	TTF_Font *f = TTF_OpenFont("assets/fonts/DS-DIGIT.TTF", 150);
+	// 	if (f) {
+	// 		myGameManager.fonts[5] = f;
+	// 	}
+	// 	else if (f = TTF_OpenFont("./../assets/fonts/DS-DIGIT.TTF", 150)){
+	// 		myGameManager.fonts[5] = f;
+	// 	}
+	// }
+
+	// //Go,Goal用
+	// if (myGameManager.fonts[6] == NULL) {
+	// 	TTF_Font *f = TTF_OpenFont("assets/fonts/Aircruiser3Dital.ttf", 150);
+	// 	if (f) {
+	// 		myGameManager.fonts[6] = f;
+	// 	}
+	// 	else if (f = TTF_OpenFont("./../assets/fonts/Aircruiser3Dital.ttf", 150)){
+	// 		myGameManager.fonts[6] = f;
+	// 	}
+	// }
 
 	return 0;
 }
@@ -79,6 +124,17 @@ static void UI_updateTextCenteredOnSurface(TTF_Font *font, const char *text, int
 	}
 }
 
+void UI_updateTitleSurface2(TitleScene *titleScene)
+{
+
+
+	if (myGameManager.fonts[0]) {
+		SDL_Color black = {0,0,0,255};
+		UI_updateTextCenteredOnSurface(myGameManager.fonts[2] , "キーボードで名前を入力してね!(Enterで次へ)" , myGameManager.windowH/3 , black);
+		UI_updateTextCenteredOnSurface(myGameManager.fonts[0] , myGameManager.myName , myGameManager.windowH/2 , black);
+	}
+}
+
 /**
  * @brief タイトル画面を描画する
  * @param titleScene タイトルシーンの状態。アニメーションなどに使用します。
@@ -87,8 +143,26 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 {
 	if (myGameManager.UI == NULL || titleScene == NULL) return;
 
-	//背景描画（白色）
-	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 255, 255, 255));
+	// // 背景画像を描画
+	// static SDL_Surface* backgroundSurface = NULL;
+	// if (backgroundSurface == NULL) {
+	// 	backgroundSurface = IMG_Load("assets/pictures/background.png");
+	// 	if (backgroundSurface == NULL) {
+	// 		fprintf(stderr, "Failed to load image 'assets/pictures/background.png': %s\n", IMG_GetError());
+	// 	}
+	// }
+
+	// if (backgroundSurface) {
+	// 	SDL_BlitScaled(backgroundSurface, NULL, myGameManager.UI, NULL);
+	// } else {
+	// 	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 0, 0, 0));
+	// }
+
+	if (titleScene->flag){
+		SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 255, 255, 255));
+		UI_updateTitleSurface2(titleScene);
+		return;
+	}
 
 	//ビート効果を適用したタイトルボックスの描画
 	float scale = titleScene->beatScale;
@@ -129,9 +203,9 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 	if ((SDL_GetTicks() / 700) % 2 == 0) { // 0.7秒ごとに点滅
 
 	#ifdef USE_JOY
-		UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "キーボードで ENTER / Joy-Conで X を押してスタート", myGameManager.windowH * 3 / 4 + 50, black);
+		UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "キーボードでEnterキー/ Joy-Conでxボタンを押してスタート", myGameManager.windowH * 3 / 4 + 50, white);
 	#else
-		UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "キーボードで ENTER を押してスタート", myGameManager.windowH * 3 / 4 + 50, black);
+		UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "キーボードでEnterキーを押してスタート", myGameManager.windowH * 3 / 4 + 50, white);
 	#endif
 	}
 }
@@ -153,13 +227,13 @@ void UI_updateWaitSurface(WaitScene *waitScene)
 
 	//画面中央: 武器名を描画
 	SDL_Color black = {0, 0, 0, 0};
-	UI_updateTextCenteredOnSurface(myGameManager.fonts[0], selected_weapon->name, myGameManager.windowH / 3 - 50, black);
+	UI_updateTextCenteredOnSurface(myGameManager.fonts[1], selected_weapon->name, myGameManager.windowH / 3 - 50, black);
 
 	//画面中央: 武器画像を描画
 	SDL_Surface* weaponImage = IMG_Load(selected_weapon->image_path);
 	if (weaponImage) {
-		int img_w = 300; // 描画する画像の幅を固定
-		int img_h = 200; // 描画する画像の高さを固定
+		int img_w = 300; 
+		int img_h = 200; 
 		SDL_Rect dst;
 		// 画像をウィンドウの中央に配置
 		dst.x = (myGameManager.windowW - img_w) / 2;
@@ -174,7 +248,6 @@ void UI_updateWaitSurface(WaitScene *waitScene)
 	//画面上部: 操作説明を描画
 	UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "左右キーで武器を選択", 60, black);
 
-	
 	//画面右下: 「通信待機中．．．」を表示
 	if (myGameManager.fonts[2] && waitScene->isSendGunId) { 
 		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "他のプレイヤーを待機中．．．", black);
@@ -217,10 +290,10 @@ void UI_updateMainSurface(MainScene *scene)
 	if (hp_percentage < 0) hp_percentage = 0;
 	if (hp_percentage > 1) hp_percentage = 1;
 
-	int bar_width = 250;
-	int bar_height = 25;
+	int bar_width = 500;
+	int bar_height = 50;
 	int bar_x = myGameManager.windowW - bar_width - 20;
-	int bar_y = myGameManager.windowH - bar_height - 60; 
+	int bar_y = myGameManager.windowH - bar_height - 100; 
 
 	//HPバーの背景(灰色)
 	SDL_Rect hp_bar_bg = { bar_x, bar_y, bar_width, bar_height };
@@ -236,7 +309,7 @@ void UI_updateMainSurface(MainScene *scene)
 		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 50, 255, 50); //緑
 	}
 
-	SDL_Rect hp_bar_fg = { bar_x, bar_y, (int)(bar_width * hp_percentage), bar_height };
+	SDL_Rect hp_bar_fg = {bar_x, bar_y, (int)(bar_width * hp_percentage), bar_height};
 	SDL_FillRect(myGameManager.UI, &hp_bar_fg, hp_bar_color);
 
 	//HP 文字出力
@@ -270,7 +343,7 @@ void UI_updateMainSurface(MainScene *scene)
 	}
 	
 	/* 画面左下: 順位表示 */
-	if (myGameManager.fonts[0]) {
+	if (myGameManager.fonts[4]) {
 		char rankText[16];
 
 		switch (myCar->place)
@@ -289,7 +362,7 @@ void UI_updateMainSurface(MainScene *scene)
 			break;
 		}
 
-		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], rankText, black);
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[4], rankText, black);
 		if (textSurface) {
 			SDL_Rect dst = { 90, myGameManager.windowH - textSurface->h - 20, textSurface->w, textSurface->h };
 			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
@@ -305,7 +378,7 @@ void UI_updateMainSurface(MainScene *scene)
 		char countText[16];
 		snprintf(countText, sizeof(countText), "%d", scene->count);
 
-		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], countText , black);
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[3], countText , black);
 		if (textSurface) {
 			SDL_Rect dst = {myGameManager.windowW/2 - textSurface->w/2, myGameManager.windowH/4, textSurface->w, textSurface->h };
 			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
@@ -353,12 +426,36 @@ void UI_updateMainSurface(MainScene *scene)
 
 	/* 画面左下:ラップ数 */
 	{
-		char rapText[16];
-		snprintf(rapText , sizeof(rapText) , "RAP %d/3" , scene->myCar->rapNum+1);
+		static SDL_Surface* flagSurface = NULL;
+		if (flagSurface == NULL) {
+			flagSurface = IMG_Load("assets/pictures/flag.png");
+			if (flagSurface == NULL) {
+				fprintf(stderr, "Failed to load image 'assets/pictures/flag.png': %s\n", IMG_GetError());
+			}
+		}
 
-		SDL_Surface *textSurface = TTF_RenderUTF8_Blended_Wrapped(myGameManager.fonts[0], rapText , black , 1000);
+		char rapText[16];
+		snprintf(rapText , sizeof(rapText) , "%d/3" , scene->myCar->rapNum+1);
+
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended_Wrapped(myGameManager.fonts[3], rapText , black , 1000);
 		if (textSurface) {
-			SDL_Rect dst = {50, myGameManager.windowH*3/4, textSurface->w, textSurface->h };
+			int base_x = 50;
+			int base_y = myGameManager.windowH - textSurface->h - 100;
+			int flag_height = 100; 
+			int padding = 10;
+			
+			SDL_Rect flag_dst = {base_x, 0, 0, 0}; 
+			int text_x = base_x;
+
+			if (flagSurface) {
+				flag_dst.h = flag_height;
+				flag_dst.w = (int)((float)flagSurface->w * ((float)flag_height / flagSurface->h));
+				flag_dst.y = base_y + (textSurface->h - flag_height) / 2; // テキストと垂直方向中央に揃える
+				SDL_BlitScaled(flagSurface, NULL, myGameManager.UI, &flag_dst);
+				text_x += flag_dst.w + padding;
+			}
+
+			SDL_Rect dst = { text_x, base_y, textSurface->w, textSurface->h };
 			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
 			SDL_FreeSurface(textSurface);
 		}
@@ -372,8 +469,8 @@ void UI_updateMainSurface(MainScene *scene)
  */
 void UI_drawBullets(Gun *gun)
 {
-	if (gun == NULL || gun->reloadFrameNow > 0) {
-		return; // 銃がない、またはリロード中は弾画像を表示しない
+	if (gun->reloadFrameNow > 0) {
+		return; 
 	}
 
 	static SDL_Surface* bulletSurface = NULL;
@@ -385,11 +482,11 @@ void UI_drawBullets(Gun *gun)
 		}
 	}
 
-	int bullet_w = bulletSurface->w / 10;
+	int bullet_w = bulletSurface->w / 4;
 	int bullet_h = bulletSurface->h / 4;
 	int padding = 2;
 	int start_x = myGameManager.windowW - 20 - (gun->bulletNum * (bullet_w + padding));
-	int start_y = myGameManager.windowH - 60 - 25 - bullet_h - 10; // HPバーの上
+	int start_y = myGameManager.windowH - 300; 
 
 	for (int i = 0; i < gun->bulletNum; i++) {
 		SDL_Rect dst = { start_x + i * (bullet_w + padding), start_y, bullet_w, bullet_h };
