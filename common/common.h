@@ -236,6 +236,7 @@ typedef enum{
     Pistol,      //ピストル
     Shotgun,    //ショットガン
     Sniper,     //スナイパー
+    GunKinds_Max
 }GunKinds;
 
 /**

@@ -186,6 +186,16 @@ void loadModels(void)
   createObjEX(&myGameManager.models[Shotgun] , "assets/models/shotgun_o.obj" , "assets/models/shotgun.png" , NULL);
   createObjEX(&myGameManager.models[Sniper] , "assets/models/sniper_o.obj" , "assets/models/sniper.png" , NULL);
   createObjEX(&myGameManager.models[Pistol] , "assets/models/pistol_o.obj" , "assets/models/pistol.png" , NULL);
+  createObjEX(&myGameManager.models[GunKinds_Max] , "assets/models/car.obj" , "assets/models/red.png" , NULL);
+  createObjEX_withTex(&myGameManager.models[GunKinds_Max+1] , &myGameManager.models[GunKinds_Max] , "assets/models/blue.png");
+  createObjEX_withTex(&myGameManager.models[GunKinds_Max+2] , &myGameManager.models[GunKinds_Max] , "assets/models/green.png");
+  createObjEX_withTex(&myGameManager.models[GunKinds_Max+3] , &myGameManager.models[GunKinds_Max] , "assets/models/yelow.png");
+  createObjEX_withTex(&myGameManager.models[GunKinds_Max+4] , &myGameManager.models[GunKinds_Max] , "assets/models/pink.png");
+  createObjEX_withTex(&myGameManager.models[GunKinds_Max+5] , &myGameManager.models[GunKinds_Max] , "assets/models/sian.png");
+  createObjEX_withTex(&myGameManager.models[GunKinds_Max+6] , &myGameManager.models[GunKinds_Max] , "assets/models/brown.png");
+  createObjEX_withTex(&myGameManager.models[GunKinds_Max+7] , &myGameManager.models[GunKinds_Max] , "assets/models/orange.png");
+  createObjEX_withTex(&myGameManager.models[GunKinds_Max+8] , &myGameManager.models[GunKinds_Max] , "assets/models/black.png");
+  createObjEX_withTex(&myGameManager.models[GunKinds_Max+9] , &myGameManager.models[GunKinds_Max] , "assets/models/white.png");
   //printf("pistl:: v:%d , n:%d , t:%d\nva:%d , na:%d , ta:%d\n" , myGameManager.models[Pistol].vertNum , myGameManager.models[Pistol].normalNum , myGameManager.models[Pistol].texCoordNum , myGameManager.models[Pistol].vertAryNum , myGameManager.models[Pistol].normAryNum , myGameManager.models[Pistol].texCoordAryNum);
 
 }

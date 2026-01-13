@@ -65,6 +65,9 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     default:
         break;
     }
+
+    car->model = createObjInfo((Vec3f){0.0f,-0.1f,0.0f} , (Vec3f){0.025f,0.025f,0.025f} , 0,0,270);
+
     car->collisionBox = createRectangler(coord , (Vec3f){0.3f,0.15f,0.15f} , color , 0 , 0 , 0 , NULL);
     car->velocity = (Vec3f){0.0f,0.0f,0.0f};
     car->direction = (Vec3f){-1.0f,0.0f,0.0f};
@@ -123,7 +126,10 @@ void displayCars(List *list)
     foreach(node , list){
         Car *car = ((Car *)node->data);
 
-        displayRectangler(car->collisionBox->data.rectangler);
+        //displayRectangler(car->collisionBox->data.rectangler);
+
+        car->model->coord = car->center;
+        car->model->yaw = car->gun->model->yaw;
 
         Vec3f eulurs = quaternion_to_euler(car->q);
         car->gun->model->yaw = eulurs.y*RAD_TO_DEG;
@@ -146,7 +152,8 @@ void displayCars(List *list)
             car->gun->model->pitch = 0.0f;
         }
         */
-        
+
+        displayObjEX(&myGameManager.models[GunKinds_Max+car->id] , car->model);
         displayObjEX(&myGameManager.models[car->gun->kind] , car->gun->model);
     }
 }
