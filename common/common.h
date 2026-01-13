@@ -15,6 +15,7 @@
 #define KEY_MAX 10
 #define JOY_KEY_MAX 10
 #define FONT_MAX 5
+#define SE_MAX 16
 #define FPS_f 90.0f
 #define FPS_inv 1.0f/FPS_f
 
@@ -91,6 +92,24 @@ typedef enum {
 
 #endif
 
+typedef enum {
+    BGM_NONE = -1,
+    BGM_TITLE,
+    BGM_WAIT,
+    BGM_MAIN,
+    BGM_RESULT,
+    BGM_MAX
+} BgmID;
+
+/**
+ * @brief 音声マネージャー
+ */
+typedef struct {
+    Mix_Music *bgm[BGM_MAX];
+    Mix_Chunk *se[SE_MAX];
+    int currentBgmID;
+}AudioManager;
+
 typedef struct client_t{
     uint8_t id;                 //クライアントのid
     char name[MYNAME_MAX];
@@ -142,6 +161,7 @@ typedef struct
     float StickX;            //ジョイスティックのx方向の傾き
     float StickY;            //ジョイスティックのy方向の傾き
     #endif
+    AudioManager audio;              //オーディオ
 
     Client clients[MAX_Clients];    //クライアントのリスト
 
@@ -155,12 +175,14 @@ typedef enum{
     Scene_Title,      //タイトル画面
     Scene_Wait,       //待機画面
     Scene_Main,       //ゲーム画面
+    Scene_Result,
     Scene_Max
 }SceneKinds;
 
 /**
  * @brief サウンドリスト
  */
+/*
 typedef enum {
     BGM_title, 
     BGM_main,  
@@ -172,6 +194,7 @@ typedef enum {
     K_ESCAPE,
     S_MAX    //使用するサウンドの数
 }KeyNum;
+*/
 
 typedef struct {
     uint16_t keyInputs;         //キーの情報
