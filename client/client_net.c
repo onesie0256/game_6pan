@@ -235,15 +235,16 @@ static int exe_command() {
     break;
 
   case COMMAND_CARINFO: //Cの場合
+  {
     unpackCar(data.container.carInfo , data.id);
     MainScene *scene = (MainScene *)myGameManager.scene;
     if (scene == NULL){
       printf("exe_command: failed to get scene\n");
       break;
     }
-
+  
     scene->sendCarInfoPlayerNum++;
-    
+  }
     break;
 
   case COMMAND_ACK:
@@ -252,7 +253,15 @@ static int exe_command() {
   
   case COMMAND_CLIENT_DATA:
     myGameManager.clients[data.id].gunId = data.container.clientData.gunId;
-    printf("id:%d gun id:%d\n" , data.id , myGameManager.clients[data.id].gunId);
+    strncpy(myGameManager.clients[data.id].name , data.container.clientData.name , MYNAME_MAX);
+    //printf("id:%d gun id:%d\n" , data.id , myGameManager.clients[data.id].gunId);
+    break;
+  
+  case COMMAND_COUNT:
+  {
+    MainScene *scene = (MainScene *)myGameManager.scene;
+    scene->count = data.container.clientData.gunId;
+  }
     break;
 
 
@@ -360,11 +369,9 @@ void unpackCar(CarInfo data , uint8_t id)
     return;
   }
 
-  car->shotFlag = data.isShotGun;
+  car->shotFlag = data.param & 1;
+  car->isOnGround = data.param & 2;
 
-  if (car->shotFlag){
-    printf("id:%d shot\n" , id);
-  }
   car->center = (Vec3f){data.carX , data.carY , data.carZ};
   car->hp = data.HP;
 
@@ -388,5 +395,6 @@ void send_gunId(void)
   data.order = COMMAND_GUN;
   data.id = my_id;
   data.container.clientData.gunId = myGameManager.gunId;
+  strncpy(data.container.clientData.name , myGameManager.myName , MYNAME_MAX);
   send_data(&data, sizeof(data));
 }

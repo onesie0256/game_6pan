@@ -45,15 +45,18 @@ int mainScene(void)
             updateCar_c();
         }
 
-        ListNode *node;
-        foreach(node , scene->cars){
-            Car *car = (Car*)node->data;
-            if (car->shotFlag == SDL_TRUE){
-                fireGun(car , car->gun);
+        if (scene->count >= 5 || scene->count == 0)
+        {
+            ListNode *node;
+            foreach(node , scene->cars){
+                Car *car = (Car*)node->data;
+                if (car->shotFlag == SDL_TRUE){
+                    fireGun(car , car->gun);
+                }
             }
         }
 
-
+        
         updateAmmos();
         collisionAmmoCars_c(scene->cars);
         updateGuns(scene->cars);
@@ -71,6 +74,7 @@ int mainScene(void)
     updateCamera(scene->myCar , scene->camera);
 
     UI_updateMainSurface(scene); 
+    if(scene->myCar) UI_drawBullets(scene->myCar->gun);
 
     draw(scene->camera);
 
@@ -109,13 +113,31 @@ int setupScene(void)
     scene->goaledPlayerNum = 0;
     scene->sendInputDataPlayerNum = 0;
     scene->sendCarInfoPlayerNum = 0;
+    scene->count = 4;
 
+    /*
+    myGameManager.carModels[Shotgun] = createObj("assets/models/shotgun_o.obj" , "assets/models/shotgun.png" , (Vec3f){0.0f,3.0f,0.0f} , (Vec3f){0.5f,0.5f,0.5f} , 0 , 0 , 0 , scene->polygonList);
+    printf("shotgun: v:%d , n:%d , t:%d\n , va:%d , na:%d , ta:%d\n" , myGameManager.carModels[Shotgun]->data.obj->vertNum, myGameManager.carModels[Shotgun]->data.obj->normalNum , myGameManager.carModels[Shotgun]->data.obj->texCoordNum , myGameManager.carModels[Shotgun]->data.obj->vertAryNum , myGameManager.carModels[Shotgun]->data.obj->normAryNum , myGameManager.carModels[Shotgun]->data.obj->texCoordAryNum);
     
+    myGameManager.carModels[Sniper] = createObj("assets/models/sniper_o.obj" , "assets/models/sniper.png" , (Vec3f){0.0f,3.0f,0.0f} , (Vec3f){0.5f,0.5f,0.5f} , 0 , 0 , 0 , scene->polygonList);
+    printf("sniper: v:%d , n:%d , t:%d\n , va:%d , na:%d , ta:%d\n" , myGameManager.carModels[Sniper]->data.obj->vertNum, myGameManager.carModels[Sniper]->data.obj->normalNum , myGameManager.carModels[Sniper]->data.obj->texCoordNum , myGameManager.carModels[Sniper]->data.obj->vertAryNum , myGameManager.carModels[Sniper]->data.obj->normAryNum , myGameManager.carModels[Sniper]->data.obj->texCoordAryNum);
+
+
+    myGameManager.carModels[Pistol] = createObj("assets/models/pistol_o.obj" , "assets/models/pistol.png" , (Vec3f){0.0f,3.0f,0.0f} , (Vec3f){0.5f,0.5f,0.5f} , 0 , 0 , 0 , scene->polygonList);
+    printf("pistol: v:%d , n:%d , t:%d\n , va:%d , na:%d , ta:%d\n" , myGameManager.carModels[Pistol]->data.obj->vertNum, myGameManager.carModels[Pistol]->data.obj->normalNum , myGameManager.carModels[Pistol]->data.obj->texCoordNum , myGameManager.carModels[Pistol]->data.obj->vertAryNum , myGameManager.carModels[Pistol]->data.obj->normAryNum , myGameManager.carModels[Pistol]->data.obj->texCoordAryNum);
+    */
 
     SDL_FillRect(myGameManager.UI , NULL , SDL_MapRGBA(myGameManager.UI->format , 0 , 0 , 0 , 0));
 
 
+    scene->bulletTextureID = loadTexture("assets/pictures/bullet.png");
+    if (scene->bulletTextureID == 0) {
+        printf("Failed to load bullet texture!\n");
+        // NOTE: Consider more robust error handling
+    }
+
     myGameManager.scene = scene;
+    myGameManager.sceneID = Scene_Main;
     myGameManager.sceneID = Scene_Main;
 
     #ifdef DEGUG_3DE
@@ -125,14 +147,24 @@ int setupScene(void)
 
     scene->myCar = NULL;
 
-    //createRectangler((Vec3f){0.0f,0.0f,0.0f} , (Vec3f){1.0f,1.0f,1.0f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 0 , 0 , scene->polygonList);
+    //当たり判定のサポート
+    //createRectangler((Vec3f){-5.2f,3.0f,-13.0f} , (Vec3f){9.0f,0.5f,1.5f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 3 , 0 , scene->polygonList);
+
+    //createRectangler((Vec3f){-10.0f,1.9f,-12.8f} , (Vec3f){5.7f,0.5f,1.9f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 13 , 0 , scene->polygonList);
+    //createRectangler((Vec3f){-18.0f,0.1f,-12.3f} , (Vec3f){9.0f,0.5f,2.4f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 13 , 0 , scene->polygonList);
+
+
+
+
     #ifdef DEGUG_3DE
     scene->myCar = createCar(scene->cars , 0 , (Vec3f){0.0f,3.0f,0.0f} , Sniper , scene->checkPointPlaneZero , scene->checkPointZero);
     c2 = createCar(scene->cars , 1 , (Vec3f){0.0f,5.0f,0.0f} , Pistol , scene->checkPointPlaneZero , scene->checkPointZero);
     #else
     for (int i = 0 ; i < myGameManager.playerNum ; i++){
         Vec3f coord = (Vec3f){0.3f + (float)i*0.5f , 2.0f , 0.7f - (float)i*0.3f};
-        if (i == 5) coord.z += 1.5f;
+        if (i >= 5) {
+            coord.z += 1.35f;
+        }
         Car *car = createCar(scene->cars , i , coord , myGameManager.clients[i].gunId , scene->checkPointPlaneZero , scene->checkPointZero);
         if (i == myGameManager.myID){
             scene->myCar = car;
@@ -163,6 +195,8 @@ int setupScene(void)
 int setupSceneLate(void)
 {
     carPlaceAlgorithmSetup();
+    initBillboard();
+    return 0;
 }
 
 int destroyScene(void)

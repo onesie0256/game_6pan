@@ -26,17 +26,6 @@ struct checkPoint_t;
 typedef struct checkPoint_t CheckPoint;
 
 
-
-
-
-
-/**
- * @brief タイトルシーン
- */
-typedef struct{
-    List *polygonList;  //立体図形のリスト
-}TitleScene3D;
-
 /**
  * @brief タイトルシーンの状態管理 
  */
@@ -45,6 +34,7 @@ typedef struct {
 	float beatScale;    // タイトルテキストの拡大・縮小スケール
     float carX;
     int carAnimState;
+    int flag;
 }TitleScene;
 
 /**
@@ -52,6 +42,7 @@ typedef struct {
  */
 typedef struct {
     int selectedWeaponIndex; // 選択中の武器のインデックス
+    SDL_bool isSendGunId;    //武器情報送ったかどうか
 } WaitScene;
 
 
@@ -89,6 +80,7 @@ int UI_init(void);
 void UI_updateTitleSurface(TitleScene *titleScene);
 void UI_updateWaitSurface(WaitScene *waitScene);
 void UI_updateMainSurface(MainScene *scene);
+void UI_drawBullets(Gun *gun);
 void UI_cleanup(void);
 
 /* thread.c */
@@ -122,4 +114,10 @@ int initWindow(char *title);
 void closeWindow(void);
 int draw(Camera *camera);
 void updateCamera(Car *car , Camera *camera);
+GLuint loadTexture(const char* filename);
+void drawBillboard(Vec3f pos, float width, float height, GLuint textureID);
+void displayBillboards(void);
+void initBillboard(void);
+void displayBillboards(void);
+
 

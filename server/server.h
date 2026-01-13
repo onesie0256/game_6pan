@@ -21,12 +21,15 @@ typedef struct {
   #endif
 } SERVER_CLIENT;
 
+/* server_net.c */
 void setup_server(int, u_short);
 int control_requests();
 void terminate_server();
 void sendCarInfo(void);
 void sendACK(void);
 void sendAllClientData(void);
+void sendCount(int count);
+void sendQuit(void);
 
 /* server_physics.c */
 void setupPhysics(void);

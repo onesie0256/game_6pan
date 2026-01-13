@@ -22,6 +22,8 @@
 #define BACKLOG 10      // 同時接続待ち上限
 #define MAX_Clients 10
 
+#define MYNAME_MAX 30
+
 #define WEAPON_TYPE_MAX 3
 
 /* network orders */
@@ -32,6 +34,7 @@
 #define COMMAND_GUN         'G' //銃の種類の送信コマンド(クライアント->サーバー)
 #define COMMAND_CLIENT_DATA 'c' //クライアントの情報のデータ
 #define COMMAND_ACK         'A' //ACKコマンド
+#define COMMAND_COUNT       'D' //スタート時のカウントダウン
 
 
 
@@ -90,6 +93,7 @@ typedef enum {
 
 typedef struct client_t{
     uint8_t id;                 //クライアントのid
+    char name[MYNAME_MAX];
     uint8_t gunId;              //銃の種類
     SDL_bool keyNow[KEY_MAX];   //キーの状態
     SDL_bool keyPrev[KEY_MAX];  //キーの状態(1フレーム前)
@@ -108,6 +112,7 @@ typedef struct
     uint8_t myID;                   //ID
     uint8_t playerNum;              //プレイヤー人数
     uint8_t gunId;                  //自分の銃の種類
+    char myName[MYNAME_MAX];        //自分の名前
     char serverName[MAX_LEN_NAME];               //サーバーの名前
     uint16_t serverPort;             //サーバーのポート番号
     SDL_Window *window;
@@ -140,6 +145,7 @@ typedef struct
 
     Client clients[MAX_Clients];    //クライアントのリスト
 
+    ObjEX models[WEAPON_TYPE_MAX+MAX_Clients];  //銃と車のモデルを格納
 }GameManager;
 
 /**
@@ -180,14 +186,15 @@ typedef struct {
     float carZ;
 
     Quaternion q;
-    uint8_t isShotGun;
+    //下位1ビット目に発射ボタンを押したかどうか,下位2ビット目に地面の上にいるかの情報を仕込む
+    uint8_t param;
     uint8_t HP;
     
 }CarInfo;
 
 typedef struct {
     uint8_t gunId;
-    //char name[] //todo
+    char name[MYNAME_MAX];
 }ClientData;
 
 typedef union {
@@ -201,7 +208,6 @@ typedef union {
 typedef struct{
     uint8_t id;                     //id
     char order;                     //命令
-    uint8_t option;                 //お好きにどうぞ
     NetworkContainer_u container;   //内容
 }NetworkContainer;
 
@@ -212,7 +218,7 @@ typedef struct car_t
 {
     uint8_t id;                 //操作するプレイヤーのid
     Polygon *collisionBox;      //当たり判定の直方体
-    Obj *model;                 //3Dモデル
+    ObjInfo *model;             //3Dモデルの情報
     Vec3f center;               //中心座標
     Vec3f preCenter;            //1フレーム前の中心座標
     Vec3f velocity;             //速度
@@ -228,6 +234,7 @@ typedef struct car_t
     Quaternion q;
     Quaternion q_pre;
     SDL_bool shotFlag;          //発射フラグ
+    SDL_bool isOnGround;        //地面にいるかどうか
 
     Polygon *nextPlane;         //次のチェックポイントの平面
     CheckPoint *nextCheckPoint; //次のチェックポイントの座標
@@ -269,7 +276,7 @@ typedef struct gun_t{
     float ammoSpeed;                //弾薬の速度
     int maxAmmoLivingFrame;         //弾薬の残存フレーム
     float ammoRadius;               //弾薬の半径
-    Obj *model;                     //3Dモデル
+    ObjInfo *model;                 //3Dモデルの情報
 }Gun;
 
 typedef struct {
@@ -321,12 +328,14 @@ typedef struct {
     int goaledPlayerNum;            //ゴールしたプレイヤーの数
     int sendInputDataPlayerNum;     //入力データを送信するプレイヤーの数
     int sendCarInfoPlayerNum;       //車情報を送信するプレイヤーの数
+    int count;                      //カウントダウン
+    GLuint bulletTextureID;
 }MainScene;
 
 /* car.c */
 Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *nextPlaneZero , CheckPoint *nextCheckPointZero);
 void displayCars(List *list);
-void moveCar(List *carList , List *PolygonList);
+void moveCar(List *carList , List *PolygonList , int count);
 //void destroyCar(Car *car);
 void damageCar(Car *car , float damage);
 Car *getCarFromId(List *carList , uint8_t id);
@@ -334,6 +343,7 @@ void collisionCars(List *carList);
 void teleportCarEX(Car *car);
 void rotateCarEX(Car *car);
 void updateCarCenter(Car *car);
+SDL_bool collisionThre(Car *car , List *polygonList);
 
 /* gun.c */
 void register_ammoList(List *list);

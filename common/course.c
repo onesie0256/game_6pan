@@ -57,6 +57,7 @@ Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero
             *checkPointPlaneZero = p;
             *checkPointZero = cp;
         }
+        //printf("checkpoint%d: coord:(%f,%f,%f)" , id , cp->coord.x , cp->coord.y , cp->coord.z);
         id++;
     }
     
@@ -82,7 +83,7 @@ SDL_bool checkCarPoint(Car *car , CheckPoint *cp , Polygon *plane_)
     //isPointOnPlane4_(car->center , plane) && (vecMulIn(pa , C) < 0) && (vecMulIn(pb , C) > 0)
 
     if (isPointOnPlane4_(car->center , plane) && (vecMulIn(pb , C) > 0)){
-        printf("No.%d : チェックポイントを%d通過\n" , car->id , car->checkPointNum);
+        //printf("No.%d : チェックポイントを%d通過\n" , car->id , car->checkPointNum);
         return SDL_TRUE;
     }
     return SDL_FALSE;
@@ -111,7 +112,13 @@ void checkCarCheckPoint(List *carList , Course *course)
             car->nextCheckPoint = scene->checkPointZero;
 
 
-        printf("No.%d : %d周完了\n" , car->id , car->rapNum);
+            //printf("No.%d : %d周完了\n" , car->id , car->rapNum);
+
+            if (car->rapNum == 3){
+                scene->goaledPlayerNum++;
+                car->isGoaled = SDL_TRUE;
+                //printf("%d,%d\n" , myGameManager.playerNum , scene->goaledPlayerNum);
+            }
         }
 
         sprintf(id_char , "%d" , car->checkPointNum);

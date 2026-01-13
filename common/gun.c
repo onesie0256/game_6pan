@@ -12,9 +12,9 @@ static Gun sniper = (Gun){
     .fireCoolFrame = 60 ,
     .damage = 80 ,
     .model = NULL ,
-    .ammoSpeed = 30.0f ,
+    .ammoSpeed = 40.0f ,
     .maxAmmoLivingFrame = 60 ,
-    .ammoRadius = 0.3f};
+    .ammoRadius = 0.5f};
 
 //ショットガンの基礎ステータス
 static Gun shotgun = (Gun){
@@ -32,13 +32,13 @@ static Gun shotgun = (Gun){
 static Gun pistol = (Gun){
     .kind = Pistol ,
     .maxBulletNum = 10 ,
-    .reloadFrame = 10 ,
-    .fireCoolFrame = 10 ,
-    .damage = 20 ,
+    .reloadFrame = 50 ,
+    .fireCoolFrame = 12 ,
+    .damage = 15 ,
     .model = NULL ,
-    .ammoSpeed = 10.0f ,
+    .ammoSpeed = 30.0f ,
     .maxAmmoLivingFrame = 60 ,
-    .ammoRadius = 1.0f};
+    .ammoRadius = 0.3f};
 
 static List *ammoList = NULL;
 void register_ammoList(List *list);
@@ -89,6 +89,8 @@ Gun* createGun(GunKinds kind , int carId)
     rtn->fireCoolFrameNow = 0;
 
     rtn->carId = carId;
+
+    rtn->model = createObjInfo((Vec3f){0.0f , 0.1f , 0.0f} , (Vec3f){0.1f , 0.1f , 0.1f} , 0 , 0 , 270);
 
     return rtn;
 }
@@ -260,6 +262,9 @@ void updateGuns(List *carList)
     foreach(node , carList){
         Car *car = node->data;
         Gun *gun = car->gun;
+
+        gun->model->coord = car->center;
+
         if (gun->reloadFrameNow > 0){
             gun->reloadFrameNow--;
         }

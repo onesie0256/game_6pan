@@ -1,6 +1,7 @@
 #include "common.h"
 
 void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2);
+SDL_bool collisionThre(Car *car , List *polygonList);
 
 /**
  * @brief Car構造体を作成する
@@ -73,6 +74,7 @@ Car *createCar(List *list , uint8_t id , Vec3f coord , GunKinds kind , Polygon *
     car->shotFlag = SDL_FALSE;
     car->gun = createGun(kind , id);
     car->isGoaled = SDL_FALSE;
+    car->isOnGround = SDL_FALSE;
 
     char id_char[6] = {0};
     sprintf(id_char , "%d" , id);
@@ -122,6 +124,30 @@ void displayCars(List *list)
         Car *car = ((Car *)node->data);
 
         displayRectangler(car->collisionBox->data.rectangler);
+
+        Vec3f eulurs = quaternion_to_euler(car->q);
+        car->gun->model->yaw = eulurs.y*RAD_TO_DEG;
+        //printf("yaw: %d\n" , car->gun->model->yaw);
+
+        /*
+        if (car->isOnGround){
+            Vec3f tmp = vecNormalize(vecSub(car->center , car->preCenter));
+            eulurs = euler_from_vectors(tmp , car->direction);
+
+            car->gun->model->pitch = eulurs.x*RAD_TO_DEG;
+
+            if (car->gun->model->pitch == 180){
+                car->gun->model->pitch = 0;
+            }
+
+            printf("pitch: %d\n" , car->gun->model->pitch);
+        }
+        else {
+            car->gun->model->pitch = 0.0f;
+        }
+        */
+        
+        displayObjEX(&myGameManager.models[car->gun->kind] , car->gun->model);
     }
 }
 
@@ -191,6 +217,17 @@ void forwardCar(Car *car)
     SDL_bool *inputAry = myGameManager.clients[car->id].keyNow;
     SDL_bool *preinputAry = myGameManager.clients[car->id].keyPrev;
 
+    Vec3f dir = car->direction;
+    if (car->isOnGround){
+        Vec3f delta = vecSub(car->center , car->preCenter);
+        //printf("delta.y = %f\n" , delta.y);
+        if (delta.y >= 0.002f){
+            dir.y = delta.y*100.0f;
+            //dir = vecNormalize(dir);
+            //printf("directon = (%f , %f , %f)\n" , dir.x , dir.y , dir.z);
+        }
+    }
+
     if (inputAry[K_SHIFT]){
         curve_deg *= 2;
     }
@@ -220,16 +257,17 @@ void forwardCar(Car *car)
     }
 
     if (inputAry[K_UP]){
-        car->velocity = vecAdd(car->velocity , vecMulSca(car->direction , 0.1f));
+        car->velocity = vecAdd(car->velocity , vecMulSca(dir , 0.2f));
     }
 
     if (inputAry[K_DOWN]){
-        car->velocity = vecAdd(car->velocity , vecMulSca(car->direction , -0.1f));
+        car->velocity = vecAdd(car->velocity , vecMulSca(dir , -0.2f));
     }
-
+    /*
     if (inputAry[K_SPACE] && !preinputAry[K_SPACE]){
-        car->velocity = vecAdd(car->velocity , (Vec3f){0.0f,3.0f,0.0f});
+        car->velocity = vecAdd(car->velocity , (Vec3f){0.0f,2.0f,0.0f});
     }
+    */
 }
 
 /**
@@ -240,6 +278,7 @@ void forwardCar(Car *car)
  */
 void teleportCar(Car *car , Vec3f coord)
 {
+    updateCarCenter(car);
     Vec3f delta = vecSub(coord , car->center);
     car->center = coord;
     moveRectacgler(car->collisionBox->data.rectangler , delta , 1.0f);
@@ -266,17 +305,19 @@ void teleportCarEX(Car *car)
  * @param PolygonList 衝突判定させるポリゴンのリスト
  * @return なし
  */
-void moveCar(List *carList , List *PolygonList)
+void moveCar(List *carList , List *PolygonList , int count)
 {
     ListNode *node;
     foreach(node , carList){
         Car *car = ((Car *)node->data);
         Rectangler *r = car->collisionBox->data.rectangler;
-        car->preCenter = car->center;
 
         updateCarCenter(car);
 
-        forwardCar(car);
+        if (count > 120 + 60*3)
+            forwardCar(car);
+
+        car->preCenter = car->center;
 
         //car->velocity.x = -1.0f;
         car->velocity = vecAdd(car->velocity , (Vec3f){0.0f,-0.1f,0.0f});
@@ -284,9 +325,15 @@ void moveCar(List *carList , List *PolygonList)
         moveRectacgler(car->collisionBox->data.rectangler , car->velocity , 1.0f/60.0f);
 
         if (r->vertex[0].y < -10.0f){
-            teleportCar(car , (Vec3f){0.0f,3.0f,0.0f});
+            teleportCar(car , (Vec3f){0.0f,5.0f,0.7f});
         }
-        collision(PolygonList , car->collisionBox->data.rectangler , car->preCoordOfVertexs , &car->velocity);
+
+        updateCarCenter(car);
+
+
+        car->isOnGround = SDL_FALSE;
+        car->isOnGround = collision(PolygonList , car->collisionBox->data.rectangler , car->preCoordOfVertexs , &car->velocity);
+
     
         
 
@@ -315,7 +362,7 @@ void damageCar(Car *car , float damage)
     car->hp -= damage;
     if (car->hp <= 0.0f){
         car->hp = 100.0f;
-        car->velocity = vecMulSca(car->velocity , 0.3f);
+        car->velocity = vecMulSca(car->velocity , 0.15f);
         car->velocity.y += 8.0f;
     }
 }
@@ -491,3 +538,73 @@ void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2)
     */
 }
 
+#define THREAD_NUM 6
+
+typedef struct threadData_t{
+    Car *car;
+    List *polygonList;
+    SDL_bool flag;
+    int start;
+    int end;
+}threadData;
+
+
+int tmp(void *arg)
+{
+    threadData *data = (threadData *)arg;
+    Car *car = data->car;
+    List *polygonList = data->polygonList;
+    int start = data->start;
+    int end = data->end;
+
+    ListNode *startNode = polygonList->head;
+
+    for (int i = 0 ; i < start ; i++){
+        startNode = startNode->next;
+    }
+
+    data->flag = collision_n(startNode , car->collisionBox->data.rectangler , car->preCoordOfVertexs , &car->velocity , end - start + 1);
+
+    return 0;
+}
+
+SDL_bool collisionThre(Car *car , List *polygonList)
+{
+    SDL_bool flag = SDL_FALSE;
+
+    SDL_Thread *threads[THREAD_NUM];
+    threadData data[THREAD_NUM];
+
+    int count = polygonList->count/THREAD_NUM;
+    int start = 0;
+    int end = count-1;
+    for (int i = 0 ; i < THREAD_NUM-1 ; i++){
+        data[i].car = car;
+        data[i].polygonList = polygonList;
+        data[i].flag = SDL_FALSE;
+        data[i].start = start;
+        data[i].end = end;
+        
+        start += count;
+        end += count;
+
+        threads[i] = SDL_CreateThread(tmp , "collision" , &data[i]);
+    }
+
+    int last = THREAD_NUM-1;
+
+    data[last].car = car;
+    data[last].polygonList = polygonList;
+    data[last].flag = SDL_FALSE;
+    data[last].start = start;
+    data[last].end = polygonList->count;
+
+    threads[last] = SDL_CreateThread(tmp , "collision" , &data[last]);
+
+    for (int i = 0 ; i < THREAD_NUM ; i++){
+        SDL_WaitThread(threads[i] , NULL);
+        flag = flag || data[i].flag;
+    }
+
+    return flag;
+}

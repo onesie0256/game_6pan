@@ -151,23 +151,23 @@ typedef struct{
  * @brief objファイル
  */
 typedef struct obj_t{
-    Vec3f vertex[1000000];    //頂点
+    Vec3f vertex[150000];    //頂点
     int vertNum;            //頂点数
 
-    float vertAry[1000000];   //頂点(openGL方式)
+    float vertAry[600000];   //頂点(openGL方式)
     int vertAryNum;         //頂点数(openGL方式)
 
-    Vec3f normal[1000000];    //法線ベクトル
+    Vec3f normal[150000];    //法線ベクトル
     int normalNum;          //法線ベクトル数
 
-    float normAry[1000000];   //法線ベクトル
+    float normAry[600000];   //法線ベクトル
     int normAryNum;         //法線ベクトル
 
 
-    Vec3f texCoord[1000000];  //テクスチャマッピング
+    Vec3f texCoord[150000];  //テクスチャマッピング
     int texCoordNum;        //テクスチャマッピング数
 
-    float texCoordAry[1000000];   //テクスチャマッピング
+    float texCoordAry[600000];   //テクスチャマッピング
     int texCoordAryNum;     //テクスチャマッピング数
 
     GLuint texture;         //テクスチャID
@@ -186,6 +186,47 @@ typedef struct obj_t{
     int rollOffset;         //初期ロール角[°]
     int yawOffset;          //初期ヨー角[°]
 }Obj;
+
+
+typedef struct objEX_t{
+    Vec3f vertex[150000];    //頂点
+    int vertNum;            //頂点数
+
+    float vertAry[3000000];   //頂点(openGL方式)
+    int vertAryNum;         //頂点数(openGL方式)
+
+    Vec3f normal[150000];    //法線ベクトル
+    int normalNum;          //法線ベクトル数
+
+    float normAry[3000000];   //法線ベクトル
+    int normAryNum;         //法線ベクトル
+
+
+    Vec3f texCoord[150000];  //テクスチャマッピング
+    int texCoordNum;        //テクスチャマッピング数
+
+    float texCoordAry[3000000];   //テクスチャマッピング
+    int texCoordAryNum;     //テクスチャマッピング数
+
+    GLuint texture;         //テクスチャID
+    float texW;             //テクスチャ横幅
+    float texH;             //テクスチャ縦幅
+}ObjEX;
+
+typedef struct objInfo_t{
+    Vec3f CoordOffSet;      //初期座標
+    Vec3f coord;            //座標
+    Vec3f scale;            //スケール
+
+    int pitch;              //ピッチ角[°]
+    int roll;               //ロール角[°]
+    int yaw;                //ヨー角[°]
+
+    int pitchOffset;        //初期ピッチ角[°]
+    int rollOffset;         //初期ロール角[°]
+    int yawOffset;          //初期ヨー角[°]
+}ObjInfo;
+
 
 /**
  * @brief 円柱形

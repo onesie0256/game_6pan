@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
   myGameManager.ackRequest = SDL_FALSE;
 
   int cond = 1;
-  while (cond) {
+  while (cond && !myGameManager.quitRequest) {
       cond = control_requests();
   }
   SDL_RemoveTimer(myGameManager.timer);

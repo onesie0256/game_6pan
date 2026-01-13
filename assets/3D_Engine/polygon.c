@@ -689,10 +689,131 @@ Polygon* createObj(const char* obj_filename , const char* texture_filename , Vec
     rtn->isDisplay   = SDL_TRUE;
     rtn->type        = PT_OBJ;
 
-    //双方向リストに格納
-    addListNode(list , rtn, NULL);
+    if (list != NULL) addListNode(list , rtn, NULL);
 
     return rtn;
+}
+
+void createObjEX(ObjEX *obj , const char* obj_filename , const char* texture_filename , List *list)
+{
+    obj->vertNum = 0;
+    obj->vertAryNum = 0;
+    obj->texCoordNum = 0;
+    obj->texCoordAryNum = 0;
+    obj->normalNum = 0;
+    obj->normAryNum = 0;
+
+    loadObjEX(obj_filename , obj);
+
+    SDL_Surface *surfaceRaw = IMG_Load(texture_filename);
+
+    if (!surfaceRaw) {
+        printf("IMG_Load error: %s\n", IMG_GetError());
+        return;
+    }
+
+    SDL_Surface *surface = SDL_ConvertSurfaceFormat(surfaceRaw, SDL_PIXELFORMAT_RGBA32, 0);
+    if (!surface) {
+        printf("SDL_ConvertSurfaceFormat error: %s\n", SDL_GetError());
+        return;
+    }
+
+    // OpenGLテクスチャを生成
+    glGenTextures(1, &obj->texture);
+    glBindTexture(GL_TEXTURE_2D, obj->texture);
+
+    // テクスチャのパラメータ設定 (ラッピング、フィルタリング)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // SDL_Surfaceのピクセルフォーマットを判定
+    GLenum format = (surface->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
+
+    // SDL_SurfaceのピクセルデータをOpenGLテクスチャに転送
+    glTexImage2D(GL_TEXTURE_2D, 0, format, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
+
+    obj->texW = (float)surface->w;
+    obj->texH = (float)surface->h;
+    //obj->texture = 0;
+
+    SDL_FreeSurface(surface);
+
+    if (list != NULL) addListNode(list , obj, NULL);
+}
+
+void createObjEX_nontex(ObjEX *obj , const char* obj_filename , List *list)
+{
+    obj->vertNum = 0;
+    obj->vertAryNum = 0;
+    obj->texCoordNum = 0;
+    obj->texCoordAryNum = 0;
+    obj->normalNum = 0;
+    obj->normAryNum = 0;
+
+    loadObjEX(obj_filename , obj);
+
+    if (list != NULL) addListNode(list , obj, NULL);
+}
+
+void createObjEX_withTex(ObjEX *dst , ObjEX *src , const char* texture_filename)
+{
+    memcpy(dst , src , sizeof(ObjEX));
+
+    SDL_Surface *surfaceRaw = IMG_Load(texture_filename);
+
+    if (!surfaceRaw) {
+        printf("IMG_Load error: %s\n", IMG_GetError());
+        return;
+    }
+
+    SDL_Surface *surface = SDL_ConvertSurfaceFormat(surfaceRaw, SDL_PIXELFORMAT_RGBA32, 0);
+    if (!surface) {
+        printf("SDL_ConvertSurfaceFormat error: %s\n", SDL_GetError());
+        return;
+    }
+
+    // OpenGLテクスチャを生成
+    glGenTextures(1, &dst->texture);
+    glBindTexture(GL_TEXTURE_2D, dst->texture);
+
+    // テクスチャのパラメータ設定 (ラッピング、フィルタリング)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // SDL_Surfaceのピクセルフォーマットを判定
+    GLenum format = (surface->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
+
+    // SDL_SurfaceのピクセルデータをOpenGLテクスチャに転送
+    glTexImage2D(GL_TEXTURE_2D, 0, format, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
+
+    dst->texW = (float)surface->w;
+    dst->texH = (float)surface->h;
+    //obj->texture = 0;
+
+    SDL_FreeSurface(surface);
+}
+
+
+ObjInfo* createObjInfo(Vec3f coordOffset , Vec3f scale , int pitchOffset , int rollOffset , int yawOffset)
+{
+    ObjInfo *objInfo = (ObjInfo *)malloc(sizeof(ObjInfo));
+
+    objInfo->CoordOffSet = coordOffset;
+    objInfo->scale = scale;
+    objInfo->pitchOffset = pitchOffset;
+    objInfo->rollOffset = rollOffset;
+    objInfo->yawOffset = yawOffset;
+
+    objInfo->coord = (Vec3f){0.0f , 0.0f , 0.0f};
+    objInfo->pitch = 0;
+    objInfo->roll = 0;
+    objInfo->yaw = 0;
+
+    return objInfo;
 }
 
 Polygon* createCylinder(List *list)
@@ -839,9 +960,6 @@ void displayObj(Obj *obj)
     glBindTexture(GL_TEXTURE_2D, obj->texture);
     glEnable(GL_TEXTURE_2D);
 
-
-    
-    
     //glRotatef(-90.0f , 0.0f , 0.0f , 1.0f);
     glTranslatef(obj->CoordOffSet.x + obj->coord.x, obj->CoordOffSet.y + obj->coord.y , obj->CoordOffSet.z + obj->coord.z);
     //printf("%f %f %f\n" , obj->CoordOffSet.x + obj->coord.x, obj->CoordOffSet.y + obj->coord.y , obj->CoordOffSet.z + obj->coord.z);
@@ -988,4 +1106,63 @@ void destroyPolygon(Polygon *polygon)
     }
 
     free(polygon);
+}
+
+void displayObjEX(ObjEX *obj , ObjInfo *objInfo)
+{
+    glPushMatrix();
+
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    //glDisable(GL_COLOR_MATERIAL);
+
+    
+    glBindTexture(GL_TEXTURE_2D, obj->texture);
+    glEnable(GL_TEXTURE_2D);
+
+
+    
+    
+    //glRotatef(-90.0f , 0.0f , 0.0f , 1.0f);
+    glTranslatef(objInfo->CoordOffSet.x + objInfo->coord.x, objInfo->CoordOffSet.y + objInfo->coord.y , objInfo->CoordOffSet.z + objInfo->coord.z);
+    //printf("%f %f %f\n" , objInfo->CoordOffSet.x + objInfo->coord.x, objInfo->CoordOffSet.y + objInfo->coord.y , objInfo->CoordOffSet.z + objInfo->coord.z);
+    //glTranslatef(objInfo->coord.x , objInfo->coord.y , objInfo->coord.z);
+    
+
+    //glScalef(50.0f , 50.0f , 50.0f);
+
+    glTranslatef(0.0f , 1.0f , 0.0f);
+
+    glRotatef(objInfo->pitch , 1.0f , 0.0f , 0.0f);
+    glRotatef(objInfo->roll , 0.0f , 0.0f , 1.0f);
+    glRotatef(objInfo->yaw , 0.0f , 1.0f , 0.0f);
+
+
+    glTranslatef(0.0f , -1.0f , 0.0f);
+
+
+    glRotatef(objInfo->pitchOffset, 1.0f , 0.0f , 0.0f);
+    glRotatef(objInfo->rollOffset, 0.0f , 0.0f , 1.0f);
+    glRotatef(objInfo->yawOffset, 0.0f , 1.0f , 0.0f);
+
+    glScalef(objInfo->scale.x , objInfo->scale.y ,objInfo->scale.z);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+
+    glVertexPointer(3 , GL_FLOAT , 0 , &(obj->vertAry[0]));
+    glTexCoordPointer(2 , GL_FLOAT , 0 , &(obj->texCoordAry[0]));
+    glNormalPointer(GL_FLOAT , 0 , &(obj->normAry[0]));
+
+    glDrawArrays(GL_TRIANGLES , 0 , obj->vertAryNum / 3);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+
+    glDisable(GL_TEXTURE_2D);
+    // デフォルトのテクスチャ環境モードに戻す
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    //glEnable(GL_COLOR_MATERIAL);
+    glPopMatrix();
 }

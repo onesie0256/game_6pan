@@ -1,6 +1,6 @@
 #include "3DEngine.h"
 
-void collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity);
+SDL_bool collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity);
 SDL_bool collisionPlane(Rectangler *rectangler , Plane4 *plane , Vec3f preCoordOfVertex[]);
 SDL_bool collisionRectangler(Rectangler *rectangler_s , Rectangler *rectangler_d , Vec3f preCoordOfVertex[] , Vec3f *velocity);
 SDL_bool collisionPlane3(Rectangler *rectangler , Plane3 *plane , Vec3f preCoordOfVertex[]);
@@ -8,27 +8,36 @@ SDL_bool collisionPlane3(Rectangler *rectangler , Plane3 *plane , Vec3f preCoord
 /**
  * @brief 四角形と衝突処理する
  */
-void collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity)
+SDL_bool collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity)
 {
     ListNode *tmp;
+    SDL_bool rtn = SDL_FALSE;
     foreach(tmp , list){
         Polygon *polygon = (Polygon *)tmp->data;
         switch (polygon->type)
         {
         case PT_PLANE4:
             if(collisionPlane(rectangler , polygon->data.plane4 , preCoordOfVertex))
+            {
                 *velocity = calcCollisionVel(*velocity , polygon->data.plane4->normal);
-                *velocity = vecMulSca(*velocity , 0.98f);
+                *velocity = vecMulSca(*velocity , 0.96f);
+
+                rtn = SDL_TRUE;
+            }
             break;
 
         case PT_RECTANGLER:
-            collisionRectangler(polygon->data.rectangler , rectangler , preCoordOfVertex , velocity);
+            if (collisionRectangler(polygon->data.rectangler , rectangler , preCoordOfVertex , velocity))
+
+            rtn = SDL_TRUE;
             break;
         
         case PT_PLANE3:
             if(collisionPlane3(rectangler , polygon->data.plane3 , preCoordOfVertex)){
                 *velocity = calcCollisionVel(*velocity , polygon->data.plane3->normal);
-                *velocity = vecMulSca(*velocity , 0.98f);
+                *velocity = vecMulSca(*velocity , 0.96f);
+                
+                rtn = SDL_TRUE;
             }
             break;
         
@@ -37,6 +46,54 @@ void collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , 
             break;
         }
     }
+    return rtn;
+}
+
+SDL_bool collision_n(ListNode *node , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity , int count)
+{
+    SDL_bool rtn = SDL_FALSE;
+    ListNode *node_ = node;
+    for (int i = 0 ; i < count ; i++){
+        Polygon *polygon = (Polygon *)node_->data;
+        switch (polygon->type)
+        {
+        case PT_PLANE4:
+            if(collisionPlane(rectangler , polygon->data.plane4 , preCoordOfVertex))
+            {
+                *velocity = calcCollisionVel(*velocity , polygon->data.plane4->normal);
+                *velocity = vecMulSca(*velocity , 0.96f);
+
+                rtn = SDL_TRUE;
+            }
+            break;
+
+        case PT_RECTANGLER:
+            if (collisionRectangler(polygon->data.rectangler , rectangler , preCoordOfVertex , velocity))
+
+            rtn = SDL_TRUE;
+            break;
+        
+        case PT_PLANE3:
+            if(collisionPlane3(rectangler , polygon->data.plane3 , preCoordOfVertex)){
+                SDL_mutex *mutex = SDL_CreateMutex();
+                SDL_LockMutex(mutex);
+                *velocity = calcCollisionVel(*velocity , polygon->data.plane3->normal);
+                *velocity = vecMulSca(*velocity , 0.96f);
+                SDL_UnlockMutex(mutex);
+                SDL_DestroyMutex(mutex);
+                
+
+                rtn = SDL_TRUE;
+            }
+            break;
+        
+
+        default:
+            break;
+        }
+        node_ = node_->next;
+    }
+    return rtn;
 }
 
 SDL_bool collisionPlane(Rectangler *rectangler , Plane4 *plane , Vec3f preCoordOfVertex[])
