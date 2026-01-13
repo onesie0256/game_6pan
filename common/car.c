@@ -1,6 +1,7 @@
 #include "common.h"
 
 void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2);
+SDL_bool collisionThre(Car *car , List *polygonList);
 
 /**
  * @brief Car構造体を作成する
@@ -332,6 +333,7 @@ void moveCar(List *carList , List *PolygonList , int count)
 
         car->isOnGround = SDL_FALSE;
         car->isOnGround = collision(PolygonList , car->collisionBox->data.rectangler , car->preCoordOfVertexs , &car->velocity);
+
     
         
 
@@ -536,3 +538,73 @@ void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2)
     */
 }
 
+#define THREAD_NUM 6
+
+typedef struct threadData_t{
+    Car *car;
+    List *polygonList;
+    SDL_bool flag;
+    int start;
+    int end;
+}threadData;
+
+
+int tmp(void *arg)
+{
+    threadData *data = (threadData *)arg;
+    Car *car = data->car;
+    List *polygonList = data->polygonList;
+    int start = data->start;
+    int end = data->end;
+
+    ListNode *startNode = polygonList->head;
+
+    for (int i = 0 ; i < start ; i++){
+        startNode = startNode->next;
+    }
+
+    data->flag = collision_n(startNode , car->collisionBox->data.rectangler , car->preCoordOfVertexs , &car->velocity , end - start + 1);
+
+    return 0;
+}
+
+SDL_bool collisionThre(Car *car , List *polygonList)
+{
+    SDL_bool flag = SDL_FALSE;
+
+    SDL_Thread *threads[THREAD_NUM];
+    threadData data[THREAD_NUM];
+
+    int count = polygonList->count/THREAD_NUM;
+    int start = 0;
+    int end = count-1;
+    for (int i = 0 ; i < THREAD_NUM-1 ; i++){
+        data[i].car = car;
+        data[i].polygonList = polygonList;
+        data[i].flag = SDL_FALSE;
+        data[i].start = start;
+        data[i].end = end;
+        
+        start += count;
+        end += count;
+
+        threads[i] = SDL_CreateThread(tmp , "collision" , &data[i]);
+    }
+
+    int last = THREAD_NUM-1;
+
+    data[last].car = car;
+    data[last].polygonList = polygonList;
+    data[last].flag = SDL_FALSE;
+    data[last].start = start;
+    data[last].end = polygonList->count;
+
+    threads[last] = SDL_CreateThread(tmp , "collision" , &data[last]);
+
+    for (int i = 0 ; i < THREAD_NUM ; i++){
+        SDL_WaitThread(threads[i] , NULL);
+        flag = flag || data[i].flag;
+    }
+
+    return flag;
+}

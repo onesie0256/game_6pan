@@ -195,6 +195,8 @@ int setupScene(void)
 int setupSceneLate(void)
 {
     carPlaceAlgorithmSetup();
+    initBillboard();
+    return 0;
 }
 
 int destroyScene(void)

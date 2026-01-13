@@ -117,4 +117,7 @@ void updateCamera(Car *car , Camera *camera);
 GLuint loadTexture(const char* filename);
 void drawBillboard(Vec3f pos, float width, float height, GLuint textureID);
 void displayBillboards(void);
+void initBillboard(void);
+void displayBillboards(void);
+
 

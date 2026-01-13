@@ -92,6 +92,7 @@ typedef enum {
 
 typedef struct client_t{
     uint8_t id;                 //クライアントのid
+    char name[MYNAME_MAX];
     uint8_t gunId;              //銃の種類
     SDL_bool keyNow[KEY_MAX];   //キーの状態
     SDL_bool keyPrev[KEY_MAX];  //キーの状態(1フレーム前)
@@ -177,7 +178,7 @@ typedef struct {
 
 typedef struct {
     uint8_t gunId;
-    //char name[] //todo
+    char name[MYNAME_MAX];
 }ClientData;
 
 typedef union {
@@ -326,6 +327,7 @@ void collisionCars(List *carList);
 void teleportCarEX(Car *car);
 void rotateCarEX(Car *car);
 void updateCarCenter(Car *car);
+SDL_bool collisionThre(Car *car , List *polygonList);
 
 /* gun.c */
 void register_ammoList(List *list);
