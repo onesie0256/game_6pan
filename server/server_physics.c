@@ -126,7 +126,7 @@ Uint32 update_physics(Uint32 interval , void *name)
         sendCount(5);
         break;
 
-    case 1000000:
+    case 1200000:
         scene_->count = 361;
         break;
     

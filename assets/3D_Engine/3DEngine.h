@@ -59,6 +59,8 @@ Vec3f rotateVecWithQuaternion_left(Vec3f v , float angle , Vec3f axis);
 /* fileIO.c */
 SDL_bool loadOBJ(const char* obj_filename , const char* texture_filename , Obj *obj);
 SDL_bool loadOBJ_collison(const char* obj_filename ,  List *list);
+SDL_bool loadObjEX(const char* obj_filename ,  ObjEX *obj);
+
 
 /* polygone.c */
 Polygon* createRectangler(Vec3f coord , Vec3f size , Vec3f color , int pitch , int roll , int yaw , List *list);
@@ -82,6 +84,11 @@ void rotateRectacglerQuaternion(Rectangler *rectangler , Quaternion q , Vec3f ce
 void rotateRectacglerQuaternion_left(Rectangler *rectangler , Quaternion q , Vec3f center);
 void destroyPolygon(Polygon *polygon);
 void upadteRectangler(Rectangler *rectangler);
+void createObjEX(ObjEX *obj , const char* obj_filename , const char* texture_filename , List *list);
+void createObjEX_nontex(ObjEX *obj , const char* obj_filename , List *list);
+void createObjEX_withTex(ObjEX *dst , ObjEX *src , const char* texture_filename);
+void displayObjEX(ObjEX *obj , ObjInfo *objInfo);
+ObjInfo* createObjInfo(Vec3f coordOffset , Vec3f scale , int pitchOffset , int rollOffset , int yawOffset);
 
 /* space.c */
 float lengthPointToPlaneAndH(Vec3f *H, Vec3f v , Vec3f n , Vec3f p);
@@ -99,6 +106,7 @@ void rotateCamera(Camera *camera, float pitch_delta, float yaw_delta);
 
 /* collision.c */
 SDL_bool collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity);
+SDL_bool collision_n(ListNode *node , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity , int count);
 
 /* list */
 /**

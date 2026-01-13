@@ -5,6 +5,8 @@
 #include "client.h"
 #include <math.h>
 
+static int flag = 0;
+
 /**
  * @name titleScene
  * @brief タイトル画面のメインループ
@@ -32,8 +34,15 @@ int titleScene(void)
 		SDL_Delay(100);
 		return 0; // ゲーム終了 
 	}
-	else {if (isKeyDowned(K_ENTER)) {
-			myGameManager.sceneID = Scene_Wait;
+	else {if (flag == 0 && isKeyDowned(K_ENTER)) {
+			flag = 1;
+			SDL_SetHint(SDL_HINT_IME_INTERNAL_EDITING , "1");
+			//SDL_SetHint("SDL_IME_SHOW_UI" , "1");
+			SDL_Rect rect = (SDL_Rect){0,0,myGameManager.windowH,myGameManager.windowW};
+			SDL_SetTextInputRect(&rect);
+			memset(myGameManager.myName , 0 , MYNAME_MAX);
+			SDL_StartTextInput();
+			titleState.flag = 1;
 		}
 		
 	#ifdef USE_JOY
@@ -48,9 +57,18 @@ int titleScene(void)
 
 	titleState.animationTimer++; //タイマーを更新
 
-	//ビート効果（拡大縮小）: sin波でループ
-	float beatPhase = (titleState.animationTimer % 100) / 100.0f; 
-	titleState.beatScale = 1.0f + 0.15f * sinf(beatPhase * 2.0f * 3.14159f);
+	if (flag == 0){
+		//ビート効果（拡大縮小）: sin波でループ
+		float beatPhase = (titleState.animationTimer % 100) / 100.0f; 
+		titleState.beatScale = 1.0f + 0.15f * sinf(beatPhase * 2.0f * 3.14159f);
+	}
+	else if (flag == 1){
+		if (isKeyDowned(K_ENTER)){
+			SDL_StopTextInput();
+			myGameManager.sceneID = Scene_Wait;
+			return 1;
+		}
+	}
 
 	UI_updateTitleSurface(&titleState);
 	draw(NULL);

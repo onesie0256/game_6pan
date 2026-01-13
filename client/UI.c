@@ -124,6 +124,17 @@ static void UI_updateTextCenteredOnSurface(TTF_Font *font, const char *text, int
 	}
 }
 
+void UI_updateTitleSurface2(TitleScene *titleScene)
+{
+
+
+	if (myGameManager.fonts[0]) {
+		SDL_Color black = {0,0,0,255};
+		UI_updateTextCenteredOnSurface(myGameManager.fonts[2] , "キーボードで名前を入力してね!(Enterで次へ)" , myGameManager.windowH/3 , black);
+		UI_updateTextCenteredOnSurface(myGameManager.fonts[0] , myGameManager.myName , myGameManager.windowH/2 , black);
+	}
+}
+
 /**
  * @brief タイトル画面を描画する
  * @param titleScene タイトルシーンの状態。アニメーションなどに使用します。
@@ -146,6 +157,11 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 	// } else {
 	// 	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 0, 0, 0));
 	// }
+
+	if (titleScene->flag){
+		UI_updateTitleSurface2(titleScene);
+		return;
+	}
 
 	//ビート効果を適用したタイトルボックスの描画
 	float scale = titleScene->beatScale;

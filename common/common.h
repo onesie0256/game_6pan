@@ -21,6 +21,8 @@
 #define BACKLOG 10      // 同時接続待ち上限
 #define MAX_Clients 10
 
+#define MYNAME_MAX 30
+
 #define WEAPON_TYPE_MAX 3
 
 /* network orders */
@@ -90,6 +92,7 @@ typedef enum {
 
 typedef struct client_t{
     uint8_t id;                 //クライアントのid
+    char name[MYNAME_MAX];
     uint8_t gunId;              //銃の種類
     SDL_bool keyNow[KEY_MAX];   //キーの状態
     SDL_bool keyPrev[KEY_MAX];  //キーの状態(1フレーム前)
@@ -108,6 +111,7 @@ typedef struct
     uint8_t myID;                   //ID
     uint8_t playerNum;              //プレイヤー人数
     uint8_t gunId;                  //自分の銃の種類
+    char myName[MYNAME_MAX];        //自分の名前
     char serverName[MAX_LEN_NAME];               //サーバーの名前
     uint16_t serverPort;             //サーバーのポート番号
     SDL_Window *window;
@@ -140,7 +144,7 @@ typedef struct
 
     Client clients[MAX_Clients];    //クライアントのリスト
 
-    Polygon *carModels[3];           //車のモデル
+    ObjEX models[WEAPON_TYPE_MAX+MAX_Clients];  //銃と車のモデルを格納
 }GameManager;
 
 /**
@@ -174,7 +178,7 @@ typedef struct {
 
 typedef struct {
     uint8_t gunId;
-    //char name[] //todo
+    char name[MYNAME_MAX];
 }ClientData;
 
 typedef union {
@@ -198,7 +202,7 @@ typedef struct car_t
 {
     uint8_t id;                 //操作するプレイヤーのid
     Polygon *collisionBox;      //当たり判定の直方体
-    Obj *model;                 //3Dモデル
+    ObjInfo *model;             //3Dモデルの情報
     Vec3f center;               //中心座標
     Vec3f preCenter;            //1フレーム前の中心座標
     Vec3f velocity;             //速度
@@ -256,7 +260,7 @@ typedef struct gun_t{
     float ammoSpeed;                //弾薬の速度
     int maxAmmoLivingFrame;         //弾薬の残存フレーム
     float ammoRadius;               //弾薬の半径
-    Obj *model;                     //3Dモデル
+    ObjInfo *model;                 //3Dモデルの情報
 }Gun;
 
 typedef struct {
@@ -309,6 +313,7 @@ typedef struct {
     int sendInputDataPlayerNum;     //入力データを送信するプレイヤーの数
     int sendCarInfoPlayerNum;       //車情報を送信するプレイヤーの数
     int count;                      //カウントダウン
+    GLuint bulletTextureID;
 }MainScene;
 
 /* car.c */
@@ -322,6 +327,7 @@ void collisionCars(List *carList);
 void teleportCarEX(Car *car);
 void rotateCarEX(Car *car);
 void updateCarCenter(Car *car);
+SDL_bool collisionThre(Car *car , List *polygonList);
 
 /* gun.c */
 void register_ammoList(List *list);
