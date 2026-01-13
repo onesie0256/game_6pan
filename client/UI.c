@@ -159,6 +159,7 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 	// }
 
 	if (titleScene->flag){
+		SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 255, 255, 255));
 		UI_updateTitleSurface2(titleScene);
 		return;
 	}
