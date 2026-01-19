@@ -265,7 +265,7 @@ void updateSound(MainScene *scene)
     }
 
     if (scene->count == 0 && scene->bgmStarted == SDL_FALSE) {
-        //Audio_PlayBGM(BGM_MAIN);
+        Audio_PlayBGM(BGM_MAIN);
         scene->bgmStarted = SDL_TRUE;
     }
 
