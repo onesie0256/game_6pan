@@ -279,4 +279,33 @@ void Audio_PlaySE_3D(int seID, Vec3f soundPos)
     }
 }
 
+static int seLoopChannel[SE_MAX];
+
+void Audio_PlaySELoop(int seID)
+{
+    if (seID < 0 || seID >= SE_MAX) return;
+    if (!myGameManager.audio.se[seID]) return;
+
+    /* すでに再生中なら何もしない */
+    if (seLoopChannel[seID] != SE_NONE) return;
+
+    int ch = Mix_PlayChannel(-1, myGameManager.audio.se[seID], -1);
+    if (ch >= 0) {
+        seLoopChannel[seID] = ch;
+    }
+}
+
+void Audio_StopSELoop(int seID)
+{
+    if (seID < 0 || seID >= SE_MAX) return;
+
+    int ch = seLoopChannel[seID];
+    if (ch != SE_NONE) {
+        Mix_HaltChannel(ch);
+        seLoopChannel[seID] = SE_NONE;
+    }
+}
+
+
+
 

@@ -248,6 +248,7 @@ typedef struct car_t
     Vec3f direction;            //方向ベクトル
     Vec3f preCoordOfVertexs[8]; //1フレーム前の各頂点の座標
     float hp;                   //HP
+    float prevhp;               //1フレーム前のHP
     float speed;                //スピード(UI専用)
     int place;                  //順位
     Gun *gun;                   //所持する銃
@@ -395,6 +396,8 @@ void Audio_FadeOutBGM(int ms);
 
 void Audio_PlaySE(int seID);
 void Audio_PlaySE_3D(int seID, Vec3f soundPos);
+void Audio_PlaySELoop(int seID);
+void Audio_StopSELoop(int seID);
 extern const SeID gunShotSeTable[];
 
 

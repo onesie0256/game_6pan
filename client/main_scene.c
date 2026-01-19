@@ -7,8 +7,10 @@ int destroyScene(void);
 int receiveDataThreFunc();
 void updateCar_c(void);
 void updateSound(MainScene *scene);
+SDL_bool isKeyPressed(int KEY_NAME);
 
 static Car *c2 = NULL;
+static SDL_bool accelSePlaying = SDL_FALSE;
 
 /**
  * @brief メインゲーム
@@ -46,6 +48,20 @@ int mainScene(void)
         if (myGameManager.quitRequest == SDL_FALSE) {
             send_input_data();
             updateCar_c();
+
+            if (isKeyPressed(K_UP)) {
+                if (!accelSePlaying) {
+                    Audio_PlaySELoop(SE_ACCEL);
+                    accelSePlaying = SDL_TRUE;
+                }
+            } else {
+                if (accelSePlaying) {
+                    Audio_StopSELoop(SE_ACCEL);
+                    accelSePlaying = SDL_FALSE;
+                }
+            }
+
+
         }
 
         if (scene->count >= 5 || scene->count == 0)
@@ -228,6 +244,7 @@ void updateCar_c(void)
     ListNode *node;
     foreach(node , scene->cars){
         Car *car = (Car*)node->data;
+        car->prevhp = car->hp;
 
         teleportCarEX(car);
         rotateCarEX(car);
@@ -248,8 +265,24 @@ void updateSound(MainScene *scene)
     }
 
     if (scene->count == 0 && scene->bgmStarted == SDL_FALSE) {
-        Audio_PlayBGM(BGM_MAIN);
+        //Audio_PlayBGM(BGM_MAIN);
         scene->bgmStarted = SDL_TRUE;
     }
 
+        /* ★ 車の死亡音 */
+    ListNode *node;
+    foreach(node , scene->cars){
+        Car *car = node->data;
+
+        if (car->prevhp > 0 && car->hp <= 0) {
+            Audio_PlaySE_3D(SE_EXPLOSION, car->center);
+        }
+    }
+
 }
+
+SDL_bool isKeyPressed(int KEY_NAME)
+{
+    return myGameManager.keyNow[KEY_NAME];
+}
+
