@@ -103,6 +103,18 @@ int mainScene(void)
     draw(scene->camera);
 
     updateSound(scene);
+    // 全員が3周したらリザルト画面へ
+    SDL_bool allFinished = SDL_TRUE;
+    ListNode *node;
+    foreach(node, scene->cars){
+        Car *car = (Car*)node->data;
+        if(car->rapNum < 3) allFinished = SDL_FALSE;
+    }
+    if(allFinished){
+        myGameManager.sceneID = Scene_Result;
+        setupFlag = SDL_TRUE;
+        return 1;
+    }
     
     //printf("next point : %f , %f , %f\n" , scene->myCar->nextCheckPoint->coord.x , scene->myCar->nextCheckPoint->coord.y , scene->myCar->nextCheckPoint->coord.z);
     //printf("順位: %d\n" , scene->myCar->place);

@@ -74,12 +74,16 @@ int titleScene(void);
 /* wait_scene.c */
 int waitScene(void);
 
+/* result_scene.c */
+int resultScene(void);
+
 
 /* UI.c */
 int UI_init(void);
 void UI_updateTitleSurface(TitleScene *titleScene);
 void UI_updateWaitSurface(WaitScene *waitScene);
 void UI_updateMainSurface(MainScene *scene);
+void UI_updateResultSurface();
 void UI_drawBullets(Gun *gun);
 void UI_cleanup(void);
 
@@ -120,3 +124,5 @@ void drawBillboard(Vec3f pos, float width, float height, GLuint textureID);
 void displayBillboards(void);
 void initBillboard(void);
 void displayBillboards(void);
+
+

@@ -244,6 +244,7 @@ void UI_updateWaitSurface(WaitScene *waitScene)
 		SDL_FreeSurface(weaponImage);
 	}
 
+
 	//画面右下: 「通信待機中．．．」を表示
 	if (myGameManager.fonts[2] && waitScene->isSendGunId) { 
 		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "他のプレイヤーを待機中．．．", black);
@@ -407,6 +408,16 @@ void UI_updateMainSurface(MainScene *scene)
 			SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
 			SDL_FreeSurface(textSurface);
 		}
+
+		// まだゴールしていない敵を攻撃しよう
+		char attackText[64];
+		snprintf(attackText, sizeof(attackText), "まだゴールしていない敵を攻撃しよう！");
+		SDL_Surface *attackSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], attackText , black);
+		if (attackSurface) {
+			SDL_Rect dst = {myGameManager.windowW/2 - attackSurface->w/2, myGameManager.windowH/4 + 120, attackSurface->w, attackSurface->h };
+			SDL_BlitSurface(attackSurface, NULL, myGameManager.UI, &dst);
+			SDL_FreeSurface(attackSurface);
+		}
 	}
 
 	/* 画面左:操作方法 */
@@ -564,4 +575,180 @@ void deleteUI(SceneKinds group)
         temp = next;
     }
 
+}
+
+/* ===============================
+   背景描画
+================================ */
+void drawGradientBackground(SDL_Surface *surface) {
+    for (int y = 0; y < surface->h; y++) {
+        Uint8 b = 50 + y * 120 / surface->h;
+        SDL_Rect line = {0, y, surface->w, 1};
+        SDL_FillRect(
+            surface,
+            &line,
+            SDL_MapRGB(surface->format, 10, 10, b)
+        );
+    }
+}
+
+void UI_updateResultSurface(ResultScene *rs) {
+    if (!rs || !myGameManager.UI) return;
+
+    /* 背景 */
+    drawGradientBackground(myGameManager.UI);
+
+    /* RESULT タイトル */
+    SDL_Color titleColor = {255, 215, 0, 255};
+    SDL_Surface *title = NULL;
+    if (myGameManager.fonts[0]) {
+        title = TTF_RenderUTF8_Blended(myGameManager.fonts[0], "RESULT", titleColor);
+    }
+
+    if (title) {
+        SDL_Rect dst = {
+            (myGameManager.windowW - title->w) / 2,
+            myGameManager.windowH / 6,
+            title->w,
+            title->h
+        };
+        SDL_BlitSurface(title, NULL, myGameManager.UI, &dst);
+        SDL_FreeSurface(title);
+    }
+
+    /* ===== 順位テキスト ===== */
+    char rankText[32];
+    sprintf(rankText, "第%d位", rs->rank);
+
+    SDL_Color mainColor, hiColor, sh1, sh2, sh3;
+    int fontSize;
+
+    if (rs->rank == 1) {
+        /* 金 */
+        mainColor = (SDL_Color){255, 215, 0, 255};
+        hiColor   = (SDL_Color){255, 255, 220, 255};
+        sh1       = (SDL_Color){120, 90, 0, 255};
+        sh2       = (SDL_Color){80, 60, 0, 255};
+        sh3       = (SDL_Color){40, 30, 0, 255};
+        fontSize  = 140;
+    } else if (rs->rank == 2) {
+        /* 銀 */
+        mainColor = (SDL_Color){220, 220, 220, 255};
+        hiColor   = (SDL_Color){255, 255, 255, 255};
+        sh1       = (SDL_Color){130, 130, 130, 255};
+        sh2       = (SDL_Color){90, 90, 90, 255};
+        sh3       = (SDL_Color){60, 60, 60, 255};
+        fontSize  = 120;
+    } else if (rs->rank == 3) {
+        /* 銅 */
+        mainColor = (SDL_Color){205, 127, 50, 255};
+        hiColor   = (SDL_Color){255, 200, 150, 255};
+        sh1       = (SDL_Color){120, 70, 30, 255};
+        sh2       = (SDL_Color){90, 50, 20, 255};
+        sh3       = (SDL_Color){60, 35, 15, 255};
+        fontSize  = 120;
+    } else {
+        /* その他 */
+        mainColor = (SDL_Color){150, 180, 255, 255};
+        hiColor   = (SDL_Color){220, 230, 255, 255};
+        sh1       = (SDL_Color){50, 70, 120, 255};
+        sh2       = (SDL_Color){30, 50, 90, 255};
+        sh3       = (SDL_Color){20, 35, 60, 255};
+        fontSize  = 110;
+    }
+
+    TTF_Font *rankFont = NULL;
+    SDL_bool isOwnFont = SDL_FALSE;
+    
+    // フォントサイズに応じて適切なフォントを選択
+    if (fontSize >= 140 && myGameManager.fonts[5]) {
+        rankFont = myGameManager.fonts[5];
+    } else if (myGameManager.fonts[2]) {
+        rankFont = myGameManager.fonts[2];
+    } else {
+        return;
+    }
+
+    SDL_Surface *sMain = TTF_RenderUTF8_Blended(rankFont, rankText, mainColor);
+    SDL_Surface *sHi   = TTF_RenderUTF8_Blended(rankFont, rankText, hiColor);
+    SDL_Surface *s1    = TTF_RenderUTF8_Blended(rankFont, rankText, sh1);
+    SDL_Surface *s2    = TTF_RenderUTF8_Blended(rankFont, rankText, sh2);
+    SDL_Surface *s3    = TTF_RenderUTF8_Blended(rankFont, rankText, sh3);
+
+    if (!sMain || !sHi || !s1 || !s2 || !s3) {
+        if (isOwnFont && rankFont) {
+            TTF_CloseFont(rankFont);
+        }
+        return;
+    }
+
+    int baseY = myGameManager.windowH / 2 - (rs->rank == 1 ? 80 : 0);
+    int x = (myGameManager.windowW - sMain->w) / 2;
+
+    SDL_BlitSurface(s3, NULL, myGameManager.UI, &(SDL_Rect){x+10, baseY+10, s3->w, s3->h});
+    SDL_BlitSurface(s2, NULL, myGameManager.UI, &(SDL_Rect){x+7,  baseY+7,  s2->w, s2->h});
+    SDL_BlitSurface(s1, NULL, myGameManager.UI, &(SDL_Rect){x+4,  baseY+4,  s1->w, s1->h});
+    SDL_BlitSurface(sMain, NULL, myGameManager.UI, &(SDL_Rect){x, baseY, sMain->w, sMain->h});
+    SDL_BlitSurface(sHi,   NULL, myGameManager.UI, &(SDL_Rect){x-2, baseY-2, sHi->w, sHi->h});
+
+    SDL_FreeSurface(sMain);
+    SDL_FreeSurface(sHi);
+    SDL_FreeSurface(s1);
+    SDL_FreeSurface(s2);
+    SDL_FreeSurface(s3);
+    
+    if (isOwnFont && rankFont) {
+        TTF_CloseFont(rankFont);
+    }
+
+    /* ===== 1位のみ：CONGRATULATIONS ===== */
+    if (rs->rank == 1) {
+        TTF_Font *congFont = myGameManager.fonts[6];
+        
+        if (congFont) {
+            SDL_Color cMainCol = {255, 255, 255, 255};
+            SDL_Color cShCol   = {0, 0, 0, 255};
+
+            SDL_Surface *cMain =
+                TTF_RenderUTF8_Blended(congFont, "CONGRATULATIONS", cMainCol);
+            SDL_Surface *cSh =
+                TTF_RenderUTF8_Blended(congFont, "CONGRATULATIONS", cShCol);
+
+            if (cMain && cSh) {
+                int cx = (myGameManager.windowW - cMain->w) / 2;
+                int cy = baseY + 170;
+
+                SDL_BlitSurface(cSh,   NULL, myGameManager.UI, &(SDL_Rect){cx+4, cy+4, cSh->w, cSh->h});
+                SDL_BlitSurface(cMain, NULL, myGameManager.UI, &(SDL_Rect){cx,   cy,   cMain->w, cMain->h});
+            }
+
+            if (cMain) SDL_FreeSurface(cMain);
+            if (cSh) SDL_FreeSurface(cSh);
+        }
+    }
+
+    /* ===== 閉じるボタン説明 ===== */
+    {
+        char closeText[50];
+        snprintf(closeText, sizeof(closeText), "閉じるボタン×を押すと終了");
+        
+        SDL_Color closeColor = {200, 200, 200, 255};
+        SDL_Surface *closeSurface = NULL;
+        if (myGameManager.fonts[2]) {
+            closeSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], closeText, closeColor);
+        } else if (myGameManager.fonts[1]) {
+            closeSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[1], closeText, closeColor);
+        }
+
+        if (closeSurface) {
+            SDL_Rect dst = {
+                (myGameManager.windowW - closeSurface->w) / 2,
+                myGameManager.windowH - 100,
+                closeSurface->w,
+                closeSurface->h
+            };
+            SDL_BlitSurface(closeSurface, NULL, myGameManager.UI, &dst);
+            SDL_FreeSurface(closeSurface);
+        }
+    }
 }
