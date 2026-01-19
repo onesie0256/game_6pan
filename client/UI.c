@@ -99,6 +99,28 @@ int UI_init(void)
 			myGameManager.fonts[6] = f;
 		}
 	}
+
+		//リザルト画面用
+	if (myGameManager.fonts[7] == NULL) {
+		TTF_Font *f = TTF_OpenFont("assets/fonts/KiwiMaru-Regular.ttf", 140);
+		if (f) {
+			myGameManager.fonts[7] = f;
+		}
+		else if (f = TTF_OpenFont("./../assets/fonts/KiwiMaru-Regular.ttf", 140)){
+			myGameManager.fonts[7] = f;
+		}
+	}
+
+	//CONGRATULATIONS用
+	if (myGameManager.fonts[8] == NULL) {
+		TTF_Font *f = TTF_OpenFont("assets/fonts/KiwiMaru-Regular.ttf", 72);
+		if (f) {
+			myGameManager.fonts[8] = f;
+		}
+		else if (f = TTF_OpenFont("./../assets/fonts/KiwiMaru-Regular.ttf", 72)){
+			myGameManager.fonts[8] = f;
+		}
+	}
 	return 0;
 }
 
@@ -638,7 +660,7 @@ void UI_updateResultSurface(ResultScene *rs) {
         sh1       = (SDL_Color){130, 130, 130, 255};
         sh2       = (SDL_Color){90, 90, 90, 255};
         sh3       = (SDL_Color){60, 60, 60, 255};
-        fontSize  = 120;
+        fontSize  = 140;
     } else if (rs->rank == 3) {
         /* 銅 */
         mainColor = (SDL_Color){205, 127, 50, 255};
@@ -646,7 +668,7 @@ void UI_updateResultSurface(ResultScene *rs) {
         sh1       = (SDL_Color){120, 70, 30, 255};
         sh2       = (SDL_Color){90, 50, 20, 255};
         sh3       = (SDL_Color){60, 35, 15, 255};
-        fontSize  = 120;
+        fontSize  = 140;
     } else {
         /* その他 */
         mainColor = (SDL_Color){150, 180, 255, 255};
@@ -654,17 +676,16 @@ void UI_updateResultSurface(ResultScene *rs) {
         sh1       = (SDL_Color){50, 70, 120, 255};
         sh2       = (SDL_Color){30, 50, 90, 255};
         sh3       = (SDL_Color){20, 35, 60, 255};
-        fontSize  = 110;
+        fontSize  = 140;
     }
 
     TTF_Font *rankFont = NULL;
     SDL_bool isOwnFont = SDL_FALSE;
     
     // フォントサイズに応じて適切なフォントを選択
-    if (fontSize >= 140 && myGameManager.fonts[5]) {
-        rankFont = myGameManager.fonts[5];
-    } else if (myGameManager.fonts[2]) {
-        rankFont = myGameManager.fonts[2];
+    if (fontSize >= 140 && myGameManager.fonts[7]) {
+        rankFont = myGameManager.fonts[7];
+    
     } else {
         return;
     }
@@ -703,7 +724,7 @@ void UI_updateResultSurface(ResultScene *rs) {
 
     /* ===== 1位のみ：CONGRATULATIONS ===== */
     if (rs->rank == 1) {
-        TTF_Font *congFont = myGameManager.fonts[6];
+        TTF_Font *congFont = myGameManager.fonts[8];
         
         if (congFont) {
             SDL_Color cMainCol = {255, 255, 255, 255};
