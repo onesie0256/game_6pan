@@ -5,6 +5,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #ifdef USE_JOY
 #include <joyconlib.h>
@@ -90,6 +91,42 @@ typedef enum {
 
 #endif
 
+typedef enum {
+    BGM_NONE = -1,
+    BGM_TITLE,
+    BGM_WAIT,
+    BGM_MAIN,
+    BGM_RESULT,
+    BGM_MAX
+} BgmID;
+
+/**
+ * @brief サウンドリスト
+ */
+typedef enum {
+    SE_NONE = -1,
+    SE_GUNSHOT_PISTOL,
+    SE_GUNSHOT_SHOTGUN,
+    SE_GUNSHOT_SNIPER,
+    SE_RELOAD,
+    SE_ACCEL,
+    SE_EXPLOSION,
+    SE_CURSOR,
+    SE_START,
+    SE_COUNTDOWN,
+    SE_KEBOARD,
+    SE_MAX
+} SeID;
+
+/**
+ * @brief 音声マネージャー
+ */
+typedef struct {
+    Mix_Music *bgm[BGM_MAX];
+    Mix_Chunk *se[SE_MAX];
+    int currentBgmID;
+}AudioManager;
+
 typedef struct client_t{
     uint8_t id;                 //クライアントのid
     char name[MYNAME_MAX];
@@ -141,6 +178,7 @@ typedef struct
     float StickX;            //ジョイスティックのx方向の傾き
     float StickY;            //ジョイスティックのy方向の傾き
     #endif
+    AudioManager audio;              //オーディオ
 
     Client clients[MAX_Clients];    //クライアントのリスト
 
@@ -154,6 +192,7 @@ typedef enum{
     Scene_Title,      //タイトル画面
     Scene_Wait,       //待機画面
     Scene_Main,       //ゲーム画面
+    Scene_Result,
     Scene_Max
 }SceneKinds;
 
@@ -314,7 +353,10 @@ typedef struct {
     int sendInputDataPlayerNum;     //入力データを送信するプレイヤーの数
     int sendCarInfoPlayerNum;       //車情報を送信するプレイヤーの数
     int count;                      //カウントダウン
+    int prevcount;
     GLuint bulletTextureID;
+    SDL_bool bgmStarted;
+    SDL_bool countdownStarted;
 }MainScene;
 
 /* car.c */
@@ -333,7 +375,7 @@ SDL_bool collisionThre(Car *car , List *polygonList);
 /* gun.c */
 void register_ammoList(List *list);
 Gun* createGun(GunKinds kind , int carId);
-void fireGun(Car *car , Gun *gun);
+SDL_bool fireGun(Car *car , Gun *gun);
 Ammo* createAmmo(Gun *gun , Vec3f coord , Vec3f direct);
 void updateAmmos(void);
 void destroyAmmo(Ammo *ammo);
@@ -341,6 +383,20 @@ void displayAmmos(void);
 void updateGuns(List *carList);
 void collisionAmmoCars(List *carList);
 void collisionAmmoCars_c(List *carList);
+
+
+/* audio.c */
+int  Audio_Init(void);
+void Audio_Quit(void);
+void Audio_OnSceneChanged(uint8_t newScene);
+void Audio_PlayBGM(BgmID id);
+void Audio_StopBGM(void);
+void Audio_FadeOutBGM(int ms);
+
+void Audio_PlaySE(int seID);
+void Audio_PlaySE_3D(int seID, Vec3f soundPos);
+extern const SeID gunShotSeTable[];
+
 
 /* course_manager.h */
 Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero);

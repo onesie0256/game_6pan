@@ -43,7 +43,7 @@ static Gun pistol = (Gun){
 static List *ammoList = NULL;
 void register_ammoList(List *list);
 Gun* createGun(GunKinds kind , int carId);
-void fireGun(Car *car , Gun *gun);
+SDL_bool fireGun(Car *car , Gun *gun);
 Ammo* createAmmo(Gun *gun , Vec3f coord , Vec3f direct);
 void updateAmmos(void);
 void destroyAmmo(Ammo *ammo);
@@ -104,13 +104,13 @@ Gun* createGun(GunKinds kind , int carId)
  * @param gum 銃の構造体
  * 
  */
-void fireGun(Car *car , Gun *gun)
+SDL_bool fireGun(Car *car , Gun *gun)
 {
-    if (gun->bulletNum <= 0 || gun->fireCoolFrameNow > 0) return;
+    if (gun->bulletNum <= 0 || gun->fireCoolFrameNow > 0) return SDL_FALSE;
     gun->fireCoolFrameNow = gun->fireCoolFrame;
     gun->bulletNum--;
     createAmmo(gun , car->center , car->direction);
-    if (gun->kind != Shotgun) return;
+    if (gun->kind != Shotgun) return SDL_TRUE;
     createAmmo(gun , car->center , rotateVecWithQuaternion(car->direction , SHOTGUN_AMMO_ROTATION , (Vec3f){0.0f , 1.0f , 0.0f}));
     createAmmo(gun , car->center , rotateVecWithQuaternion(car->direction , -SHOTGUN_AMMO_ROTATION , (Vec3f){0.0f , 1.0f , 0.0f}));
 
@@ -125,6 +125,7 @@ void fireGun(Car *car , Gun *gun)
     createAmmo(gun , car->center , rotateVecWithQuaternion(tmp , -SHOTGUN_AMMO_ROTATION , (Vec3f){0.0f , 1.0f , 0.0f}));
 
 
+    return SDL_TRUE;
 }
 
 /**
@@ -258,28 +259,37 @@ void displayAmmos(void)
 void updateGuns(List *carList)
 {
     ListNode *node;
-    
-    foreach(node , carList){
+
+    foreach (node, carList) {
         Car *car = node->data;
         Gun *gun = car->gun;
 
         gun->model->coord = car->center;
 
-        if (gun->reloadFrameNow > 0){
-            gun->reloadFrameNow--;
-        }
-        if (gun->fireCoolFrameNow > 0){
+        /* 発射クールタイム更新 */
+        if (gun->fireCoolFrameNow > 0) {
             gun->fireCoolFrameNow--;
         }
 
-        if (gun->bulletNum != 0) continue;
+        /* ===== リロード中 ===== */
+        if (gun->reloadFrameNow > 0) {
+            gun->reloadFrameNow--;
 
-        gun->reloadFrameNow++;
+            /* ★★★ ここ：リロード完了した瞬間 ★★★ */
+            if (gun->reloadFrameNow == 0) {
+                gun->bulletNum = gun->maxBulletNum;
 
-        if (gun->reloadFrameNow++ != gun->reloadFrame) continue;
+                /* ここで音を鳴らす */
+                Audio_PlaySE(SE_RELOAD);
+            }
 
-        gun->bulletNum = gun->maxBulletNum;
-        gun->reloadFrameNow = 0;
+            continue;
+        }
+
+        /* ===== リロード開始条件 ===== */
+        if (gun->bulletNum == 0) {
+            gun->reloadFrameNow = gun->reloadFrame;
+        }
     }
 }
 

@@ -91,6 +91,7 @@ int main(int argc , char* argv[])
   SDL_Quit();
   TTF_Quit();
   IMG_Quit();
+  Audio_Quit();
 
     return 0;
 }
@@ -126,6 +127,10 @@ SDL_bool init(void)
         SDL_Quit();
         return SDL_FALSE;
     }
+
+    Audio_Init();
+
+
 
     #ifdef USE_JOY
     

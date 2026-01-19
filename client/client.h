@@ -109,6 +109,7 @@ typedef struct {
 
 }UI;
 
+
 /* 3DEutil.c */
 int initWindow(char *title);
 void closeWindow(void);
@@ -119,5 +120,3 @@ void drawBillboard(Vec3f pos, float width, float height, GLuint textureID);
 void displayBillboards(void);
 void initBillboard(void);
 void displayBillboards(void);
-
-
