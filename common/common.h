@@ -15,7 +15,6 @@
 #define KEY_MAX 10
 #define JOY_KEY_MAX 10
 #define FONT_MAX 5
-#define SE_MAX 16
 #define FPS_f 90.0f
 #define FPS_inv 1.0f/FPS_f
 
@@ -102,6 +101,24 @@ typedef enum {
 } BgmID;
 
 /**
+ * @brief サウンドリスト
+ */
+typedef enum {
+    SE_NONE = -1,
+    SE_GUNSHOT_PISTOL,
+    SE_GUNSHOT_SHOTGUN,
+    SE_GUNSHOT_SNIPER,
+    SE_RELOAD,
+    SE_ACCEL,
+    SE_EXPLOSION,
+    SE_CURSOR,
+    SE_START,
+    SE_COUNTDOWN,
+    SE_KEBOARD,
+    SE_MAX
+} SeID;
+
+/**
  * @brief 音声マネージャー
  */
 typedef struct {
@@ -178,23 +195,6 @@ typedef enum{
     Scene_Result,
     Scene_Max
 }SceneKinds;
-
-/**
- * @brief サウンドリスト
- */
-/*
-typedef enum {
-    BGM_title, 
-    BGM_main,  
-    Sound_Gunshot,    
-    Sound_Engine,  
-    Sound_Acceleration, 
-    K_SHIFT, 
-    K_ENTER, 
-    K_ESCAPE,
-    S_MAX    //使用するサウンドの数
-}KeyNum;
-*/
 
 typedef struct {
     uint16_t keyInputs;         //キーの情報
@@ -352,7 +352,10 @@ typedef struct {
     int sendInputDataPlayerNum;     //入力データを送信するプレイヤーの数
     int sendCarInfoPlayerNum;       //車情報を送信するプレイヤーの数
     int count;                      //カウントダウン
+    int prevcount;
     GLuint bulletTextureID;
+    SDL_bool bgmStarted;
+    SDL_bool countdownStarted;
 }MainScene;
 
 /* car.c */
@@ -371,7 +374,7 @@ SDL_bool collisionThre(Car *car , List *polygonList);
 /* gun.c */
 void register_ammoList(List *list);
 Gun* createGun(GunKinds kind , int carId);
-void fireGun(Car *car , Gun *gun);
+SDL_bool fireGun(Car *car , Gun *gun);
 Ammo* createAmmo(Gun *gun , Vec3f coord , Vec3f direct);
 void updateAmmos(void);
 void destroyAmmo(Ammo *ammo);
@@ -379,6 +382,20 @@ void displayAmmos(void);
 void updateGuns(List *carList);
 void collisionAmmoCars(List *carList);
 void collisionAmmoCars_c(List *carList);
+
+
+/* audio.c */
+int  Audio_Init(void);
+void Audio_Quit(void);
+void Audio_OnSceneChanged(uint8_t newScene);
+void Audio_PlayBGM(BgmID id);
+void Audio_StopBGM(void);
+void Audio_FadeOutBGM(int ms);
+
+void Audio_PlaySE(int seID);
+void Audio_PlaySE_3D(int seID, Vec3f soundPos);
+extern const SeID gunShotSeTable[];
+
 
 /* course_manager.h */
 Course *createCourse(Polygon **checkPointPlaneZero , CheckPoint **checkPointZero);

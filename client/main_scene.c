@@ -6,6 +6,7 @@ int setupSceneLate(void);
 int destroyScene(void);
 int receiveDataThreFunc();
 void updateCar_c(void);
+void updateSound(MainScene *scene);
 
 static Car *c2 = NULL;
 
@@ -27,6 +28,8 @@ int mainScene(void)
         setupFlag = SDL_FALSE;
         return 1;
     }
+
+    scene->prevcount = scene->count;
 
     if (myGameManager.quitRequest == SDL_TRUE) {
         endFlag = SDL_TRUE;
@@ -51,7 +54,12 @@ int mainScene(void)
             foreach(node , scene->cars){
                 Car *car = (Car*)node->data;
                 if (car->shotFlag == SDL_TRUE){
-                    fireGun(car , car->gun);
+                    if(fireGun(car , car->gun)){
+                        Audio_PlaySE_3D(
+                            gunShotSeTable[car->gun->kind],
+                            car->center
+                        );
+                    }
                 }
             }
         }
@@ -78,6 +86,7 @@ int mainScene(void)
 
     draw(scene->camera);
 
+    updateSound(scene);
     
     //printf("next point : %f , %f , %f\n" , scene->myCar->nextCheckPoint->coord.x , scene->myCar->nextCheckPoint->coord.y , scene->myCar->nextCheckPoint->coord.z);
     //printf("順位: %d\n" , scene->myCar->place);
@@ -153,6 +162,8 @@ int setupScene(void)
     //createRectangler((Vec3f){-10.0f,1.9f,-12.8f} , (Vec3f){5.7f,0.5f,1.9f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 13 , 0 , scene->polygonList);
     //createRectangler((Vec3f){-18.0f,0.1f,-12.3f} , (Vec3f){9.0f,0.5f,2.4f} , (Vec3f){0.0f,0.0f,1.0f} , 0 , 13 , 0 , scene->polygonList);
 
+    scene->bgmStarted = SDL_FALSE;
+    scene->countdownStarted = SDL_FALSE;
 
 
 
@@ -228,4 +239,17 @@ void updateCar_c(void)
         car->preCenter = car->center;
     }
     SDL_DestroyMutex(m);
+}
+
+void updateSound(MainScene *scene)
+{
+    if (scene->prevcount != 3 && scene->count == 3) {
+        Audio_PlaySE(SE_COUNTDOWN);
+    }
+
+    if (scene->count == 0 && scene->bgmStarted == SDL_FALSE) {
+        Audio_PlayBGM(BGM_MAIN);
+        scene->bgmStarted = SDL_TRUE;
+    }
+
 }

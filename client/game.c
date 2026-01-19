@@ -16,7 +16,6 @@ int gameLoop(void)
 
     SDL_Thread *delayThre = SDL_CreateThread(mainLoopDelay , "mainLoopDelay" , NULL);
 
-    Audio_PlayBGM(sceneBgmTable[myGameManager.sceneID]);
 
     switch (myGameManager.sceneID)
     {

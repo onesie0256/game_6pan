@@ -109,12 +109,6 @@ typedef struct {
 
 }UI;
 
-static const BgmID sceneBgmTable[Scene_Max] = {
-    [Scene_Title]  = BGM_TITLE,
-    [Scene_Wait]   = BGM_TITLE,
-    [Scene_Main]   = BGM_MAIN,
-    [Scene_Result] = BGM_RESULT,
-};
 
 /* 3DEutil.c */
 int initWindow(char *title);
@@ -126,13 +120,3 @@ void drawBillboard(Vec3f pos, float width, float height, GLuint textureID);
 void displayBillboards(void);
 void initBillboard(void);
 void displayBillboards(void);
-
-/* audio.c */
-int  Audio_Init(void);
-void Audio_Quit(void);
-void Audio_OnSceneChanged(uint8_t newScene);
-void Audio_PlayBGM(BgmID id);
-void Audio_StopBGM(void);
-void Audio_FadeOutBGM(int ms);
-
-void Audio_PlaySE(int seID);
