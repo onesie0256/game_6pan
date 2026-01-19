@@ -308,6 +308,101 @@ void UI_updateWaitSurface(WaitScene *waitScene)
 		dst.h = img_h;
 		SDL_BlitScaled(weaponImage, NULL, myGameManager.UI, &dst);
 		SDL_FreeSurface(weaponImage);
+		}
+
+	//画面中央（画像下）:　武器のパラメータを表示
+	
+		int damage = 0; //攻撃力
+		int rapid = 0; //連射速度
+		int BulletNum = 0; //弾数
+		int ammoSpeed = 0; //弾速
+
+		// 武器ごとのパラメータ設定(表示用)
+		switch(index) {
+			case 0: // Pistol
+				damage = 15; rapid = 8; BulletNum = 10; ammoSpeed = 30; break;
+			case 1: // Shotgun
+				damage = 20; rapid = 4; BulletNum = 5; ammoSpeed = 30; break;
+			case 2: // Sniper
+				damage = 80; rapid = 1; BulletNum = 3; ammoSpeed = 40; break;
+		}
+
+		int bar_w_max = 600;
+		int bar_h = 50;
+		int start_y = (myGameManager.windowH / 7 + 40) + 400 + 30; 
+		int center_x = myGameManager.windowW / 2 + 50;
+		
+		//攻撃力
+		if (myGameManager.fonts[2]) {
+			SDL_Surface *t = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "攻撃力", black);
+			if (t) {
+				SDL_Rect dst = {center_x - bar_w_max/2 - t->w - 20, start_y, t->w, t->h};
+				SDL_BlitSurface(t, NULL, myGameManager.UI, &dst);
+				SDL_FreeSurface(t);
+			}
+		}
+		SDL_Rect bg = {center_x - bar_w_max/2, start_y + 5, bar_w_max, bar_h};
+		SDL_FillRect(myGameManager.UI, &bg, SDL_MapRGB(myGameManager.UI->format, 200, 200, 200));
+		
+		SDL_Rect fg = {center_x - bar_w_max/2, start_y + 5, (int)(bar_w_max * (damage / 100.0)), bar_h};
+		SDL_FillRect(myGameManager.UI, &fg, SDL_MapRGB(myGameManager.UI->format, 0, 0, 0));
+
+		start_y += 60;
+
+		//連射速度
+		if (myGameManager.fonts[2]) {
+			SDL_Surface *t = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "連射速度", black);
+			if (t) {
+				SDL_Rect dst = {center_x - bar_w_max/2 - t->w - 20, start_y, t->w, t->h};
+				SDL_BlitSurface(t, NULL, myGameManager.UI, &dst);
+				SDL_FreeSurface(t);
+			}
+		}
+		bg.y = start_y + 5;
+		SDL_FillRect(myGameManager.UI, &bg, SDL_MapRGB(myGameManager.UI->format, 200, 200, 200));
+		
+		fg.y = start_y + 5;
+		fg.w = (int)(bar_w_max * (rapid / 100.0));
+		SDL_FillRect(myGameManager.UI, &fg, SDL_MapRGB(myGameManager.UI->format, 0, 0, 0));
+	
+		start_y += 60;
+
+		//弾速
+		if (myGameManager.fonts[2]) {
+			SDL_Surface *t = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "弾速", black);
+			if(t) {
+				SDL_Rect dst = {center_x - bar_w_max/2 -t->w -20, start_y, t->w, t->h};
+				SDL_BlitSurface(t, NULL, myGameManager.UI, &dst);
+				SDL_FreeSurface(t);
+			}
+		}
+		bg.y = start_y + 5;
+		SDL_FillRect(myGameManager.UI, &bg, SDL_MapRGB(myGameManager.UI->format, 200, 200, 200));
+		
+		fg.y = start_y + 5;
+		fg.w = (int)(bar_w_max * (ammoSpeed / 100.0));
+		SDL_FillRect(myGameManager.UI, &fg, SDL_MapRGB(myGameManager.UI->format, 0, 0, 0));
+	
+		start_y += 60;
+
+		//弾数
+		if (myGameManager.fonts[2]) {
+			SDL_Surface *t = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "弾数", black);
+			char bulletText[16];
+			snprintf(bulletText, sizeof(bulletText), "%d", BulletNum); 
+
+			SDL_Surface *num = TTF_RenderUTF8_Blended(myGameManager.fonts[2], bulletText, black);
+			if (num) {
+				SDL_Rect numDst = {center_x - bar_w_max/2 + 10, start_y, num->w, num->h};
+				SDL_BlitSurface(num, NULL, myGameManager.UI, &numDst);
+				SDL_FreeSurface(num);
+
+				if (t) {
+					SDL_Rect dst = {center_x - bar_w_max/2 - t->w - 20, start_y, t->w, t->h};
+					SDL_BlitSurface(t, NULL, myGameManager.UI, &dst);
+					SDL_FreeSurface(t);
+				}
+			}
 	}
 
 	//画面右下: 「通信待機中．．．」を表示
