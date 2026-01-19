@@ -30,32 +30,29 @@ int waitScene(void)
             if (waitSceneState.selectedWeaponIndex < 0) {
                 waitSceneState.selectedWeaponIndex = WEAPON_TYPE_MAX - 1; // 末尾にループ
             }
+
+            Audio_PlaySE(SE_CURSOR);
+
         }
         
         if (isKeyDowned(K_RIGHT) == SDL_TRUE) {
             //右キー
             waitSceneState.selectedWeaponIndex++;
             waitSceneState.selectedWeaponIndex %= WEAPON_TYPE_MAX; // 先頭にループ
+
+            Audio_PlaySE(SE_CURSOR);
+            
         }
                 
         if (isKeyDowned(K_ENTER) == SDL_TRUE) {
+            myGameManager.sceneID = Scene_Main;
             running = 0;  //メイン画面へ
+            Audio_PlaySE(SE_START);
         } 
 
         UI_updateWaitSurface(&waitSceneState);
 
         draw(NULL);
-            
-
-        if (isKeyDowned(K_ENTER) == SDL_TRUE){
-            myGameManager.sceneID = Scene_Main;
-            running = 0;
-        }
-
-        if (isKeyDowned(K_ENTER) == SDL_TRUE){
-            myGameManager.sceneID = Scene_Main;
-            running = 0;
-        }
 
         #ifdef USE_JOY
 

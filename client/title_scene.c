@@ -36,6 +36,9 @@ int titleScene(void)
 	}
 	else {if (flag == 0 && isKeyDowned(K_ENTER)) {
 			flag = 1;
+
+			Audio_PlaySE(SE_START);
+
 			SDL_SetHint(SDL_HINT_IME_INTERNAL_EDITING , "1");
 			//SDL_SetHint("SDL_IME_SHOW_UI" , "1");
 			SDL_Rect rect = (SDL_Rect){0,0,myGameManager.windowH,myGameManager.windowW};
@@ -66,6 +69,7 @@ int titleScene(void)
 		if (isKeyDowned(K_ENTER)){
 			SDL_StopTextInput();
 			myGameManager.sceneID = Scene_Wait;
+			Audio_PlaySE(SE_START);
 			return 1;
 		}
 	}
