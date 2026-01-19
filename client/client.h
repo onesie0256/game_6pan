@@ -25,7 +25,6 @@ typedef struct course_t Course;
 struct checkPoint_t;
 typedef struct checkPoint_t CheckPoint;
 
-
 /**
  * @brief タイトルシーンの状態管理 
  */
