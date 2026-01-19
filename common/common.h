@@ -35,6 +35,7 @@
 #define COMMAND_CLIENT_DATA 'c' //クライアントの情報のデータ
 #define COMMAND_ACK         'A' //ACKコマンド
 #define COMMAND_COUNT       'D' //スタート時のカウントダウン
+#define COMMAND_RESULT      'R' //リザルトコマンド(サーバー->クライアント)
 
 
 
@@ -192,7 +193,7 @@ typedef enum{
     Scene_Title,      //タイトル画面
     Scene_Wait,       //待機画面
     Scene_Main,       //ゲーム画面
-    Scene_Result,
+    Scene_Result,     //リザルト画面
     Scene_Max
 }SceneKinds;
 
@@ -220,10 +221,15 @@ typedef struct {
     char name[MYNAME_MAX];
 }ClientData;
 
+typedef struct {
+    uint8_t rank;
+}ResultData;
+
 typedef union {
     InputData inputData;
     CarInfo carInfo;
     ClientData clientData;
+    ResultData resultData;
 }NetworkContainer_u;
 
 
@@ -337,6 +343,13 @@ typedef struct course_t{
 }Course;
 
 /**
+ * @brief リザルトシーンの状態管理
+ */
+typedef struct {
+    int rank; // 順位
+} ResultScene;
+
+/**
  * @brief メインゲームのシーン
  */
 typedef struct {
@@ -406,6 +419,7 @@ void updatePlace(void);
 
 /* main_scene.c */
 int mainScene(void);
+int destroyScene(void);
 
 
 extern GameManager myGameManager;
