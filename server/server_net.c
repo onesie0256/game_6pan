@@ -24,7 +24,7 @@ static int clientId = 0;
 static NetworkContainer inputBuffer[MAX_Clients]; // 各クライアントの入力データ
 static int inputReceived[MAX_Clients] = {0};            // 受信したかどうか
 //void packInputData(InputData *data , );
-void unpackInputData(uint16_t key , uint16_t joy , uint8_t id);
+void unpackInputData(uint16_t key , uint16_t joy , uint8_t id , float stickX , float stickY);
 void packCarInfo(Car *car , CarInfo *data);
 void sendCarInfo(void);
 void sendACK(void);
@@ -131,7 +131,9 @@ int control_requests() {
             
             inputReceived[id] = 1;    // 受信済フラグ
         }
-        unpackInputData(data.container.inputData.keyInputs , data.container.inputData.joyKeyInputs , data.id);
+        unpackInputData(data.container.inputData.keyInputs , data.container.inputData.joyKeyInputs , data.id , data.container.inputData.stickX , data.container.inputData.stickY);
+
+        
         MainScene *scene = (MainScene *)myGameManager.scene;
         scene->sendInputDataPlayerNum++;
 
@@ -276,7 +278,7 @@ void terminate_server(void) {
   exit(0);
 }
 
-void unpackInputData(uint16_t key , uint16_t joy , uint8_t id)
+void unpackInputData(uint16_t key , uint16_t joy , uint8_t id , float stickX , float stickY)
 {
   //前フレームの状態を保存
       for (int i = 0; i < KEY_MAX; i++) {
@@ -298,6 +300,9 @@ void unpackInputData(uint16_t key , uint16_t joy , uint8_t id)
         data.joyKeyInputs >>= 1;
         myGameManager.clients[id].joyBotton[i] = (joy & 1);
       }
+
+      myGameManager.clients[id].stickX = stickX;
+      myGameManager.clients[id].stickY = stickY;
       #endif
 }
 

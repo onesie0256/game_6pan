@@ -36,6 +36,8 @@ void createThread(void)
 
     #ifdef USE_JOY
 
+    if (myGameManager.jc == NULL)
+        return;
     //スレッド作成
     myGameManager.joy_thread = SDL_CreateThread(joy_func, "joy_thread", NULL); // joy_threadを作成し、スレッド関数joy_funcを実行（引数なし）
     
@@ -279,11 +281,25 @@ int joy_func(void *args)
             myGameManager.joyBotton[JOY_X] = SDL_FALSE;
         }      
         
-        if (myGameManager.jc.button.btn.X){
+        if (myGameManager.jc.button.btn.Y){
             myGameManager.joyBotton[JOY_Y] = SDL_TRUE;
         }
         else {
             myGameManager.joyBotton[JOY_Y] = SDL_FALSE;
+        }  
+
+        if (myGameManager.jc.button.btn.SL_r){
+            myGameManager.joyBotton[JOY_SL] = SDL_TRUE;
+        }
+        else {
+            myGameManager.joyBotton[JOY_SL] = SDL_FALSE;
+        }  
+
+        if (myGameManager.jc.button.btn.SR_r){
+            myGameManager.joyBotton[JOY_SR] = SDL_TRUE;
+        }
+        else {
+            myGameManager.joyBotton[JOY_SR] = SDL_FALSE;
         }  
 
         //ジョイコンの傾き

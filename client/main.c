@@ -4,6 +4,7 @@ GameManager myGameManager;
 
 SDL_bool init(void);
 void loadModels(void);
+int showJoyconErr(void);
 
 static uint16_t port = 50100;
 static char clientServerName[MAX_LEN_NAME];
@@ -127,13 +128,27 @@ SDL_bool init(void)
         return SDL_FALSE;
     }
 
+    
+
     #ifdef USE_JOY
+
+    CONNECT_JOY:
     
     if (joycon_open(&myGameManager.jc , JOYCON_R) != 0){
-        printf("failed to open Joy-Con");
-        SDL_DestroyWindow(window); // ウィンドウを破棄
-        SDL_Quit(); // SDLを終了
-        return 1; // プログラム終了
+        int flag = showJoyconErr();
+
+        if (flag == 0){
+            goto CONNECT_JOY;
+        }
+        else if (flag == 1){
+            myGameManager.jc = NULL;
+        }
+        else if (flag == 2){
+            SDL_Quit();
+            TTF_Quit();
+            IMG_Quit();
+            return -1;
+        }
     }
     #endif
 
@@ -198,4 +213,39 @@ void loadModels(void)
   createObjEX_withTex(&myGameManager.models[GunKinds_Max+9] , &myGameManager.models[GunKinds_Max] , "assets/models/white.png");
   //printf("pistl:: v:%d , n:%d , t:%d\nva:%d , na:%d , ta:%d\n" , myGameManager.models[Pistol].vertNum , myGameManager.models[Pistol].normalNum , myGameManager.models[Pistol].texCoordNum , myGameManager.models[Pistol].vertAryNum , myGameManager.models[Pistol].normAryNum , myGameManager.models[Pistol].texCoordAryNum);
 
+}
+
+
+int showJoyconErr(void)
+{
+  const SDL_MessageBoxButtonData buttons[] = {
+    {0, 0 , "try connect again"},
+    {0, 0 , "continue without joycon"},
+    {0, 0 , "close game"}
+  };
+
+  const SDL_MessageBoxColorScheme colorScheme = {
+    {
+      {255, 255 , 255}, //背景色
+      {0, 0 , 0},       //テキスト色
+      {0, 0 , 0},       //ボタンのボーダー
+      {255, 255 , 255},       //ボタンの背景色
+      {220, 220 , 220}  //ボタンのテキスト色（選択時）
+    }
+    };
+
+    const SDL_MessageBoxData messageBoxData = {
+      SDL_MESSAGEBOX_ERROR,
+      NULL,
+      "3Dバトルガンカート:ジョイコン接続エラー",
+      "failed to connect Joy-Con",
+      SDL_arraysize(buttons),
+      buttons,
+      &colorScheme
+    };
+
+    int bottonID;
+    SDL_ShowMessageBox(&messageBoxData , &bottonID);
+
+  return bottonID;
 }
