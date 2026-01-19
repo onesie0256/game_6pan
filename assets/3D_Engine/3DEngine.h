@@ -45,16 +45,22 @@ void destroyList(List *list);
 
 /* quaternion.c */
 Quaternion quaternion_identity(void);
+Quaternion quaternion_inverse(Quaternion q);
 Quaternion quaternion_from_axis_angle(Vec3f axis, float angle_deg);
 Quaternion quaternion_multiply(Quaternion q1, Quaternion q2);
 Quaternion quaternion_normalize(Quaternion q);
 Vec3f quaternion_rotate_vector(Vec3f v, Quaternion q);
+Vec3f quaternion_rotate_vector_left(Vec3f v, Quaternion q);
 Vec3f quaternion_to_euler(Quaternion q);
 Vec3f euler_from_vectors(Vec3f v1, Vec3f v2);
 Vec3f rotateVecWithQuaternion(Vec3f v , float angle , Vec3f axis);
+Vec3f rotateVecWithQuaternion_left(Vec3f v , float angle , Vec3f axis);
 
 /* fileIO.c */
 SDL_bool loadOBJ(const char* obj_filename , const char* texture_filename , Obj *obj);
+SDL_bool loadOBJ_collison(const char* obj_filename ,  List *list);
+SDL_bool loadObjEX(const char* obj_filename ,  ObjEX *obj);
+
 
 /* polygone.c */
 Polygon* createRectangler(Vec3f coord , Vec3f size , Vec3f color , int pitch , int roll , int yaw , List *list);
@@ -74,7 +80,15 @@ void displayDisc(Disc *disc);
 void displayCylinder(Cylinder *cylinder);
 void moveRectacgler(Rectangler *rectangler , Vec3f velocity , float dt);
 void rotateRectacglerTo(Rectangler *rectangler , int pitch , int roll , int yaw , Vec3f center);
+void rotateRectacglerQuaternion(Rectangler *rectangler , Quaternion q , Vec3f center);
+void rotateRectacglerQuaternion_left(Rectangler *rectangler , Quaternion q , Vec3f center);
 void destroyPolygon(Polygon *polygon);
+void upadteRectangler(Rectangler *rectangler);
+void createObjEX(ObjEX *obj , const char* obj_filename , const char* texture_filename , List *list);
+void createObjEX_nontex(ObjEX *obj , const char* obj_filename , List *list);
+void createObjEX_withTex(ObjEX *dst , ObjEX *src , const char* texture_filename);
+void displayObjEX(ObjEX *obj , ObjInfo *objInfo);
+ObjInfo* createObjInfo(Vec3f coordOffset , Vec3f scale , int pitchOffset , int rollOffset , int yawOffset);
 
 /* space.c */
 float lengthPointToPlaneAndH(Vec3f *H, Vec3f v , Vec3f n , Vec3f p);
@@ -91,7 +105,8 @@ void rotateCamera(Camera *camera, float pitch_delta, float yaw_delta);
 //void updateCamera(Camera *camera);
 
 /* collision.c */
-void collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity);
+SDL_bool collision(List *list , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity);
+SDL_bool collision_n(ListNode *node , Rectangler *rectangler , Vec3f preCoordOfVertex[] , Vec3f *velocity , int count);
 
 /* list */
 /**

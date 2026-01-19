@@ -20,13 +20,14 @@ typedef unsigned int u_int;
 #define MAX_LEN_ADDR 32
 #define MAX_LEN_MESSAGE 256
 #define BROADCAST -1
-#define QUIT_COMMAND 'Q'
+
 
 static int n_clients; //クライアント数
 static int my_id; //自分のID
 static int sock; //ソケット
 static int num_sock; // 
 static fd_set mask; 
+static struct sockaddr_in sv_addr; //サーバアドレス構造体
 //static Client clients[MAX_Clients]; //クライアント情報
 
 void setup_client(char *serverName, uint16_t port); 
@@ -34,9 +35,6 @@ int control_requests();
 void terminate_client();
 void send_input_data(void);
 void receive_input_data(void);
-void send_gun_data(void);
-void input_gun_data(void);
-void send_fire_data(void);
 void send_Quit(void);
 
 static int in_command(void);
@@ -45,15 +43,12 @@ static void send_data(void *, int);
 static int receive_data(void *, int);
 static void handle_error(char *);
 
-// 全クライアント分の武器データを受信した数
-int gunReadyCount = 0;
-
+void unpackCar(CarInfo data , uint8_t id);
 
 //クライアント起動後の動き
 void setup_client(char *server_name, uint16_t port) {
 
   struct hostent *server; //サーバ情報
-  struct sockaddr_in sv_addr; //サーバアドレス構造体
 
 //起動直後　Trying to connect serverとポート番号を表示
   fprintf(stderr, "Trying to connect server %s (port = %d).\n", server_name, port);
@@ -62,7 +57,7 @@ void setup_client(char *server_name, uint16_t port) {
   }
 
   //ソケット作成
-  sock = socket(AF_INET, SOCK_STREAM, 0);
+  sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {//ソケット作成失敗
     handle_error("socket()");
   }
@@ -72,10 +67,13 @@ void setup_client(char *server_name, uint16_t port) {
   sv_addr.sin_port = htons(port);//ポート番号をネットワークバイトオーダーに変換
   sv_addr.sin_addr.s_addr = *(u_int *) server ->h_addr_list[0];//IPアドレス設定
 
-  //サーバへ接続要求
-  if (connect(sock, (struct sockaddr *)&sv_addr, sizeof(sv_addr)) != 0) {
-    handle_error("connect()");
-  }
+  NetworkContainer data;
+  memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
+  data.order = COMMAND_SYN; //接続要求
+
+  send_data(&data, sizeof(NetworkContainer)); //データをサーバへ送信
+
+
 
   fprintf(stderr, "Waiting for other clients...\n");
   //クライアント数を受信
@@ -88,37 +86,10 @@ void setup_client(char *server_name, uint16_t port) {
   receive_data(&my_id, sizeof(int));
   fprintf(stderr, "Your ID = %d.\n", my_id);
   myGameManager.myID = my_id;
-  
-
-  num_sock = sock + 1; //最大ソケット番号＋1を設定
-  FD_ZERO(&mask); //マスクを初期化
-  FD_SET(0, &mask); //標準入力を監視対象に設定
-  FD_SET(sock, &mask);//ソケットを監視対象に設定
-  for (int i = 0; i < n_clients; i++) {
-    myGameManager.clients[i].gunId = Pistol;     // デフォルト
-    myGameManager.clients[i].gunReady = SDL_FALSE;
-}
-
 }
 
 int control_requests () {
-  fd_set read_flag = mask; //コピー作成
-
-  struct timeval timeout;
-  timeout.tv_sec = 0;
-  timeout.tv_usec = 30;//30マイクロ秒のタイムアウト設定
-
-  if (select(num_sock, (fd_set *)&read_flag, NULL, NULL, &timeout) == -1) {
-    handle_error("select()");
-  }
-
-  int result = 1;
-  if (FD_ISSET(0, &read_flag)) { //標準入力からの入力がある場合
-     result = in_command(); //コマンド処理
-  } else if (FD_ISSET(sock, &read_flag)) { //ソケットからの入力がある場合
-    result = exe_command(); //コマンド実行
-  }
-
+    int result = exe_command(); //コマンド実行
   return result;
 }
 
@@ -127,22 +98,22 @@ void send_input_data(void) {
   memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
 
   data.id = my_id; //自分のIDを設定
-  data.order = 'I'; //入力情報コマンド
-  data.keyInputs = 0;
+  data.order = COMMAND_INPUT_DATA; //入力情報コマンド
+  data.container.inputData.keyInputs = 0;
   for (int i = 0; i < KEY_MAX; i++) {
     if (myGameManager.keyNow[i]) {
-      data.keyInputs |= 1;//ビット列に圧縮
+      data.container.inputData.keyInputs |= 1;//ビット列に圧縮
     }
-    data.keyInputs <<= 1;
+    data.container.inputData.keyInputs <<= 1;
   }
   
-  data.joyKeyInputs = 0;
+  data.container.inputData.joyKeyInputs = 0;
   #ifdef USE_JOY
   for (int i = 0; i < JOY_KEY_MAX; i++) {
     if (myGameManager.joyBotton[i]) {
-      data.joyKeyInputs |= 1;//ビット列に圧縮
+      data.container.inputData.joyKeyInputs |= 1;//ビット列に圧縮
     }
-    data.joyKeyInputs <<= 1;
+    data.container.inputData.joyKeyInputs <<= 1;
   }
   data.stickX = myGameManager.StickX;
   data.stickY = myGameManager.StickY;
@@ -150,7 +121,7 @@ void send_input_data(void) {
   
   //データをサーバへ送信
   send_data(&data, sizeof(NetworkContainer));
-  printf("send input data\n");
+  //printf("send input data\n");
 }   
 
 void receive_input_data(void) {
@@ -175,42 +146,15 @@ void receive_input_data(void) {
 
     // 2. 次に今フレームの状態を復元する
     for (int i = KEY_MAX -1 ; i >= 0 ; i--) {
-        data.keyInputs >>= 1;
-        myGameManager.clients[data.id].keyNow[i] = (data.keyInputs & 1);
+        data.container.inputData.keyInputs >>= 1;
+        myGameManager.clients[data.id].keyNow[i] = (data.container.inputData.keyInputs & 1);
     }
     #ifdef USE_JOY
     for (int i = JOY_KEY_MAX - 1; i >= 0; i--) {
-        data.joyKeyInputs >>= 1;
-        myGameManager.clients[data.id].joyBotton[i] = (data.joyKeyInputs & 1);
+        data.container.inputData.joyKeyInputs >>= 1;
+        myGameManager.clients[data.id].joyBotton[i] = (data.container.inputData.joyKeyInputs & 1);
     }
     #endif
-  }
-}
-
-void send_gun_data(void)
-{
-  NetworkContainer data;
-  memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
-
-  data.id = my_id; //自分のIDを設定
-  data.order = 'G'; //銃情報コマンド
-  data.option = myGameManager.gunId; // 銃の種類をセット
-  
-  //データをサーバへ送信
-  send_data(&data, sizeof(NetworkContainer));
-  printf("send gun data\n");
-}
-
-void input_gun_data(void)
-{
-  NetworkContainer data;
-  memset(&data, 0, sizeof(NetworkContainer));
-  //ソケットからデータ受信
-  receive_data(&data, sizeof(data));
-
-  //受信した銃データをクライアント情報に反映
-  if (data.id < n_clients) {
-     myGameManager.clients[data.id].gunId = data.option; // 銃の種類をセット
   }
 }
 
@@ -223,8 +167,8 @@ static int in_command() {
 
   switch (com) {
     //Qと入力されたらQUIT_COMMANDを送信
-  case QUIT_COMMAND:
-    data.order = 'Q';
+  case COMMAND_QUIT:
+    data.order = COMMAND_QUIT;
     data.id = my_id;
     send_data(&data, sizeof(NetworkContainer)); //データをサーバへ送信
     break;
@@ -252,7 +196,7 @@ static int exe_command() {
 //コマンドに応じた処理
   switch (data.order) {
 
-  case 'I': //入力情報の場合
+  case COMMAND_INPUT_DATA: //入力情報の場合
     //受信した入力データを処理
     if (data.id < n_clients) {
       printf("recieve input data from id:%d\n" , data.id);
@@ -268,49 +212,58 @@ static int exe_command() {
       
       //現在のフレームの状態を復元
       for (int i = KEY_MAX - 1; i >= 0; i--) {
-        data.keyInputs >>= 1;
-        myGameManager.clients[data.id].keyNow[i] = (data.keyInputs & 1);
+        data.container.inputData.keyInputs >>= 1;
+        myGameManager.clients[data.id].keyNow[i] = (data.container.inputData.keyInputs & 1);
       }
       #ifdef USE_JOY
       for (int i = JOY_KEY_MAX - 1; i >= 0; i--) {
-        data.joyKeyInputs >>= 1;
-        myGameManager.clients[data.id].joyBotton[i] = (data.joyKeyInputs & 1);
+        data.container.inputData.joyKeyInputs >>= 1;
+        myGameManager.clients[data.id].joyBotton[i] = (data.container.inputData.joyKeyInputs & 1);
       }
       #endif
-      if (myGameManager.sceneID == Scene_Main && myGameManager.scene != NULL) {
-
       MainScene *scene = (MainScene *)myGameManager.scene;
       scene->sendInputDataPlayerNum++;
-      }
     }
-    break;
-
- case 'G':
-    if (data.id < n_clients) {
-
-        // gunId保存
-        myGameManager.clients[data.id].gunId = data.option;
-
-        // 初めて受信したプレイヤーのみカウント
-        if (myGameManager.clients[data.id].gunReady == SDL_FALSE) {
-            myGameManager.clients[data.id].gunReady = SDL_TRUE;
-            gunReadyCount++;
-        }
-
-        // 全員分そろったら MainScene へ
-        if (gunReadyCount == myGameManager.playerNum) {
-            myGameManager.sceneID = Scene_Main;
-    }
-    }
+    result = 1;
     break;
 
 
-
-  case QUIT_COMMAND: //Qの場合
+  case COMMAND_QUIT: //Qの場合
     fprintf(stderr, "client[%d] sent quit order.\n", data.id);
     myGameManager.quitRequest = SDL_TRUE;
     result = 0; //終了
     break;
+
+  case COMMAND_CARINFO: //Cの場合
+  {
+    unpackCar(data.container.carInfo , data.id);
+    MainScene *scene = (MainScene *)myGameManager.scene;
+    if (scene == NULL){
+      printf("exe_command: failed to get scene\n");
+      break;
+    }
+  
+    scene->sendCarInfoPlayerNum++;
+  }
+    break;
+
+  case COMMAND_ACK:
+    myGameManager.ackRequest++;
+    break;
+  
+  case COMMAND_CLIENT_DATA:
+    myGameManager.clients[data.id].gunId = data.container.clientData.gunId;
+    strncpy(myGameManager.clients[data.id].name , data.container.clientData.name , MYNAME_MAX);
+    //printf("id:%d gun id:%d\n" , data.id , myGameManager.clients[data.id].gunId);
+    break;
+  
+  case COMMAND_COUNT:
+  {
+    MainScene *scene = (MainScene *)myGameManager.scene;
+    scene->count = data.container.clientData.gunId;
+  }
+    break;
+
 
   default: //無効なコマンドの場合
     fprintf(stderr, "exe_command(): %c is not a valid command.\n", data.order);
@@ -326,7 +279,7 @@ void send_Quit(void)
     memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
 
     data.id = my_id; //自分のIDを設定
-    data.order = QUIT_COMMAND; //入力情報コマンド
+    data.order = COMMAND_QUIT; //入力情報コマンド
 
     send_data(&data, sizeof(NetworkContainer));
 }
@@ -342,7 +295,7 @@ static void send_data(void *data, int size) {
   int bytes_sent = 0;
   int result;
   while (bytes_sent < size) {
-    result = write(sock, (char *)data + bytes_sent, size - bytes_sent);
+    result = sendto(sock, (char *)data + bytes_sent, size - bytes_sent , 0 , (struct sockaddr *)&sv_addr, sizeof(sv_addr));
     if (result < 0) {
       handle_error("write()");
       return; // エラーが発生したら中断
@@ -361,7 +314,7 @@ static int receive_data(void *data, int size) {
   int bytes_received = 0;
   int result;
   while (bytes_received < size) {
-    result = read(sock, (char *)data + bytes_received, size - bytes_received);
+    result = recvfrom(sock, (char *)data + bytes_received, size - bytes_received , 0 , NULL, NULL);
     if (result < 0) {
       // EAGAIN/EWOULDBLOCKは、非ブロッキングソケットではエラーではない
       if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -395,4 +348,53 @@ static void handle_error(char *message) {
 void terminate_client() {
   fprintf(stderr, "Connection is closed.\n");
   close(sock); //ソケットクローズ
+}
+
+void unpackCar(CarInfo data , uint8_t id)
+{
+  MainScene *scene = myGameManager.scene;
+  if (scene == NULL){
+    printf("unpackCar: failed to get scene\n");
+    return;
+  }
+  if (scene->cars == NULL){
+    printf("unpackCar: failed to get cars\n");
+    return;
+  }
+
+  Car *car = getCarFromId(scene->cars , id);
+
+  if (car == NULL){
+    printf("unpackCar: failed to get car\n");
+    return;
+  }
+
+  car->shotFlag = data.param & 1;
+  car->isOnGround = data.param & 2;
+
+  car->center = (Vec3f){data.carX , data.carY , data.carZ};
+  car->hp = data.HP;
+
+  car->q_pre = car->q;
+  car->q = data.q;
+}
+
+void waitUntilAck(void)
+{
+  while (myGameManager.ackRequest == 0)
+  {
+    ;
+  }
+  myGameManager.ackRequest = 0;
+}
+
+void send_gunId(void)
+{
+  NetworkContainer data;
+  memset(&data, 0, sizeof(NetworkContainer)); //データ初期化
+  data.order = COMMAND_GUN;
+  data.id = my_id;
+  data.container.clientData.gunId = myGameManager.gunId;
+  strncpy(data.container.clientData.name , myGameManager.myName , MYNAME_MAX);
+  send_data(&data, sizeof(data));
 }

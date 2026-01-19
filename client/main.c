@@ -3,6 +3,7 @@
 GameManager myGameManager;
 
 SDL_bool init(void);
+void loadModels(void);
 
 static uint16_t port = 50100;
 static char clientServerName[MAX_LEN_NAME];
@@ -50,6 +51,8 @@ int main(int argc , char* argv[])
 
   if(!init()) return 1; //初期化
 
+  loadModels();
+
   setup_client(myGameManager.serverName, port);
   printf("connected server %s %d\n" , myGameManager.serverName , port);
 
@@ -67,6 +70,8 @@ int main(int argc , char* argv[])
   //終了処理
   // まず、ネットワーク処理を行っているスレッドが終了するのを待つ
   SDL_WaitThread(myGameManager.key_thread , NULL); 
+
+  SDL_WaitThread(myGameManager.net_thread , NULL);
   
   #ifdef USE_JOY
   // joy_threadも終了を待つ
@@ -99,6 +104,10 @@ SDL_bool init(void)
 {
     //初期化
     myGameManager.UI = NULL;
+
+    myGameManager.quitRequest = SDL_FALSE;
+    myGameManager.ackRequest = 0;
+
 
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0){
         printf("SDL_init error %s\n" , SDL_GetError());
@@ -170,4 +179,13 @@ SDL_bool init(void)
 
 
   return SDL_TRUE;
+}
+
+void loadModels(void)
+{
+  createObjEX(&myGameManager.models[Shotgun] , "assets/models/shotgun_o.obj" , "assets/models/shotgun.png" , NULL);
+  createObjEX(&myGameManager.models[Sniper] , "assets/models/sniper_o.obj" , "assets/models/sniper.png" , NULL);
+  createObjEX(&myGameManager.models[Pistol] , "assets/models/pistol_o.obj" , "assets/models/pistol.png" , NULL);
+  //printf("pistl:: v:%d , n:%d , t:%d\nva:%d , na:%d , ta:%d\n" , myGameManager.models[Pistol].vertNum , myGameManager.models[Pistol].normalNum , myGameManager.models[Pistol].texCoordNum , myGameManager.models[Pistol].vertAryNum , myGameManager.models[Pistol].normAryNum , myGameManager.models[Pistol].texCoordAryNum);
+
 }

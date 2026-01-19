@@ -27,6 +27,10 @@ int gameLoop(void)
         break;
     case Scene_Main:
         endFlag = mainScene();
+        break;
+    case Scene_Result:
+        endFlag = resultScene();
+        break;
     default:
         break;
     }

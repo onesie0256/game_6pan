@@ -4,7 +4,12 @@ void drawUI(void);
 int initWindow(char *title);
 void closeWindow(void);
 int draw(Camera *camera);
-void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2);
+GLuint loadTexture(const char* filename);
+GLuint loadTextureFromSurface(SDL_Surface *surface);
+void initBillboard(void);
+void displayBillboards(void);
+
+
 
 /**
  * @brief ウィンドウを初期化する
@@ -113,12 +118,13 @@ int draw(Camera *camera)
     //gluLookAt(camera->pos.x, camera->pos.y, camera->pos.z, center_pos.x, center_pos.y, center_pos.z, up_vec.x, up_vec.y, up_vec.z);
     gluLookAt(camera->pos.x, camera->pos.y, camera->pos.z, camera->center.x, camera->center.y, camera->center.z, 0.0, 1.0, 0.0);
 
-    if (myGameManager.sceneID == Scene_Main){
+    if (myGameManager.sceneID == Scene_Main && myGameManager.scene != NULL){
         MainScene *scene = (MainScene *)myGameManager.scene;
         displayPolygons(scene->polygonList);
         displayCars(scene->cars);
         displayAmmos();
-        displayPolygons(scene->course->checkPointPlaneList);
+        displayBillboards();
+        //displayPolygons(scene->course->checkPointPlaneList);
     }
 
 
@@ -210,162 +216,6 @@ void drawUI(void)
     glPopAttrib();
 }
 
-/**
- * @brief 2つ車間で衝突処理を行う
- * 
- * @param c1 車1
- * @param c2 車2
- * 
- * @return 衝突したらSDL_True,そうでないならSDL_False
- */
-SDL_bool collisionCar(Car *c1 , Car *c2)
-{
-    Rectangler *r1 = c1->collisionBox->data.rectangler;
-    Rectangler *r2 = c2->collisionBox->data.rectangler;
-
-    
-    Vec3f v = r2->vertex[0];
-    Vec3f n = r2->normals[0];
-
-
-    for (int i = 0 ; i < 8 ; i++){
-        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[0] , r2->vertex[1] , r2->vertex[2] , r2->vertex[3] , n)){
-            Vec3f H; float l;
-            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
-            Vec3f moveVec = vecMulSca(n , l);
-            moveRectacgler(r1 , moveVec , 1.0f);
-            calcCollisionCarVel(&c1->velocity , &c2->velocity);
-            return SDL_TRUE;
-        }
-    }
-
-    v = r2->vertex[1];
-    n = r2->normals[1];
-
-    for (int i = 0 ; i < 8 ; i++){
-        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[1] , r2->vertex[4] , r2->vertex[7] , r2->vertex[2] , n)){
-            Vec3f H; float l;
-            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
-            Vec3f moveVec = vecMulSca(n , l);
-            moveRectacgler(r1 , moveVec , 1.0f);
-            calcCollisionCarVel(&c1->velocity , &c2->velocity);
-            return SDL_TRUE;
-        }
-    }
-
-    v = r2->vertex[4];
-    n = r2->normals[2];
-
-    for (int i = 0 ; i < 8 ; i++){
-        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[4] , r2->vertex[5] , r2->vertex[6] , r2->vertex[7] , n)){
-            Vec3f H; float l;
-            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
-            Vec3f moveVec = vecMulSca(n , l);
-            moveRectacgler(r1 , moveVec , 1.0f);
-            calcCollisionCarVel(&c1->velocity , &c2->velocity);
-            return SDL_TRUE;
-        }
-    }
-
-    v = r2->vertex[5];
-    n = r2->normals[3];
-
-    for (int i = 0 ; i < 8 ; i++){
-        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[5] , r2->vertex[0] , r2->vertex[3] , r2->vertex[6] , n)){
-            Vec3f H; float l;
-            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
-            Vec3f moveVec = vecMulSca(n , l);
-            moveRectacgler(r1 , moveVec , 1.0f);
-            calcCollisionCarVel(&c1->velocity , &c2->velocity);
-            return SDL_TRUE;
-        }
-    }
-    
-    v = r2->vertex[3];
-    n = r2->normals[4];
-
-    for (int i = 0 ; i < 8 ; i++){
-        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[3] , r2->vertex[2] , r2->vertex[7] , r2->vertex[6] , n)){
-            Vec3f H; float l;
-            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
-            Vec3f moveVec = vecMulSca(n , l);
-            moveRectacgler(r1 , moveVec , 1.0f);
-            calcCollisionCarVel(&c1->velocity , &c2->velocity);
-            return SDL_TRUE;
-        }
-    }
-    
-
-    v = r2->vertex[0];
-    n = r2->normals[5];
-
-    for (int i = 0 ; i < 8 ; i++){
-        if (isPointOnPlane(c1->preCoordOfVertexs[i] , v , n) && !isPointOnPlane(r1->vertex[i] , v , n) && isPointOnPlane4(r1->vertex[i] , r2->vertex[0] , r2->vertex[5] , r2->vertex[4] , r2->vertex[1] , n)){
-            Vec3f H; float l;
-            l = lengthPointToPlaneAndH(&H , v , n , r1->vertex[i]);
-            Vec3f moveVec = vecMulSca(n , l);
-            moveRectacgler(r1 , moveVec , 1.0f);
-            calcCollisionCarVel(&c1->velocity , &c2->velocity);
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
-}
-
-/**
- * @brief リスト全ての車と衝突処理を行う
- * @param carList 車のリスト
- */
-void collisionCars(List *carList)
-{
-    ListNode *i;
-    foreach(i,carList){
-        ListNode *j;
-        foreach_(j , i){
-            Car *c1 = ((Car *)i->data);
-            Car *c2 = ((Car *)j->data);
-            collisionCar(c1 , c2);
-            collisionCar(c2 , c1);
-        }
-        
-    }
-}
-
-/**
- * @brief 車が別の車に当たった時の跳ね返りの速度を求める   
- * 
- * @param velocity1 車の速度ベクトル1
- * @param velocity2 車の速度ベクトル1
- * 
- * @return なし
- */
-void calcCollisionCarVel(Vec3f *v1 , Vec3f *v2)
-{
-    float e = 0.90;
-    float mass = 100.0f;
-
-    Vec3f v1_ , v2_;
-
-    v1_.x = (mass * v1->x + mass * v2->x + v2->x * e * mass - v1->x * e * mass) / (mass * 2);
-    v2_.x = -e * (v2->x - v1->x) + v1_.x;
-
-    v1_.y = (mass * v1->y + mass * v2->y + v2->y * e * mass - v1->y * e * mass) / (mass * 2);
-    v2_.y = -e * (v2->y - v1->y) + v1_.y;
-
-    v1_.z = (mass * v1->z + mass * v2->z + v2->z * e * mass - v1->z * e * mass) / (mass * 2);
-    v2_.z = -e * (v2->z - v1->z) + v1_.z;
-
-    *v1 = v1_;
-    *v2 = v2_;
-
-    /*
-    ci_v1.x = (ci->mass * ci_v0.x + cj->mass * cj_v0.x + cj_v0.x * e * cj->mass - ci_v0.x * e * cj->mass) / (ci->mass + cj->mass);
-        cj_v1.x = -e * (cj_v0.x - ci_v0.x) + ci_v1.x;
-
-    ci_v1.y = (ci->mass * ci_v0.y + cj->mass * cj_v0.y + cj_v0.y * e * cj->mass - ci_v0.y * e * cj->mass) / (ci->mass + cj->mass);
-    cj_v1.y = -e * (cj_v0.y - ci_v0.y) + ci_v1.y;
-    */
-}
 
 /**
  * @brief カメラを更新する
@@ -378,5 +228,231 @@ void updateCamera(Car *car , Camera *camera)
     Rectangler *r = car->collisionBox->data.rectangler;
 
     camera->center = car->center;
-    camera->pos = vecAdd(car->center , vecAdd((Vec3f){0.0f,2.0f,0.0f} , vecMulSca(car->direction , -3.0f)));
+    camera->pos = vecAdd(car->center , vecAdd((Vec3f){0.0f,0.6f,0.0f} , vecMulSca(car->direction , -1.5f)));
 }
+
+/**
+ * @brief テクスチャを読み込む
+ * @param filename ファイル名
+ * @return テクスチャID
+ */
+GLuint loadTexture(const char* filename)
+{
+    SDL_Surface *surfaceRaw = IMG_Load(filename);
+    if (!surfaceRaw) {
+        printf("IMG_Load error: %s\n", IMG_GetError());
+        return 0;
+    }
+
+    SDL_Surface *surface = SDL_ConvertSurfaceFormat(surfaceRaw, SDL_PIXELFORMAT_RGBA32, 0);
+    SDL_FreeSurface(surfaceRaw); // Don't need the raw surface anymore
+    if (!surface) {
+        printf("SDL_ConvertSurfaceFormat error: %s\n", SDL_GetError());
+        return 0;
+    }
+
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    GLenum format = (surface->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
+
+    SDL_FreeSurface(surface);
+
+    return textureID;
+}
+
+/**
+ * @brief サーフェスからテクスチャを生成する
+ */
+GLuint loadTextureFromSurface(SDL_Surface *surface)
+{
+    if (!surface) {
+        printf("%s: surface is NULL\n" , __func__);
+        return 0;
+    }
+
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    GLenum format = (surface->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
+
+    SDL_FreeSurface(surface);
+
+    return textureID;
+}
+
+// Template surface (background + name) for each player's billboard.
+static SDL_Surface *billboard_templates[MAX_Clients] = {NULL};
+SDL_Surface *makeHPBar(int hp);
+
+/**
+ * @brief ビルボードを描画する
+ * @param pos ビルボードの中心座標
+ * @param width 幅
+ * @param height 高さ
+ * @param textureID テクスチャID
+ */
+void drawBillboard(Vec3f pos, float width, float height, GLuint textureID)
+{
+    float modelview[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
+
+    // Extract the right and up vectors from the model-view matrix
+    // Note: OpenGL matrices are column-major.
+    Vec3f right = {modelview[0], modelview[4], modelview[8]};
+    Vec3f up = {modelview[1], modelview[5], modelview[9]};
+
+    // Calculate the four vertices of the billboard
+    Vec3f half_w_right = vecMulSca(right, width / 2.0f);
+    Vec3f half_h_up = vecMulSca(up, height / 2.0f);
+
+    Vec3f top_left     = vecAdd(vecSub(pos, half_w_right), half_h_up);
+    Vec3f top_right    = vecAdd(vecAdd(pos, half_w_right), half_h_up);
+    Vec3f bottom_right = vecSub(vecAdd(pos, half_w_right), half_h_up);
+    Vec3f bottom_left  = vecSub(vecSub(pos, half_w_right), half_h_up);
+
+
+    // Save OpenGL state
+    glPushAttrib(GL_ENABLE_BIT | GL_TEXTURE_BIT | GL_LIGHTING_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glDisable(GL_LIGHTING);
+    glDisable(GL_CULL_FACE); // Disable culling for billboards
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthMask(GL_FALSE); // Don't write to depth buffer
+    
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // Set color to white
+
+    glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f); glVertex3f(top_left.x, top_left.y, top_left.z);
+        glTexCoord2f(1.0f, 0.0f); glVertex3f(top_right.x, top_right.y, top_right.z);
+        glTexCoord2f(1.0f, 1.0f); glVertex3f(bottom_right.x, bottom_right.y, bottom_right.z);
+        glTexCoord2f(0.0f, 1.0f); glVertex3f(bottom_left.x, bottom_left.y, bottom_left.z);
+    glEnd();
+
+    // Restore OpenGL state
+    glPopAttrib();
+}
+
+// Placeholder for drawing all billboards in the scene
+void displayBillboards(void)
+{
+    MainScene *scene = (MainScene *)myGameManager.scene;
+    if (scene == NULL) 
+        return;
+
+    int i = 0;
+    ListNode *node;
+    foreach(node , scene->cars){
+
+        if (i == myGameManager.myID){
+            i++;
+            continue;
+        }
+
+        Car *car = (Car*)node->data;
+
+        SDL_Surface *composite = SDL_ConvertSurfaceFormat(billboard_templates[i], SDL_PIXELFORMAT_RGBA32, 0);
+        SDL_Surface *hpBar = makeHPBar(car->hp);
+
+        SDL_Rect hpBarDst = {composite->w/3, composite->h*4/5, hpBar->w, hpBar->h};
+        SDL_Rect hpBarSrc = {0, 0, hpBar->w, hpBar->h};
+
+        SDL_BlitSurface(hpBar, &hpBarSrc, composite, &hpBarDst);
+        
+        SDL_FreeSurface(hpBar);
+
+        float w = composite->w;
+        float h = composite->h;
+
+        GLuint textureID = loadTextureFromSurface(composite);
+
+        Vec3f pos = vecAdd(car->center , (Vec3f){0.0f,0.6f,0.0f});
+
+        drawBillboard(pos, w/1000, h/1000, textureID);
+        glDeleteTextures(1, &textureID);
+        i++;
+    }
+        
+}
+
+
+void initBillboard(void)
+{
+    SDL_Surface *billboardBack = NULL;
+
+    billboardBack = IMG_Load("assets/pictures/builbord_back_blue.png");
+
+    if (billboardBack == NULL){
+        printf("IMG_Load error: %s\n", IMG_GetError());
+        return;
+    }
+
+    SDL_Color black = {0, 0, 0, 255};
+
+    for (int i = 0; i < myGameManager.playerNum; i++) {
+        billboard_templates[i] = SDL_ConvertSurfaceFormat(billboardBack, SDL_PIXELFORMAT_RGBA32, 0);
+        SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], myGameManager.clients[i].name , black);
+        if (textSurface) {
+            SDL_Rect dst = {billboardBack->w/4, billboardBack->h*2/3, textSurface->w, textSurface->h };
+            SDL_BlitSurface(textSurface, NULL, billboard_templates[i], &dst);
+            SDL_FreeSurface(textSurface);
+        }
+    }
+
+    SDL_FreeSurface(billboardBack);
+}
+
+SDL_Surface *makeHPBar(int hp)
+{
+    float hp_percentage = hp / 100.0f; 
+	if (hp_percentage < 0) hp_percentage = 0;
+	if (hp_percentage > 1) hp_percentage = 1;
+
+	int bar_width = 250;
+	int bar_height = 25;
+
+    SDL_Surface *rtn = SDL_CreateRGBSurface(SDL_SWSURFACE, bar_width, bar_height, 32, 0x00ff0000 , 0x0000ff00 , 0x000000ff , 0xff000000);
+
+	//HPバーの背景(灰色)
+	SDL_Rect hp_bar_bg = { 0, 0, bar_width, bar_height };
+	SDL_FillRect(rtn, &hp_bar_bg, SDL_MapRGB(myGameManager.UI->format, 128, 128, 128));
+
+	//HPバーの前景(HP残量に応じて色が変わる)
+	Uint32 hp_bar_color;
+	if (hp_percentage <= 0.25f) {
+		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 255, 50, 50); //赤
+	} else if (hp_percentage <= 0.5f) {
+		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 255, 255, 50); //黄
+	} else {
+		hp_bar_color = SDL_MapRGB(myGameManager.UI->format, 50, 255, 50); //緑
+	}
+
+	SDL_Rect hp_bar_fg = { 0, 0, (int)(bar_width * hp_percentage), bar_height };
+    
+	SDL_FillRect(rtn, &hp_bar_fg, hp_bar_color);
+
+    return rtn;
+}
+
+

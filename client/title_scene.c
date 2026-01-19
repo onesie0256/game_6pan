@@ -5,6 +5,8 @@
 #include "client.h"
 #include <math.h>
 
+static int flag = 0;
+
 /**
  * @name titleScene
  * @brief タイトル画面のメインループ
@@ -27,32 +29,46 @@ int titleScene(void)
 	}
 
 	//イベント処理:Enter(Joy-conではX)で次シーンへ  
-		if (myGameManager.quitRequest == SDL_TRUE) {
-			setupFlag = SDL_TRUE;
-			SDL_Delay(100);
-			return 0; // ゲーム終了 
+	if (myGameManager.quitRequest == SDL_TRUE) {
+		setupFlag = SDL_TRUE;
+		SDL_Delay(100);
+		return 0; // ゲーム終了 
+	}
+	else {if (flag == 0 && isKeyDowned(K_ENTER)) {
+			flag = 1;
+			SDL_SetHint(SDL_HINT_IME_INTERNAL_EDITING , "1");
+			//SDL_SetHint("SDL_IME_SHOW_UI" , "1");
+			SDL_Rect rect = (SDL_Rect){0,0,myGameManager.windowH,myGameManager.windowW};
+			SDL_SetTextInputRect(&rect);
+			memset(myGameManager.myName , 0 , MYNAME_MAX);
+			SDL_StartTextInput();
+			titleState.flag = 1;
 		}
-		else{
-			if (isKeyDowned(K_ENTER)) {
-				myGameManager.sceneID = Scene_Wait;
-			}
 		
-		#ifdef USE_JOY
+	#ifdef USE_JOY
 
-		if (myGameManager.joyBotton[JOY_Home] == SDL_TRUE ) {
+	if (myGameManager.joyBotton[JOY_X] == SDL_TRUE ) {
+		myGameManager.sceneID = Scene_Wait;
+		break;
+	}
+
+	#endif 
+	}
+
+	titleState.animationTimer++; //タイマーを更新
+
+	if (flag == 0){
+		//ビート効果（拡大縮小）: sin波でループ
+		float beatPhase = (titleState.animationTimer % 100) / 100.0f; 
+		titleState.beatScale = 1.0f + 0.15f * sinf(beatPhase * 2.0f * 3.14159f);
+	}
+	else if (flag == 1){
+		if (isKeyDowned(K_ENTER)){
+			SDL_StopTextInput();
 			myGameManager.sceneID = Scene_Wait;
-			break;
+			return 1;
 		}
-
-		#endif 
-		}
-
-	//アニメーション更新
-	titleState.animationTimer += 16; 
-
-	// ビート効果（拡大縮小）: sin波で0.9～1.1をループ 
-	float beatPhase = (titleState.animationTimer % 1000) / 1000.0f; /* 0.0～1.0 */
-	titleState.beatScale = 1.0f + 0.15f * sinf(beatPhase * 2.0f * 3.14159f);
+	}
 
 	UI_updateTitleSurface(&titleState);
 	draw(NULL);
