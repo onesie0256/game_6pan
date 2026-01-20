@@ -71,6 +71,8 @@ typedef enum {
 
 #include <joyconlib.h>
 
+#endif
+
 /**
  * @brief ジョイコンのボタン
  */
@@ -85,12 +87,11 @@ typedef enum {
     JOY_B,
     JOY_X,
     JOY_Y,
-
+    JOY_SL,
+    JOY_SR,
     JOY_Max   //ボタンの数
 
 }JoyConInputNum;
-
-#endif
 
 typedef enum {
     BGM_NONE = -1,
@@ -136,6 +137,8 @@ typedef struct client_t{
     SDL_bool keyPrev[KEY_MAX];  //キーの状態(1フレーム前)
     SDL_bool joyBotton[JOY_KEY_MAX];  //ジョイコンのボタンの状態
     SDL_bool joyBottonPrev[JOY_KEY_MAX];
+    float stickX;            //ジョイスティックのx方向の傾き
+    float stickY;            //ジョイスティックのy方向の傾き
 }Client;
 
 /**
@@ -165,7 +168,7 @@ typedef struct
     SDL_Event event; // SDLイベント構造体    
     SDL_Thread * joy_thread;
     #ifdef USE_JOY
-    joyconlib_t jc;
+    joyconlib_t *jc;
     joycon_btn prev_btn; // 前回のボタン状態
     #endif 
     SDL_Thread * key_thread;

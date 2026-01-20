@@ -4,6 +4,7 @@ GameManager myGameManager;
 
 SDL_bool init(void);
 void loadModels(void);
+int showJoyconErr(void);
 
 static uint16_t port = 50100;
 static char clientServerName[MAX_LEN_NAME];
@@ -85,7 +86,7 @@ int main(int argc , char* argv[])
   closeWindow();
 
   #ifdef USE_JOY
-  joycon_close(&jc);
+  joycon_close(myGameManager.jc);
   #endif
 
   SDL_Quit();
@@ -133,12 +134,26 @@ SDL_bool init(void)
 
 
     #ifdef USE_JOY
+
+    myGameManager.jc = (joyconlib_t *)malloc(sizeof(joyconlib_t));
     
-    if (joycon_open(&myGameManager.jc , JOYCON_R) != 0){
-        printf("failed to open Joy-Con");
-        SDL_DestroyWindow(window); // ウィンドウを破棄
-        SDL_Quit(); // SDLを終了
-        return 1; // プログラム終了
+    while (joycon_open(myGameManager.jc , JOYCON_R) != 0){
+        int flag = showJoyconErr();
+        printf("%d\n" , flag);
+
+        if (flag == 0){
+          ;
+        }
+        else if (flag == 1){
+            myGameManager.jc = NULL;
+            break;
+        }
+        else if (flag == 2){
+            SDL_Quit();
+            TTF_Quit();
+            IMG_Quit();
+            return 0;
+        }
     }
     #endif
 
@@ -203,4 +218,39 @@ void loadModels(void)
   createObjEX_withTex(&myGameManager.models[GunKinds_Max+9] , &myGameManager.models[GunKinds_Max] , "assets/models/white.png");
   //printf("pistl:: v:%d , n:%d , t:%d\nva:%d , na:%d , ta:%d\n" , myGameManager.models[Pistol].vertNum , myGameManager.models[Pistol].normalNum , myGameManager.models[Pistol].texCoordNum , myGameManager.models[Pistol].vertAryNum , myGameManager.models[Pistol].normAryNum , myGameManager.models[Pistol].texCoordAryNum);
 
+}
+
+
+int showJoyconErr(void)
+{
+  const SDL_MessageBoxButtonData buttons[] = {
+    {0, 0 , "try connect again"},
+    {0, 1 , "continue without joycon"},
+    {0, 2 , "close game"}
+  };
+
+  const SDL_MessageBoxColorScheme colorScheme = {
+    {
+      {255, 255 , 255}, //背景色
+      {0, 0 , 0},       //テキスト色
+      {0, 0 , 0},       //ボタンのボーダー
+      {255, 255 , 255},       //ボタンの背景色
+      {220, 220 , 220}  //ボタンのテキスト色（選択時）
+    }
+    };
+
+    const SDL_MessageBoxData messageBoxData = {
+      SDL_MESSAGEBOX_ERROR,
+      NULL,
+      "3Dバトルガンカート:ジョイコン接続エラー",
+      "failed to connect Joy-Con",
+      SDL_arraysize(buttons),
+      buttons,
+      &colorScheme
+    };
+
+    int bottonID;
+    SDL_ShowMessageBox(&messageBoxData , &bottonID);
+
+  return bottonID;
 }

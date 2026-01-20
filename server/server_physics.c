@@ -79,7 +79,7 @@ Uint32 update_physics(Uint32 interval , void *name)
 
     if (scene_->count >= 300){
         for (int i = 0 ; i < myGameManager.playerNum ; i++){
-            if (myGameManager.clients[i].keyNow[K_ENTER] == SDL_TRUE){
+            if (myGameManager.clients[i].keyNow[K_ENTER] || myGameManager.clients[i].joyBotton[JOY_SL]){
                 Car *tmp = getCarFromId(scene_->cars , i);
                 if (tmp != NULL){
                     fireGun(tmp , tmp->gun);

@@ -222,9 +222,22 @@ void forwardCar(Car *car)
 
     int curve_deg = CURVE_DEGREE;
     SDL_bool *inputAry = myGameManager.clients[car->id].keyNow;
+    SDL_bool *inputJoy = myGameManager.clients[car->id].joyBotton;
     SDL_bool *preinputAry = myGameManager.clients[car->id].keyPrev;
 
     Vec3f dir = car->direction;
+
+    int joyStickFlag = 0;
+
+    if (myGameManager.clients[car->id].stickX <= -0.5f){
+        joyStickFlag = -1;
+    }
+    else if (myGameManager.clients[car->id].stickX >= 0.5f){
+        joyStickFlag = 1;
+    }
+
+
+
     if (car->isOnGround){
         Vec3f delta = vecSub(car->center , car->preCenter);
         //printf("delta.y = %f\n" , delta.y);
@@ -235,11 +248,11 @@ void forwardCar(Car *car)
         }
     }
 
-    if (inputAry[K_SHIFT]){
+    if (inputAry[K_SHIFT] || inputJoy[JOY_SR]){
         curve_deg *= 2;
     }
 
-    if (inputAry[K_LEFT]){
+    if (inputAry[K_LEFT] || joyStickFlag == -1){
         rotateCar(car , curve_deg);
         car->direction = rotateVecWithQuaternion(car->direction , curve_deg , (Vec3f){0.0f , 1.0f , 0.0f});
 
@@ -251,7 +264,7 @@ void forwardCar(Car *car)
         */
     }
 
-    if (inputAry[K_RIGHT]){
+    if (inputAry[K_RIGHT] || joyStickFlag == 1){
         rotateCar(car , -curve_deg);
         car->direction = rotateVecWithQuaternion(car->direction , -curve_deg , (Vec3f){0.0f , 1.0f , 0.0f});
 
@@ -263,11 +276,11 @@ void forwardCar(Car *car)
         */
     }
 
-    if (inputAry[K_UP]){
+    if (inputAry[K_UP] || inputJoy[JOY_Y]){
         car->velocity = vecAdd(car->velocity , vecMulSca(dir , 0.2f));
     }
 
-    if (inputAry[K_DOWN]){
+    if (inputAry[K_DOWN] || inputJoy[JOY_X]){
         car->velocity = vecAdd(car->velocity , vecMulSca(dir , -0.2f));
     }
     /*

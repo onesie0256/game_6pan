@@ -115,8 +115,8 @@ void send_input_data(void) {
     }
     data.container.inputData.joyKeyInputs <<= 1;
   }
-  data.stickX = myGameManager.StickX;
-  data.stickY = myGameManager.StickY;
+  data.container.inputData.stickX = myGameManager.StickX;
+  data.container.inputData.stickY = myGameManager.StickY;
   #endif
   
   //データをサーバへ送信
