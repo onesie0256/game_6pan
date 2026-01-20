@@ -217,85 +217,85 @@ int joy_func(void *args)
 
     SDL_bool *is_JoyConInputContenue = (SDL_bool *)args;
 
-    while (running)
+    while (!myGameManager.quitRequest)
     {
-        if (joycon_get_state(&myGameManager.jc) != 0){
+        if (joycon_get_state(myGameManager.jc) != 0){
             //printf("failed to update joycon");
             //SDL_Delay(1);
             continue;
         }
 
-        if (myGameManager.jc.button.btn.Home){
+        if (myGameManager.jc->button.btn.Home){
             myGameManager.joyBotton[JOY_Home] = SDL_TRUE;
         }
         else {
             myGameManager.joyBotton[JOY_Home] = SDL_FALSE;
         }        
 
-        if (myGameManager.jc.button.btn.Plus){
+        if (myGameManager.jc->button.btn.Plus){
             myGameManager.joyBotton[JOY_Plus] = SDL_TRUE;
         }
         else {
             myGameManager.joyBotton[JOY_Plus] = SDL_FALSE;
         }
 
-        if (myGameManager.jc.button.btn.Minus){
+        if (myGameManager.jc->button.btn.Minus){
             myGameManager.joyBotton[JOY_Minus] = SDL_TRUE;
         }
         else {
             myGameManager.joyBotton[JOY_Minus] = SDL_FALSE;
         }
 
-        if (myGameManager.jc.button.btn.ZL){
+        if (myGameManager.jc->button.btn.ZL){
             myGameManager.joyBotton[JOY_ZL] = SDL_TRUE;
         }
         else {
             myGameManager.joyBotton[JOY_ZL] = SDL_FALSE;
         }
 
-        if (myGameManager.jc.button.btn.ZR){
+        if (myGameManager.jc->button.btn.ZR){
             myGameManager.joyBotton[JOY_ZR] = SDL_TRUE;
         }
         else {
             myGameManager.joyBotton[JOY_ZR] = SDL_FALSE;
         }
 
-        if (myGameManager.jc.button.btn.A){
+        if (myGameManager.jc->button.btn.A){
             myGameManager.joyBotton[JOY_A] = SDL_TRUE;
         }
         else {
             myGameManager.joyBotton[JOY_A] = SDL_FALSE;
         }
 
-        if (myGameManager.jc.button.btn.B){
+        if (myGameManager.jc->button.btn.B){
             myGameManager.joyBotton[JOY_B] = SDL_TRUE;
         }
         else {
             myGameManager.joyBotton[JOY_B] = SDL_FALSE;
         }    
 
-        if (myGameManager.jc.button.btn.X){
+        if (myGameManager.jc->button.btn.X){
             myGameManager.joyBotton[JOY_X] = SDL_TRUE;
         }
         else {
             myGameManager.joyBotton[JOY_X] = SDL_FALSE;
         }      
         
-        if (myGameManager.jc.button.btn.Y){
+        if (myGameManager.jc->button.btn.Y){
             myGameManager.joyBotton[JOY_Y] = SDL_TRUE;
         }
         else {
             myGameManager.joyBotton[JOY_Y] = SDL_FALSE;
         }  
 
-        if (myGameManager.jc.button.btn.SL_r){
+        if (myGameManager.jc->button.btn.SL_r){
             myGameManager.joyBotton[JOY_SL] = SDL_TRUE;
         }
         else {
             myGameManager.joyBotton[JOY_SL] = SDL_FALSE;
         }  
 
-        if (myGameManager.jc.button.btn.SR_r){
+        if (myGameManager.jc->button.btn.SR_r){
             myGameManager.joyBotton[JOY_SR] = SDL_TRUE;
         }
         else {
@@ -303,8 +303,8 @@ int joy_func(void *args)
         }  
 
         //ジョイコンの傾き
-        myGameManager.StickX = myGameManager.jc.stick.x;
-        myGameManager.StickY = myGameManager.jc.stick.y;
+        myGameManager.StickX = myGameManager.jc->stick.x;
+        myGameManager.StickY = myGameManager.jc->stick.y;
 
         //SDL_Delay(300);
     }

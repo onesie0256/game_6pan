@@ -297,7 +297,7 @@ void unpackInputData(uint16_t key , uint16_t joy , uint8_t id , float stickX , f
       }
       #ifdef USE_JOY
       for (int i = JOY_KEY_MAX - 1; i >= 0; i--) {
-        data.joyKeyInputs >>= 1;
+        joy >>= 1;
         myGameManager.clients[id].joyBotton[i] = (joy & 1);
       }
 
@@ -328,7 +328,7 @@ void packCarInfo(Car *car , CarInfo *data)
 
   #ifdef USE_JOY
   if (myGameManager.clients[car->id].joyBotton[JOY_B]){
-    data->isShotGun = 1;
+    data->param |= 1;
   }
   #endif
 }

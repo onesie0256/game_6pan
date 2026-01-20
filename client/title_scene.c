@@ -34,7 +34,7 @@ int titleScene(void)
 		SDL_Delay(100);
 		return 0; // ゲーム終了 
 	}
-	else {if (flag == 0 && isKeyDowned(K_ENTER)) {
+	else {if (flag == 0 && (isKeyDowned(K_ENTER) || myGameManager.joyBotton[JOY_X])) {
 			flag = 1;
 			SDL_SetHint(SDL_HINT_IME_INTERNAL_EDITING , "1");
 			//SDL_SetHint("SDL_IME_SHOW_UI" , "1");
@@ -44,15 +44,6 @@ int titleScene(void)
 			SDL_StartTextInput();
 			titleState.flag = 1;
 		}
-		
-	#ifdef USE_JOY
-
-	if (myGameManager.joyBotton[JOY_X] == SDL_TRUE ) {
-		myGameManager.sceneID = Scene_Wait;
-		break;
-	}
-
-	#endif 
 	}
 
 	titleState.animationTimer++; //タイマーを更新

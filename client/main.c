@@ -86,7 +86,7 @@ int main(int argc , char* argv[])
   closeWindow();
 
   #ifdef USE_JOY
-  joycon_close(&jc);
+  joycon_close(myGameManager.jc);
   #endif
 
   SDL_Quit();
@@ -132,22 +132,24 @@ SDL_bool init(void)
 
     #ifdef USE_JOY
 
-    CONNECT_JOY:
+    myGameManager.jc = (joyconlib_t *)malloc(sizeof(joyconlib_t));
     
-    if (joycon_open(&myGameManager.jc , JOYCON_R) != 0){
+    while (joycon_open(myGameManager.jc , JOYCON_R) != 0){
         int flag = showJoyconErr();
+        printf("%d\n" , flag);
 
         if (flag == 0){
-            goto CONNECT_JOY;
+          ;
         }
         else if (flag == 1){
             myGameManager.jc = NULL;
+            break;
         }
         else if (flag == 2){
             SDL_Quit();
             TTF_Quit();
             IMG_Quit();
-            return -1;
+            return 0;
         }
     }
     #endif
@@ -220,8 +222,8 @@ int showJoyconErr(void)
 {
   const SDL_MessageBoxButtonData buttons[] = {
     {0, 0 , "try connect again"},
-    {0, 0 , "continue without joycon"},
-    {0, 0 , "close game"}
+    {0, 1 , "continue without joycon"},
+    {0, 2 , "close game"}
   };
 
   const SDL_MessageBoxColorScheme colorScheme = {

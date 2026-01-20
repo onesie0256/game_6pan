@@ -130,7 +130,7 @@ typedef struct
     SDL_Event event; // SDLイベント構造体    
     SDL_Thread * joy_thread;
     #ifdef USE_JOY
-    joyconlib_t jc;
+    joyconlib_t *jc;
     joycon_btn prev_btn; // 前回のボタン状態
     #endif 
     SDL_Thread * key_thread;
