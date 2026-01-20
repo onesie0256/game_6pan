@@ -176,12 +176,10 @@ typedef struct
     SDL_TimerID timer;
     SDL_bool keyNow[KEY_MAX]; //キーの状態
     SDL_bool keyPrev[KEY_MAX];//キーの状態(1フレーム前)
-    #ifdef USE_JOY
     SDL_bool joyBotton[JOY_KEY_MAX];  //ジョイコンのボタンの状態
     SDL_bool joyBottonPrev[JOY_KEY_MAX];
     float StickX;            //ジョイスティックのx方向の傾き
     float StickY;            //ジョイスティックのy方向の傾き
-    #endif
     AudioManager audio;              //オーディオ
 
     Client clients[MAX_Clients];    //クライアントのリスト
