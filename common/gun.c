@@ -95,7 +95,7 @@ Gun* createGun(GunKinds kind , int carId)
     return rtn;
 }
 
-#define SHOTGUN_AMMO_ROTATION 4
+#define SHOTGUN_AMMO_ROTATION 2
 
 /**
  * @brief 銃を打ち,銃弾を生成する
@@ -111,15 +111,18 @@ SDL_bool fireGun(Car *car , Gun *gun)
     gun->bulletNum--;
     createAmmo(gun , car->center , car->direction);
     if (gun->kind != Shotgun) return SDL_TRUE;
+
+    Vec3f right = rotateVecWithQuaternion(car->direction , 90 , (Vec3f){0.0f , 1.0f , 0.0f});
+
     createAmmo(gun , car->center , rotateVecWithQuaternion(car->direction , SHOTGUN_AMMO_ROTATION , (Vec3f){0.0f , 1.0f , 0.0f}));
     createAmmo(gun , car->center , rotateVecWithQuaternion(car->direction , -SHOTGUN_AMMO_ROTATION , (Vec3f){0.0f , 1.0f , 0.0f}));
 
-    Vec3f tmp = rotateVecWithQuaternion(car->direction , -SHOTGUN_AMMO_ROTATION , (Vec3f){1.0f , 0.0f , 0.0f});
+    Vec3f tmp = rotateVecWithQuaternion(car->direction , -SHOTGUN_AMMO_ROTATION , right);
     createAmmo(gun , car->center , rotateVecWithQuaternion(tmp , SHOTGUN_AMMO_ROTATION , (Vec3f){0.0f , 1.0f , 0.0f}));
     createAmmo(gun , car->center , rotateVecWithQuaternion(tmp , 0 , (Vec3f){0.0f , 1.0f , 0.0f}));
     createAmmo(gun , car->center , rotateVecWithQuaternion(tmp , -SHOTGUN_AMMO_ROTATION , (Vec3f){0.0f , 1.0f , 0.0f}));
 
-    tmp = rotateVecWithQuaternion(tmp , -SHOTGUN_AMMO_ROTATION , (Vec3f){1.0f , 0.0f , 0.0f});
+    tmp = rotateVecWithQuaternion(tmp , -SHOTGUN_AMMO_ROTATION , right);
     createAmmo(gun , car->center , rotateVecWithQuaternion(tmp , SHOTGUN_AMMO_ROTATION , (Vec3f){0.0f , 1.0f , 0.0f}));
     createAmmo(gun , car->center , rotateVecWithQuaternion(tmp , 0 , (Vec3f){0.0f , 1.0f , 0.0f}));
     createAmmo(gun , car->center , rotateVecWithQuaternion(tmp , -SHOTGUN_AMMO_ROTATION , (Vec3f){0.0f , 1.0f , 0.0f}));

@@ -229,10 +229,10 @@ void forwardCar(Car *car)
 
     int joyStickFlag = 0;
 
-    if (myGameManager.clients[car->id].stickX <= -0.5f){
+    if (myGameManager.clients[car->id].stickY <= -0.5f){
         joyStickFlag = -1;
     }
-    else if (myGameManager.clients[car->id].stickX >= 0.5f){
+    else if (myGameManager.clients[car->id].stickY >= 0.5f){
         joyStickFlag = 1;
     }
 
