@@ -15,6 +15,12 @@ typedef struct {
 	SDL_Surface *left;
 	SDL_Surface *right;
 	SDL_Surface *enter;
+	SDL_Surface *shift;
+	SDL_Surface *x;
+	SDL_Surface *a;
+	SDL_Surface *sr;
+	SDL_Surface *sl;
+	SDL_Surface *stick;
 } KeyImages;
 
 static KeyImages keyImages = {0};
@@ -30,6 +36,12 @@ static void UI_loadKeyImages(void) {
 	keyImages.left = IMG_Load("assets/pictures/left_key.png");
 	keyImages.right = IMG_Load("assets/pictures/right_key.png");
 	keyImages.enter = IMG_Load("assets/pictures/Enter.png");
+	keyImages.shift = IMG_Load("assets/pictures/Shift.png");
+	keyImages.x = IMG_Load("assets/pictures/X_joycon.png");
+	keyImages.a = IMG_Load("assets/pictures/A_joycon.png");
+	keyImages.sr = IMG_Load("assets/pictures/sr_joycon.png");
+	keyImages.sl = IMG_Load("assets/pictures/sl_joycon.png");
+	keyImages.stick = IMG_Load("assets/pictures/stick_joycon.png");
 }
 
 /**
@@ -79,12 +91,12 @@ int UI_init(void)
 
 	//タイトル用のフォントを読み込む
 	if (myGameManager.fonts[0] == NULL) {
-		TTF_Font *f = TTF_OpenFont("assets/fonts/Aircruiser3Dital.ttf", 100);
+		TTF_Font *f = TTF_OpenFont("assets/fonts/aircruiseracadital.ttf", 100);
 		if (f) {
 			if (f)
 			myGameManager.fonts[0] = f;
 		}
-		else if (f = TTF_OpenFont("./../assets/fonts/Aircruiser3Dital.ttf", 100)){
+		else if (f = TTF_OpenFont("./../assets/fonts/aircruiseracadital.ttf", 100)){
 			myGameManager.fonts[0] = f;
 		}
 	}
@@ -230,20 +242,20 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 {
 	if (myGameManager.UI == NULL || titleScene == NULL) return;
 
-	// // 背景画像を描画
-	// static SDL_Surface* backgroundSurface = NULL;
-	// if (backgroundSurface == NULL) {
-	// 	backgroundSurface = IMG_Load("assets/pictures/background.png");
-	// 	if (backgroundSurface == NULL) {
-	// 		fprintf(stderr, "Failed to load image 'assets/pictures/background.png': %s\n", IMG_GetError());
-	// 	}
-	// }
+	// 背景画像を描画
+	static SDL_Surface* backgroundSurface = NULL;
+	if (backgroundSurface == NULL) {
+		backgroundSurface = IMG_Load("assets/pictures/background.png");
+		if (backgroundSurface == NULL) {
+			fprintf(stderr, "Failed to load image 'assets/pictures/background.png': %s\n", IMG_GetError());
+		}
+	}
 
-	// if (backgroundSurface) {
-	// 	SDL_BlitScaled(backgroundSurface, NULL, myGameManager.UI, NULL);
-	// } else {
-	// 	SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 0, 0, 0));
-	// }
+	if (backgroundSurface) {
+		SDL_BlitScaled(backgroundSurface, NULL, myGameManager.UI, NULL);
+	} else {
+		SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 0, 0, 0));
+	}
 
 	if (titleScene->flag){
 		SDL_FillRect(myGameManager.UI, NULL, SDL_MapRGB(myGameManager.UI->format, 255, 255, 255));
@@ -258,17 +270,17 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 	int scaledBoxW = (int)(baseBoxW * scale);
 	int scaledBoxH = (int)(baseBoxH * scale);
 
-	SDL_Rect titleBox = { (myGameManager.windowW - scaledBoxW) / 2,
-						  myGameManager.windowH / 3 + (baseBoxH - scaledBoxH) / 2,
-						  scaledBoxW, scaledBoxH };
+	// SDL_Rect titleBox = { (myGameManager.windowW - scaledBoxW) / 2,
+	// 					  myGameManager.windowH / 2 - scaledBoxH / 2,
+	// 					  scaledBoxW, scaledBoxH };
 
-	SDL_FillRect(myGameManager.UI, &titleBox, SDL_MapRGB(myGameManager.UI->format, 60, 120, 200));
+	// SDL_FillRect(myGameManager.UI, &titleBox, SDL_MapRGB(myGameManager.UI->format, 255, 255, 255));
 
-	SDL_Color white = { 255, 255, 255, 255 };
-	SDL_Color black = { 0, 0, 0, 255 };
+	SDL_Color white = {255, 255, 255, 255};
+	SDL_Color emerald = {80, 200, 120, 255};
 	if (myGameManager.fonts[0]) {
 		//ビート効果のスケールに応じたテキスト描画 
-		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], "3D GUN KART", white);
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], "3D GUN KART", emerald);
 		if (textSurface) {
 			int baseW = textSurface->w, baseH = textSurface->h;
 			int scaledW = (int)(baseW * scale);
@@ -276,7 +288,7 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 
 			SDL_Rect dst = {
 				(myGameManager.windowW - scaledW) / 2,
-				myGameManager.windowH / 3 + (baseBoxH - scaledH) / 2,
+				myGameManager.windowH / 2 - scaledH / 2,
 				scaledW,
 				scaledH
 			};
@@ -290,9 +302,9 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 	if ((SDL_GetTicks() / 700) % 2 == 0) { // 0.7秒ごとに点滅
 
 	#ifdef USE_JOY
-		UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "キーボードでEnterキー/ Joy-Conでxボタンを押してスタート", myGameManager.windowH * 3 / 4 + 50, white);
+		UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "キーボードでEnterキー/ Joy-Conでxボタンを押してスタート", myGameManager.windowH * 3 / 4 + 30, white);
 	#else
-		UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "キーボードでEnterキーを押してスタート", myGameManager.windowH * 3 / 4 + 50, white);
+		UI_updateTextCenteredOnSurface(myGameManager.fonts[2], "キーボードでEnterキーを押してスタート", myGameManager.windowH * 3 / 4 + 30, white);
 	#endif
 	}
 }
@@ -615,37 +627,46 @@ void UI_updateMainSurface(MainScene *scene)
 	}
 
 	/* 画面左:操作方法 */
-	// {
-	// 	char text[300];
-	// 	snprintf(text , sizeof(text) , "操作方法\n↑ : アクセル\n← → : ハンドル\n↓ : バック\nEnter:ショット");
-
-	// 	SDL_Surface *textSurface = TTF_RenderUTF8_Blended_Wrapped(myGameManager.fonts[2], text , black , 1000);
-	// 	if (textSurface) {
-	// 		SDL_Rect dst = {50, myGameManager.windowH/5 + 100, textSurface->w, textSurface->h };
-	// 		SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
-	// 		SDL_FreeSurface(textSurface);
-	// 	}
-	// }
-
 	UI_loadKeyImages();
 	int base_x = 50;
-	int base_y = myGameManager.windowH / 5 + 100;
-	int line_h = 60;
+	int base_y = myGameManager.windowH / 5 + 20;
+	int line_h = 70;
 
+#ifdef USE_JOY
+	UI_drawKeyWithText(keyImages.x, "アクセル", base_x, base_y,
+		myGameManager.fonts[2], black);
+
+	UI_drawKeyWithText(keyImages.a, "バック", base_x, base_y + line_h,
+		myGameManager.fonts[2], black);
+
+	UI_drawKeyWithText(keyImages.stick, "ハンドル", base_x, base_y + line_h * 2,
+		myGameManager.fonts[2], black);
+
+	UI_drawKeyWithText(keyImages.sl, "ショット", base_x, base_y + line_h * 3,
+		myGameManager.fonts[2], black);
+	
+	UI_drawKeyWithText(keyImages.sr, "ドリフト", base_x, base_y + line_h * 4,
+		myGameManager.fonts[2], black);
+
+#else
 	UI_drawKeyWithText(keyImages.up, "アクセル", base_x, base_y,
 		myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.left, "", base_x, base_y + line_h,
+	UI_drawKeyWithText(keyImages.down, "バック", base_x, base_y + line_h,
 		myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.right, "ハンドル", base_x + 70, base_y + line_h, 
+	UI_drawKeyWithText(keyImages.left, "", base_x, base_y + line_h * 2,
 		myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.down, "バック", base_x, base_y + line_h * 2,
+	UI_drawKeyWithText(keyImages.right, "ハンドル", base_x + 70, base_y + line_h * 2, 
 		myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.enter, "ショット", base_x, base_y + line_h * 3.5,
+	UI_drawKeyWithText(keyImages.enter, "ショット", base_x, base_y + line_h * 3,
 		myGameManager.fonts[2], black);
+
+	UI_drawKeyWithText(keyImages.shift, "ドリフト", base_x, base_y + line_h * 4,
+		myGameManager.fonts[2], black);
+#endif
 
 	/* 画面左下:ラップ数 */
 	{
