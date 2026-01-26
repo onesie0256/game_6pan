@@ -252,7 +252,7 @@ void forwardCar(Car *car)
         curve_deg *= 2;
     }
 
-    if (inputAry[K_LEFT] || joyStickFlag == -1){
+    if (inputAry[K_LEFT] || joyStickFlag == 1){
         rotateCar(car , curve_deg);
         car->direction = rotateVecWithQuaternion(car->direction , curve_deg , (Vec3f){0.0f , 1.0f , 0.0f});
 
@@ -264,7 +264,7 @@ void forwardCar(Car *car)
         */
     }
 
-    if (inputAry[K_RIGHT] || joyStickFlag == 1){
+    if (inputAry[K_RIGHT] || joyStickFlag == -1){
         rotateCar(car , -curve_deg);
         car->direction = rotateVecWithQuaternion(car->direction , -curve_deg , (Vec3f){0.0f , 1.0f , 0.0f});
 
@@ -276,11 +276,11 @@ void forwardCar(Car *car)
         */
     }
 
-    if (inputAry[K_UP] || inputJoy[JOY_Y]){
+    if (inputAry[K_UP] || inputJoy[JOY_X]){
         car->velocity = vecAdd(car->velocity , vecMulSca(dir , 0.2f));
     }
 
-    if (inputAry[K_DOWN] || inputJoy[JOY_X]){
+    if (inputAry[K_DOWN] || inputJoy[JOY_A]){
         car->velocity = vecAdd(car->velocity , vecMulSca(dir , -0.2f));
     }
     /*

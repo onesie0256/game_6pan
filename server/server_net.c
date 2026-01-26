@@ -285,7 +285,7 @@ void unpackInputData(uint16_t key , uint16_t joy , uint8_t id , float stickX , f
         myGameManager.clients[id].keyPrev[i] = myGameManager.clients[id].keyNow[i];
       }
       #ifdef USE_JOY
-      for (int i = 0; i < JOY_KEY_MAX; i++) {
+      for (int i = 0; i < JOY_Max; i++) {
         myGameManager.clients[id].joyBottonPrev[i] = myGameManager.clients[id].joyBotton[i];
       }
       #endif
@@ -296,7 +296,7 @@ void unpackInputData(uint16_t key , uint16_t joy , uint8_t id , float stickX , f
         myGameManager.clients[id].keyNow[i] = (key & 1);
       }
       #ifdef USE_JOY
-      for (int i = JOY_KEY_MAX - 1; i >= 0; i--) {
+      for (int i = JOY_Max - 1; i >= 0; i--) {
         joy >>= 1;
         myGameManager.clients[id].joyBotton[i] = (joy & 1);
       }
@@ -318,7 +318,7 @@ void packCarInfo(Car *car , CarInfo *data)
 
   data->HP = car->hp;
 
-  if (myGameManager.clients[car->id].keyNow[K_ENTER]){
+  if (myGameManager.clients[car->id].keyNow[K_ENTER] || myGameManager.clients[car->id].joyBotton[JOY_SL]){
     data->param |= 1;
   }
 

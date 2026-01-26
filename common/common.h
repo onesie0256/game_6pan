@@ -13,7 +13,7 @@
 #include "./../assets/3D_Engine/3DEngine.h"
 
 #define KEY_MAX 10
-#define JOY_KEY_MAX 10
+#define JOY_KEY_MAX 11
 #define FONT_MAX 9
 #define FPS_f 90.0f
 #define FPS_inv 1.0f/FPS_f
@@ -176,8 +176,8 @@ typedef struct
     SDL_TimerID timer;
     SDL_bool keyNow[KEY_MAX]; //キーの状態
     SDL_bool keyPrev[KEY_MAX];//キーの状態(1フレーム前)
-    SDL_bool joyBotton[JOY_KEY_MAX];  //ジョイコンのボタンの状態
-    SDL_bool joyBottonPrev[JOY_KEY_MAX];
+    SDL_bool joyBotton[JOY_Max];  //ジョイコンのボタンの状態
+    SDL_bool joyBottonPrev[JOY_Max];
     float StickX;            //ジョイスティックのx方向の傾き
     float StickY;            //ジョイスティックのy方向の傾き
     AudioManager audio;              //オーディオ

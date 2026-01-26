@@ -23,9 +23,10 @@ int waitScene(void)
             return 0; // ゲーム終了
         }
             
-        if (isKeyDowned(K_LEFT) == SDL_TRUE){
+        if (isKeyDowned(K_LEFT) == SDL_TRUE || myGameManager.StickY < -0.5f){
             //左キー
             waitSceneState.selectedWeaponIndex--;
+            SDL_Delay(300);
 
             if (waitSceneState.selectedWeaponIndex < 0) {
                 waitSceneState.selectedWeaponIndex = WEAPON_TYPE_MAX - 1; // 末尾にループ
@@ -35,10 +36,11 @@ int waitScene(void)
 
         }
         
-        if (isKeyDowned(K_RIGHT) == SDL_TRUE) {
+        if (isKeyDowned(K_RIGHT) == SDL_TRUE|| myGameManager.StickY > 0.5f) {
             //右キー
             waitSceneState.selectedWeaponIndex++;
             waitSceneState.selectedWeaponIndex %= WEAPON_TYPE_MAX; // 先頭にループ
+            SDL_Delay(300);
 
             Audio_PlaySE(SE_CURSOR);
             

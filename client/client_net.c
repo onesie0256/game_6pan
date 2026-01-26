@@ -139,7 +139,7 @@ void receive_input_data(void) {
         myGameManager.clients[data.id].keyPrev[i] = myGameManager.clients[data.id].keyNow[i];
     }
     #ifdef USE_JOY
-    for (int i = 0; i < JOY_KEY_MAX; i++) {
+    for (int i = 0; i < JOY_Max; i++) {
         myGameManager.clients[data.id].joyBottonPrev[i] = myGameManager.clients[data.id].joyBotton[i];
     }
     #endif
@@ -150,7 +150,7 @@ void receive_input_data(void) {
         myGameManager.clients[data.id].keyNow[i] = (data.container.inputData.keyInputs & 1);
     }
     #ifdef USE_JOY
-    for (int i = JOY_KEY_MAX - 1; i >= 0; i--) {
+    for (int i = JOY_Max - 1; i >= 0; i--) {
         data.container.inputData.joyKeyInputs >>= 1;
         myGameManager.clients[data.id].joyBotton[i] = (data.container.inputData.joyKeyInputs & 1);
     }
@@ -205,7 +205,7 @@ static int exe_command() {
         myGameManager.clients[data.id].keyPrev[i] = myGameManager.clients[data.id].keyNow[i];
       }
       #ifdef USE_JOY
-      for (int i = 0; i < JOY_KEY_MAX; i++) {
+      for (int i = 0; i < JOY_Max; i++) {
         myGameManager.clients[data.id].joyBottonPrev[i] = myGameManager.clients[data.id].joyBotton[i];
       }
       #endif
@@ -216,7 +216,7 @@ static int exe_command() {
         myGameManager.clients[data.id].keyNow[i] = (data.container.inputData.keyInputs & 1);
       }
       #ifdef USE_JOY
-      for (int i = JOY_KEY_MAX - 1; i >= 0; i--) {
+      for (int i = JOY_Max - 1; i >= 0; i--) {
         data.container.inputData.joyKeyInputs >>= 1;
         myGameManager.clients[data.id].joyBotton[i] = (data.container.inputData.joyKeyInputs & 1);
       }
