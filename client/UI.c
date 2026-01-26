@@ -277,10 +277,10 @@ void UI_updateTitleSurface(TitleScene *titleScene)
 	// SDL_FillRect(myGameManager.UI, &titleBox, SDL_MapRGB(myGameManager.UI->format, 255, 255, 255));
 
 	SDL_Color white = {255, 255, 255, 255};
-	SDL_Color emerald = {80, 200, 120, 255};
+	SDL_Color yellow = {255, 255, 0, 255};
 	if (myGameManager.fonts[0]) {
 		//ビート効果のスケールに応じたテキスト描画 
-		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], "3D GUN KART", emerald);
+		SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[0], "3D GUN KART", yellow);
 		if (textSurface) {
 			int baseW = textSurface->w, baseH = textSurface->h;
 			int scaledW = (int)(baseW * scale);
@@ -456,12 +456,18 @@ void UI_updateWaitSurface(WaitScene *waitScene)
 	UI_drawKeyWithText(keyImages.left, "", 50, myGameManager.windowH / 7, 
 		myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.right, "武器変更", 120, myGameManager.windowH / 7,
+	UI_drawKeyWithText(keyImages.right, "", 120, myGameManager.windowH / 7,
 		myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.enter, "決定", 50, myGameManager.windowH / 7 + 100,
-		myGameManager.fonts[2], black
-	);
+	UI_drawKeyWithText(keyImages.stick, "武器変更", 190, myGameManager.windowH / 7,
+		myGameManager.fonts[2], black);
+
+	UI_drawKeyWithText(keyImages.enter, "", 50, myGameManager.windowH / 7 + 100,
+		myGameManager.fonts[2], black);
+
+	UI_drawKeyWithText(keyImages.x, "決定", 120, myGameManager.windowH / 7 + 100,
+		myGameManager.fonts[2], black);
+
 
 	// {
 	// 	char text[300];
@@ -536,7 +542,7 @@ void UI_updateMainSurface(MainScene *scene)
 				SDL_Surface *textSurface = TTF_RenderUTF8_Blended(myGameManager.fonts[2], "Reloading...", black);
 				if (textSurface) {
 					// HPバーの上に表示
-					SDL_Rect dst = {bar_x, bar_y, textSurface->w + 50, textSurface->h };
+					SDL_Rect dst = {bar_x, bar_y, textSurface->w + 150, textSurface->h };
 					SDL_BlitSurface(textSurface, NULL, myGameManager.UI, &dst);
 					SDL_FreeSurface(textSurface);
 				}
@@ -632,41 +638,41 @@ void UI_updateMainSurface(MainScene *scene)
 	int base_y = myGameManager.windowH / 5 + 20;
 	int line_h = 70;
 
-#ifdef USE_JOY
-	UI_drawKeyWithText(keyImages.x, "アクセル", base_x, base_y,
-		myGameManager.fonts[2], black);
+	if (myGameManager.jc != NULL) {
+		UI_drawKeyWithText(keyImages.x, "アクセル", base_x, base_y,
+			myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.a, "バック", base_x, base_y + line_h,
-		myGameManager.fonts[2], black);
+		UI_drawKeyWithText(keyImages.a, "バック", base_x, base_y + line_h,
+			myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.stick, "ハンドル", base_x, base_y + line_h * 2,
-		myGameManager.fonts[2], black);
+		UI_drawKeyWithText(keyImages.stick, "ハンドル", base_x, base_y + line_h * 2,
+			myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.sl, "ショット", base_x, base_y + line_h * 3,
-		myGameManager.fonts[2], black);
-	
-	UI_drawKeyWithText(keyImages.sr, "ドリフト", base_x, base_y + line_h * 4,
-		myGameManager.fonts[2], black);
+		UI_drawKeyWithText(keyImages.sl, "ショット", base_x, base_y + line_h * 3,
+			myGameManager.fonts[2], black);
+		
+		UI_drawKeyWithText(keyImages.sr, "ドリフト", base_x, base_y + line_h * 4,
+			myGameManager.fonts[2], black);
+	}
+	else {
+		UI_drawKeyWithText(keyImages.up, "アクセル", base_x, base_y,
+			myGameManager.fonts[2], black);
 
-#else
-	UI_drawKeyWithText(keyImages.up, "アクセル", base_x, base_y,
-		myGameManager.fonts[2], black);
+		UI_drawKeyWithText(keyImages.down, "バック", base_x, base_y + line_h,
+			myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.down, "バック", base_x, base_y + line_h,
-		myGameManager.fonts[2], black);
+		UI_drawKeyWithText(keyImages.left, "", base_x, base_y + line_h * 2,
+			myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.left, "", base_x, base_y + line_h * 2,
-		myGameManager.fonts[2], black);
+		UI_drawKeyWithText(keyImages.right, "ハンドル", base_x + 70, base_y + line_h * 2, 
+			myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.right, "ハンドル", base_x + 70, base_y + line_h * 2, 
-		myGameManager.fonts[2], black);
+		UI_drawKeyWithText(keyImages.enter, "ショット", base_x, base_y + line_h * 3,
+			myGameManager.fonts[2], black);
 
-	UI_drawKeyWithText(keyImages.enter, "ショット", base_x, base_y + line_h * 3,
-		myGameManager.fonts[2], black);
-
-	UI_drawKeyWithText(keyImages.shift, "ドリフト", base_x, base_y + line_h * 4,
-		myGameManager.fonts[2], black);
-#endif
+		UI_drawKeyWithText(keyImages.shift, "ドリフト", base_x, base_y + line_h * 4,
+			myGameManager.fonts[2], black);
+	}
 
 	/* 画面左下:ラップ数 */
 	{

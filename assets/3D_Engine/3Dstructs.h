@@ -218,9 +218,9 @@ typedef struct objInfo_t{
     Vec3f coord;            //座標
     Vec3f scale;            //スケール
 
-    int pitch;              //ピッチ角[°]
-    int roll;               //ロール角[°]
-    int yaw;                //ヨー角[°]
+    float pitch;              //ピッチ角[°]
+    float roll;               //ロール角[°]
+    float yaw;                //ヨー角[°]
 
     int pitchOffset;        //初期ピッチ角[°]
     int rollOffset;         //初期ロール角[°]

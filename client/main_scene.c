@@ -39,6 +39,7 @@ int mainScene(void)
 
     if (scene->sendCarInfoPlayerNum < myGameManager.playerNum) {
         if (myGameManager.quitRequest == SDL_TRUE) { 
+			SDL_StopTextInput();
              endFlag = SDL_TRUE;
         } else {
             ;
@@ -49,7 +50,7 @@ int mainScene(void)
             send_input_data();
             updateCar_c();
 
-            if (isKeyPressed(K_UP)) {
+            if (isKeyPressed(K_UP) || myGameManager.joyBotton[JOY_X]) {
                 if (!accelSePlaying) {
                     Audio_PlaySELoop(SE_ACCEL);
                     accelSePlaying = SDL_TRUE;

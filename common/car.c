@@ -125,14 +125,17 @@ void displayCars(List *list)
     ListNode *node;
     foreach(node , list){
         Car *car = ((Car *)node->data);
+        updateCarCenter(car);
 
         //displayRectangler(car->collisionBox->data.rectangler);
 
-        car->model->coord = car->center;
-        car->model->yaw = car->gun->model->yaw;
 
         Vec3f eulurs = quaternion_to_euler(car->q);
         car->gun->model->yaw = eulurs.y*RAD_TO_DEG;
+
+        car->model->coord = car->center;
+        car->model->yaw = car->gun->model->yaw;
+        
         //printf("yaw: %d\n" , car->gun->model->yaw);
 
         /*

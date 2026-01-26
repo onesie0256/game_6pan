@@ -156,6 +156,7 @@ Ammo* createAmmo(Gun *gun , Vec3f coord , Vec3f direct)
     SDL_itoa(id++ , ammo->id , 10);
     ammo->carId = gun->carId;
     ammo->radius = gun->ammoRadius;
+    ammo->flag = 0;
 
     Vec3f color = (Vec3f){1.0f , 0.0f , 0.0f};
     switch (gun->carId)
@@ -278,7 +279,6 @@ void updateGuns(List *carList)
         if (gun->reloadFrameNow > 0) {
             gun->reloadFrameNow--;
 
-            /* ★★★ ここ：リロード完了した瞬間 ★★★ */
             if (gun->reloadFrameNow == 0) {
                 gun->bulletNum = gun->maxBulletNum;
 
@@ -387,8 +387,20 @@ void collisionAmmoCars(List *carList)
             if (car->id == ammo->carId) continue;
             
             if (collisonAmmoCar(ammo , car)){
-                damageCar(car , ammo->damage);
-                destroyAmmo(ammo);
+                if (ammo->kind == Sniper){
+                    if (ammo->flag & (1 << car->id)){
+                        ;
+                    }
+                    else {
+                        ammo->flag |= (1 << car->id);
+                        damageCar(car , ammo->damage);
+                        destroyAmmo(ammo);
+                    }
+                }
+                else {
+                    damageCar(car , ammo->damage);
+                    destroyAmmo(ammo);
+                }
             }
         }
     }
@@ -404,9 +416,18 @@ void collisionAmmoCars_c(List *carList)
             Ammo *ammo = (Ammo *)j->data;
             if (car->id == ammo->carId) continue;
             
-            if (collisonAmmoCar(ammo , car)){
-                destroyAmmo(ammo);
-            }
+            if (ammo->kind == Sniper){
+                    if (ammo->flag & (1 << car->id)){
+                        ;
+                    }
+                    else {
+                        ammo->flag |= (1 << car->id);
+                        destroyAmmo(ammo);
+                    }
+                }
+                else {
+                    destroyAmmo(ammo);
+                }
         }
     }
 }

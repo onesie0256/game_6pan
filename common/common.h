@@ -324,6 +324,7 @@ typedef struct {
     char id[6];                     //id
     int carId;                      //所属する車
     float radius;                   //半径
+    uint16_t flag;
 }Ammo;
 
 // 武器情報配列を宣言

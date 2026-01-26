@@ -54,7 +54,7 @@ int titleScene(void)
 	if (flag == 0){
 		//ビート効果（拡大縮小）: sin波でループ
 		float beatPhase = (titleState.animationTimer % 100) / 100.0f; 
-		titleState.beatScale = 1.0f + 0.15f * sinf(beatPhase * 2.0f * 3.14159f);
+		titleState.beatScale = 1.5f + 0.2f * sinf(beatPhase * 2.0f * 3.14159f);
 	}
 	else if (flag == 1){
 		if (isKeyDowned(K_ENTER)){
